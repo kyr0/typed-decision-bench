@@ -1,0 +1,28 @@
+# secrets / local configuration
+.env
+.env.*
+
+# derived eval artifacts: run logs, stats/cases, per-run metrics, comparisons
+output/
+
+# gated gpqa_diamond data exists at rest only as *.jsonl.zip; ignore the
+# transient plaintext copies produced by unlock/eval runs (any directory)
+gpqa_diamond.jsonl
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.uv-cache/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store

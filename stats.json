@@ -1,0 +1,1412 @@
+{
+  "total_cases": 27598,
+  "total_capabilities": 275,
+  "existing_v3_capabilities": 67,
+  "existing_v3_cases": 6700,
+  "new_v5_capabilities": 207,
+  "new_v5_cases": 20700,
+  "cases_per_capability": 100,
+  "question_types": {
+    "choice": 18140,
+    "noul": 7250,
+    "score": 2208
+  },
+  "per_capability_types": {
+    "hard_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "math_quantitative_decisions": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "oos_abstention_ambiguity": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "pii_sensitive_data_classification": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "routing_intent_support_priority": {
+      "choice": 55,
+      "noul": 20,
+      "score": 25
+    },
+    "rule_following_formal_logic": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "security_policy_risk": {
+      "choice": 40,
+      "noul": 30,
+      "score": 30
+    },
+    "structured_schema_decisions": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "tool_action_selection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "typed_jev_native_replay": {
+      "choice": 36,
+      "noul": 32,
+      "score": 32
+    },
+    "code_quality_judgements": {
+      "choice": 11,
+      "noul": 68,
+      "score": 21
+    },
+    "program_behavior_prediction": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "code_requirement_satisfaction": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "patch_diff_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "test_quality_and_adequacy": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "api_contract_compatibility": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "dependency_api_existence_judgements": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "version_compatibility": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "environment_portability_judgements": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "concurrency_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "idempotency_judgements": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "error_handling_quality": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "algorithm_data_structure_appropriateness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "complexity_estimation": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "performance_bottleneck_attribution": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "parallelization_suitability": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "database_query_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "regex_pattern_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "state_machine_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "serialization_compatibility": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "data_migration_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "distributed_systems_consistency": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "cache_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "observability_adequacy": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "log_event_sequence_diagnosis": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "configuration_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "command_line_semantics": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "open_source_license_compatibility": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "accessibility_semantics_from_source": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "graph_logic": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "graph_knowledge": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "ontology_taxonomy_consistency": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "graph_path_relevance": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "temporal_graph_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "causal_chain_validation": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "root_cause_attribution": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "evidence_provenance": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "source_reliability_in_context": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "semantic_similarity_and_factual_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "summary_completeness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "claim_entailment": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "unknown_known_state_classification": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "answerability_from_provided_context": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "evidence_sufficiency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "fact_vs_inference_classification": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "hallucination_detection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "topic_keyword_fidelity": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "information_retrieval_relevance": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "recommendation_reranking_quality": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "entity_resolution": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "record_deduplication": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "cross_document_reconciliation": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "document_consistency": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "booking_accounting_mapping": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "accounting_reasonableness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "invoice_anomaly_detection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "fraud_scam_likelihood": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "transaction_anomaly_detection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "commercial_price_plausibility": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "budget_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "resource_planning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "capacity_planning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "inventory_decisions": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "scheduling_feasibility": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "prioritization_under_constraints": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "pareto_optimal_decision_taking": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "expected_utility_decisions": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "bayesian_evidence_updating": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "game_theory_judgements": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "adversarial_agent_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "negotiation_judgements": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "probability_support_judgement": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "probability_calibration_language": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "forecast_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "counterfactual_plausibility": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "base_rate_awareness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "sampling_statistical_interpretation": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "unit_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "dimensional_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "order_of_magnitude_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "scale_plausibility": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "geometry_and_embodied_navigation": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "spatial_relation_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "route_feasibility": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "embodied_affordances": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "physical_commonsense": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "mechanical_system_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "object_permanence_state_tracking": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "temporal_ordering": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "calendar_time_zone_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "historical_fact_verification": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "historical_anachronism_detection": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "geographical_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "weather_state_interpretation": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "scientific_hypothesis_plausibility": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "experimental_design_judgement": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "measurement_uncertainty_reasoning": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "biological_system_reasoning": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "biological_signal_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "medical_differential_reasoning_benchmarks": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "medical_chronology_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "translation_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "grammar_judgement": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "glossary_adherence": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "synonym_semantic_substitution_scoring": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "word_sense_disambiguation": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "language_dialect_identification": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "code_switch_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "pragmatic_intent_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "sarcasm_and_humor_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "humor_explanation_correctness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "mood_atmosphere_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "tone_register_classification": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "dialogue_coherence": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "conversation_state_tracking": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "persona_consistency": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "theory_of_mind_false_belief_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "embodied_unknowns": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "embodied_time_aware_world_views": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "embodied_emotions": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "emotion_cause_attribution": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "social_norm_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "relationship_permission_reasoning": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "embodied_animal_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "animal_affordance_constraint_reasoning": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "narrative_next_event_plausibility": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "character_goal_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "ocr_ngram_based_text_recognition": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "noisy_ocr_reconstruction": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "document_field_association": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "document_type_classification": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "document_workflow_state": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "table_reasoning_from_linearized_text": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "spreadsheet_formula_semantics_from_text": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "form_completeness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "contract_clause_consistency": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "requirement_traceability": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "business_process_conformance": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "email_thread_state_understanding": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "action_item_extraction_verification": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "product_catalog_matching": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "compatibility_matching": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "taxonomy_category_assignment": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "multi_label_topic_classification": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "domain_identification": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "expertise_level_estimation_of_text": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "explanation_necessity_judgement": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "explanation_quality_judgement": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "rationale_to_answer_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "constraint_satisfaction_judgement": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "soft_vs_hard_constraint_discrimination": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "preference_learning_from_explicit_examples": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "multi_criteria_scoring_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "rubric_based_quality_assessment": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "comparative_judgement_transitivity": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "pairwise_preference_prediction": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "set_coverage_diversity_judgement": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "redundancy_detection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "information_density_judgement": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "data_quality_validation": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "synthetic_data_plausibility": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "class_label_leakage_detection": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "dataset_example_quality": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "benchmark_contamination_clues": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "adversarial_example_detection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "spurious_correlation_resistance": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "invariant_detection": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "boundary_condition_judgement": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "failure_mode_classification": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "recoverability_judgement": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "reversibility_destructiveness": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "operational_urgency": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "change_risk_judgement": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "regression_likelihood_judgement": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "human_vs_machine_task_suitability": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "live_data_requirement": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "information_acquisition_value": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "stopping_decision_sufficiency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "confidence_vs_evidence_consistency": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "self_consistency_across_outputs": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "granularity_selection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "abstraction_level_matching": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "analogy_validity": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "category_error_detection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "cognitive_bias_illogic_detection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "contradiction_resolution": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "scope_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "quantifier_reasoning_in_natural_text": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "negation_polarity_tracking": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "reference_coreference_resolution": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "comparative_language_reasoning": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "definition_adherence": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "local_rule_over_world_knowledge_judgement": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "world_model_consistency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "long_context_distractor_resistance": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "needle_set_retrieval": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "cross_domain_synthesis": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "minimal_sufficient_explanation_selection": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "competing_hypothesis_discrimination": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "mechanism_vs_pattern_distinction": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "decision_robustness": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "sensitivity_analysis": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "dominated_information_detection": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "consistency_under_paraphrase": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "consistency_under_irrelevant_context_insertion": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "consistency_under_option_permutation": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "calibration_under_ambiguity": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "action_item_assignment": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "ad_policy_violation": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "allergen_present": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "app_review_intent": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "churn_risk": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "city_service_request": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "code_review_intent": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "commit_intent": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "contains_pii": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "contains_spoiler": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "content_moderation": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "content_type": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "contract_clause_type": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "delivery_exception": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "dietary_vegan": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "document_type": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "email_intent": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "email_intent_hard": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "expense_category": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "fair_housing_violation": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "formality_level": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "frustration_level": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "frustration_level_hard": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "gaming_report_type": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "grammar_issue": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "hazmat_shipping": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "home_service_routing": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "incident_severity": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "incident_severity_hard": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "insurance_claim_priority": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "lead_qualification": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "meeting_conflict": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "news_topic": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "oncall_route": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "phishing_email": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "question_duplicate": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "reading_level": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "recipe_cuisine": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "refund_eligible": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "refund_eligible_hard": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "return_reason": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "review_sentiment": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "review_sentiment_hard": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "secret_leak": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "secret_leak_hard": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "sql_injection_risk": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "support_department": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "support_department_hard": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "suspicious_transaction": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "symptom_triage": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "travel_policy_violation": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "urgency": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "urgency_hard": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "veterinary_triage": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "voice_assistant_intent": {
+      "choice": 100,
+      "noul": 0,
+      "score": 0
+    },
+    "warranty_claim_eligible": {
+      "choice": 0,
+      "noul": 100,
+      "score": 0
+    },
+    "weather_alert_severity": {
+      "choice": 0,
+      "noul": 0,
+      "score": 100
+    },
+    "gpqa_diamond": {
+      "choice": 198,
+      "noul": 0,
+      "score": 0
+    }
+  },
+  "quality_summary": {
+    "openapi_validation": "PASS",
+    "semantic_pair_validation": "PASS",
+    "golden_self_score_micro_accuracy": 1.0,
+    "cases": 21700,
+    "capabilities": 217,
+    "cases_per_capability": 100,
+    "global_duplicate_request_bodies": 0,
+    "atomic_one_question_per_request": true,
+    "existing_v3_jsonl_files_checked": 30,
+    "existing_v3_jsonl_files_byte_identical": 30,
+    "new_v5_suites": 207,
+    "new_v5_cases": 20700,
+    "new_suite_min_distinct_gold_outcomes": 2,
+    "new_suite_max_single_gold_share": 0.86,
+    "question_types": {
+      "choice": 15742,
+      "noul": 5150,
+      "score": 808
+    }
+  }
+}

@@ -1,0 +1,1860 @@
+[
+  {
+    "slug": "hard_reasoning",
+    "title": "hard reasoning",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "math_quantitative_decisions",
+    "title": "math quantitative decisions",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "oos_abstention_ambiguity",
+    "title": "oos abstention ambiguity",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "pii_sensitive_data_classification",
+    "title": "pii sensitive data classification",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "routing_intent_support_priority",
+    "title": "routing intent support priority",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "rule_following_formal_logic",
+    "title": "rule following formal logic",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "security_policy_risk",
+    "title": "security policy risk",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "structured_schema_decisions",
+    "title": "structured schema decisions",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "tool_action_selection",
+    "title": "tool action selection",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "typed_jev_native_replay",
+    "title": "typed jev native replay",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "code_quality_judgements",
+    "title": "Code quality judgements",
+    "description": "does documentation and code align? is a method too long given a specified max length? categorize cyclomatic complexity; does a test actually test the intended behavior? are important branches untested? what will the code return? will it produce the declared schema? does it call external functions? is it side-effect free? does it mutate state? arbitrary-code-execution potential? should this code be optimized or is optimization unlikely to matter? does it need explanatory comments? does it require a live datasource? browser/server/both? memory/CPU/GPU intensity; thread safety; blocking behavior; command destructiveness; estimated runtime class; programming-language identification; application-domain classification.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "program_behavior_prediction",
+    "title": "Program-behavior prediction",
+    "description": "given short code, predict output, exception, state mutation, filesystem/network effects, stdout/stderr, exit status, returned type, number of iterations, whether execution terminates; classic interview-style traps but also realistic application code.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "code_requirement_satisfaction",
+    "title": "Code requirement satisfaction",
+    "description": "given a natural-language task and candidate implementation, decide which requirements are actually implemented, partially implemented, contradicted, or absent; distinguish superficial keyword matches from behavioral compliance.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "patch_diff_correctness",
+    "title": "Patch/diff correctness",
+    "description": "given original code, requested change and patch, decide whether the patch actually solves the request; identify unrelated behavior changes, regressions, incomplete modifications, stale tests, obsolete branches.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "test_quality_and_adequacy",
+    "title": "Test quality and adequacy",
+    "description": "does the test exercise the behavior named by its title? can it pass despite a broken implementation? does it test implementation details rather than contract? missing boundary conditions? duplicated tests? property/invariant that should be tested? score semantic coverage independently from line coverage.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "api_contract_compatibility",
+    "title": "API-contract compatibility",
+    "description": "does client request match server contract? path/method/header/content-type mismatch; required vs optional fields; return shape; pagination contract; sync/async mismatch; REST/OpenAPI/GraphQL/RPC examples; backwards compatibility.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "dependency_api_existence_judgements",
+    "title": "Dependency/API existence judgements",
+    "description": "does the referenced method plausibly belong to the named library/version? candidate calls from documentation vs fabricated APIs; deprecated methods; package-name confusion; stdlib vs third-party dependency; import-path compatibility.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "version_compatibility",
+    "title": "Version compatibility",
+    "description": "given dependency/runtime versions and feature usage, decide compatible/incompatible/unknown; Python/Node/Rust/Java versions, CUDA/runtime pairs, database versions, browser features, serialization formats.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "environment_portability_judgements",
+    "title": "Environment/portability judgements",
+    "description": "browser-only, Node-only, POSIX-only, Windows-specific, GPU-required, CUDA-specific, root-required, interactive-terminal-dependent, filesystem-dependent, locale-dependent, architecture-dependent, isomorphic.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "concurrency_correctness",
+    "title": "Concurrency correctness",
+    "description": "race conditions, shared mutable state, atomicity assumptions, lock ordering, possible deadlock, async misuse, reentrancy, thread safety, process safety, duplicate-job execution.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "idempotency_judgements",
+    "title": "Idempotency judgements",
+    "description": "HTTP retries, payment processing, migration scripts, queue consumers, file transformations: can repeated execution alter the outcome incorrectly? distinguish read-only, naturally idempotent, explicitly idempotent and non-idempotent operations.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "error_handling_quality",
+    "title": "Error-handling quality",
+    "description": "exception swallowed? retry useful or harmful? retryable vs permanent failure; cleanup guaranteed? fallback masks corruption? error loses useful context? timeout required? failure leaves inconsistent state?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "algorithm_data_structure_appropriateness",
+    "title": "Algorithm/data-structure appropriateness",
+    "description": "list vs hash map vs tree vs heap; full sort vs top-k; linear scan vs indexed lookup; algorithm asymptotically inappropriate? optimization justified by expected input sizes?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "complexity_estimation",
+    "title": "Complexity estimation",
+    "description": "categorize time/memory complexity; distinguish worst/average/amortized; identify input variable controlling complexity; detect accidental quadratic behavior; score practical rather than merely asymptotic cost.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "performance_bottleneck_attribution",
+    "title": "Performance-bottleneck attribution",
+    "description": "given code plus timings, identify CPU, I/O, memory bandwidth, network, lock contention, serialization, database, accelerator or startup bottleneck; decide whether proposed optimization affects the bottleneck.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "parallelization_suitability",
+    "title": "Parallelization suitability",
+    "description": "is the task embarrassingly parallel? state synchronization needed? batchable? vectorizable? GPU-friendly? multiprocessing useful? parallelism likely slower because workload is tiny?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "database_query_reasoning",
+    "title": "Database-query reasoning",
+    "description": "SQL result semantics, incorrect joins, duplicate rows, missing predicates, NULL semantics, aggregation correctness, N+1 queries, index usefulness, transaction isolation assumptions.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "regex_pattern_correctness",
+    "title": "Regex/pattern correctness",
+    "description": "does regex accept/reject supplied examples? catastrophic-backtracking potential; anchored vs substring matching; Unicode assumptions; overly broad/overly strict validation.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "state_machine_correctness",
+    "title": "State-machine correctness",
+    "description": "given states/events/transitions, is a transition legal? unreachable states? missing terminal state? event sequence impossible? transition introduces invariant violation?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "serialization_compatibility",
+    "title": "Serialization compatibility",
+    "description": "JSON/JSONL/YAML/CSV/Protobuf-like representations; numeric/string coercion, enum incompatibilities, absent/null distinction, precision loss, ordering assumptions.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "data_migration_correctness",
+    "title": "Data-migration correctness",
+    "description": "old/new schema plus transformation: is information lost? reversible? duplicate creation possible? migration safe to retry? values mapped to wrong enum/unit?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "distributed_systems_consistency",
+    "title": "Distributed-systems consistency",
+    "description": "event order, stale replicas, at-least-once delivery, duplicate messages, leader changes, eventual consistency; decide whether observed states are possible and whether invariants survive.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "cache_correctness",
+    "title": "Cache correctness",
+    "description": "stale cache, incorrect keying, tenant leakage, invalidation mistakes, TTL assumptions, cacheable vs non-cacheable responses, derived-data dependency changes.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "observability_adequacy",
+    "title": "Observability adequacy",
+    "description": "given system behavior and logs/metrics/traces, decide whether evidence can distinguish likely failure modes; identify missing correlation IDs, timings, error context, cardinality problems.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "log_event_sequence_diagnosis",
+    "title": "Log/event-sequence diagnosis",
+    "description": "given textual logs, decide most plausible execution path, component that failed first, causal vs downstream errors, whether retries recovered, whether timestamps violate expected ordering.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "configuration_correctness",
+    "title": "Configuration correctness",
+    "description": "`Dockerfile`, Compose, Kubernetes, CI, package config, compiler config, environment variables represented as text; incompatible options, wrong paths, missing required keys, overridden values.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "command_line_semantics",
+    "title": "Command-line semantics",
+    "description": "what does this pipeline actually do? destructive/non-destructive; local/network effects; blocking? requires stdin? can glob expand dangerously? expected output class; approximate runtime category.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "open_source_license_compatibility",
+    "title": "Open-source/license compatibility",
+    "description": "given licenses and distribution arrangement, classify likely compatibility/obligation category from supplied license rules; notice/source-distribution requirements; distinguish linking, copying and mere tool usage.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "accessibility_semantics_from_source",
+    "title": "Accessibility semantics from source",
+    "description": "HTML/ARIA/textual component representation: correct label association? keyboard reachable? heading hierarchy? interactive element role? duplicate labels? accessibility claim unsupported?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "graph_logic",
+    "title": "Graph logic",
+    "description": "given reasoning/causal graph, judge whether edges are supported, merely correlated, impossible, circular, redundant or hallucinated; determine whether conclusion follows from reachable evidence.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "graph_knowledge",
+    "title": "Graph knowledge",
+    "description": "given concept/entity graph, judge whether relation types are correct: `is-a`, `part-of`, `causes`, `located-in`, `authored-by`, `depends-on`; score semantic closeness of candidate edges.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "ontology_taxonomy_consistency",
+    "title": "Ontology/taxonomy consistency",
+    "description": "dog\u2192mammal valid, mammal\u2192dog too specific; instance-vs-class mistakes; disjoint categories; transitive relationships; parent category chosen at wrong abstraction level.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "graph_path_relevance",
+    "title": "Graph-path relevance",
+    "description": "given query and a knowledge graph, rank possible paths by how directly they explain/connect the concepts; reject paths connected only through generic hubs.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "temporal_graph_consistency",
+    "title": "Temporal graph consistency",
+    "description": "edge valid only before/after date X; employment, ownership, dependency/version, historical relationships; detect relations impossible simultaneously.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "causal_chain_validation",
+    "title": "Causal-chain validation",
+    "description": "A preceded B but did not necessarily cause B; intervention evidence vs correlation; mediators/confounders; identify unsupported causal step in multi-hop explanation.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "root_cause_attribution",
+    "title": "Root-cause attribution",
+    "description": "given symptoms/events and dependency graph, rank plausible root causes separately from downstream manifestations; include cases with insufficient evidence or multiple equally compatible causes.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "evidence_provenance",
+    "title": "Evidence provenance",
+    "description": "given claims and source snippets, map each claim to supporting evidence; unsupported, directly supported, inferred, contradicted, or sourced from the wrong document.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "source_reliability_in_context",
+    "title": "Source reliability in-context",
+    "description": "given explicit metadata such as primary record, repost, anonymous comment, official specification, outdated manual, decide which source is suitable for which claim without relying on source prestige alone.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "semantic_similarity_and_factual_correctness",
+    "title": "Semantic similarity and factual correctness",
+    "description": "does summary preserve source meaning? contradiction vs paraphrase; over-generalization; omitted qualifier; invented detail; unsupported certainty; incorrect entity/date/quantity.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "summary_completeness",
+    "title": "Summary completeness",
+    "description": "does summary cover all materially distinct topics? which topic is absent? does it spend disproportionate space on minor detail? distinguish concise-but-complete from lossy.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "claim_entailment",
+    "title": "Claim entailment",
+    "description": "source says \u201cmay reduce latency\u201d; candidate says \u201creduces latency\u201d: unsupported certainty. Source says 8\u201312%; candidate says 10%: approximation vs fabrication. Multi-sentence entailment and contradiction.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "unknown_known_state_classification",
+    "title": "Unknown/known-state classification",
+    "description": "given evidence set, distinguish true, false, likely, possible and genuinely unknown rather than guessing a binary answer.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "answerability_from_provided_context",
+    "title": "Answerability from provided context",
+    "description": "question may have a real-world answer but cannot be answered from supplied state; distinguish \u201cunknown to the model state\u201d from \u201cfactually unknowable\u201d and \u201cexplicitly contradicted.\u201d",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "evidence_sufficiency",
+    "title": "Evidence sufficiency",
+    "description": "is there enough evidence to make a requested decision at confidence threshold X? decide what additional evidence would discriminate between remaining alternatives.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "fact_vs_inference_classification",
+    "title": "Fact-vs-inference classification",
+    "description": "identify statements explicitly present, deductively derivable, probabilistically inferred, merely plausible, or unsupported.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "hallucination_detection",
+    "title": "Hallucination detection",
+    "description": "candidate response introduces person, date, dependency, number, cause, quotation, API, event or feature absent from source; include subtle composite hallucinations formed by combining true fragments.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "topic_keyword_fidelity",
+    "title": "Topic/keyword fidelity",
+    "description": "do keywords describe the source? overly broad/narrow terms; missing dominant topic; term present only incidentally; rank keywords by representativeness.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "information_retrieval_relevance",
+    "title": "Information-retrieval relevance",
+    "description": "query plus 20\u2013100 passages/items; rank relevance; distinguish exact lexical overlap from semantic relevance; IT/API/code/CSS/HTML/legal/scientific/general domains.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "recommendation_reranking_quality",
+    "title": "Recommendation/reranking quality",
+    "description": "query, explicit preferences/constraints, candidate products/documents/actions/items; order by fit; hard constraint violation must dominate superficial similarity; ties and insufficient-information cases.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "entity_resolution",
+    "title": "Entity resolution",
+    "description": "are \u201cInternational Business Machines\u201d, \u201cIBM Corp.\u201d and \u201cIBM\u201d same entity in this context? distinguish same-name different entities using address/date/domain/account metadata.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "record_deduplication",
+    "title": "Record deduplication",
+    "description": "decide exact duplicate, near duplicate, updated record, related-but-distinct, or ambiguous using noisy text fields.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "cross_document_reconciliation",
+    "title": "Cross-document reconciliation",
+    "description": "invoice vs purchase order vs delivery note; resume vs application form; API docs vs implementation; identify matching, missing, contradictory and outdated facts.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "document_consistency",
+    "title": "Document consistency",
+    "description": "invoice subtotal/tax/total agreement; stated address vs country code; account owner vs invoice party; dates in plausible order; internal references resolve.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "booking_accounting_mapping",
+    "title": "Booking/accounting mapping",
+    "description": "bank-statement descriptions \u2192 rent, payroll, cloud hosting, office equipment, tax, fee, refund, transfer, subscription etc.; debit/credit implications; recurring vs exceptional; business/private/unknown.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "accounting_reasonableness",
+    "title": "Accounting reasonableness",
+    "description": "is booking category compatible with description? VAT treatment stated in supplied rules? asset vs expense under supplied threshold? candidate mapping clearly impossible or merely uncertain?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "invoice_anomaly_detection",
+    "title": "Invoice anomaly detection",
+    "description": "implausible totals, duplicate positions, unusual quantity\u00d7price, inconsistent tax, dates, currencies, IBAN/country/address mismatch, changed payment destination.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "fraud_scam_likelihood",
+    "title": "Fraud/scam likelihood",
+    "description": "emails, invoices, letters, account-change requests, fake support messages; German phone but unrelated foreign banking coordinates, domain typo, impossible chronology, urgency combined with credential/payment request; score individual evidence rather than \u201codd = fraud.\u201d",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "transaction_anomaly_detection",
+    "title": "Transaction anomaly detection",
+    "description": "usual transaction pattern supplied in state; detect unusual amount, merchant, geography, frequency, timing or counterparty while tolerating legitimate one-off changes.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "commercial_price_plausibility",
+    "title": "Commercial-price plausibility",
+    "description": "given supplied catalogue/reference prices, judge invoice/order positions as plausible, unusually high/low, incompatible unit or quantity, or not comparable.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "budget_consistency",
+    "title": "Budget consistency",
+    "description": "proposed spend vs budget categories, recurring costs, commitments and reserve; identify oversubscription, double-counting or nominally cheap option causing downstream cost.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "resource_planning",
+    "title": "Resource planning",
+    "description": "staff, compute, storage, inventory, time, materials, advertising budget; what is required, optional, excessive or missing; quantities under explicit workload assumptions.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "capacity_planning",
+    "title": "Capacity planning",
+    "description": "requests/s, workers, memory, storage growth, production capacity, hotel seats, warehouse space; choose sufficient capacity tier and detect impossible utilization assumptions.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "inventory_decisions",
+    "title": "Inventory decisions",
+    "description": "demand forecasts, lead times, spoilage, safety stock; reorder/hold/clearance decisions; distinguish shortage risk from overstock risk.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "scheduling_feasibility",
+    "title": "Scheduling feasibility",
+    "description": "jobs, dependencies, workers, durations, calendars; is schedule possible? earliest feasible slot? conflicting resources? missed prerequisite?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "prioritization_under_constraints",
+    "title": "Prioritization under constraints",
+    "description": "rank tasks using explicit impact, urgency, dependency, cost and deadline; reject \u201curgent-looking\u201d low-value work when criteria disagree.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "pareto_optimal_decision_taking",
+    "title": "Pareto-optimal decision taking",
+    "description": "multiple objectives such as latency/cost/accuracy/reliability; identify dominated options, Pareto frontier, and goal-compatible choices without pretending one global optimum exists.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "expected_utility_decisions",
+    "title": "Expected-utility decisions",
+    "description": "explicit outcomes, probabilities and utility/cost; select or rank choices; include loss aversion traps, tiny-probability/high-cost events and cases where expected value differs from expected utility.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "bayesian_evidence_updating",
+    "title": "Bayesian evidence updating",
+    "description": "prior plus diagnostic evidence/likelihood information; decide which hypothesis should gain/lose probability, rank posteriors, detect evidence that is actually non-informative.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "game_theory_judgements",
+    "title": "Game-theory judgements",
+    "description": "dominant strategies, best response, coordination, prisoner\u2019s dilemma, zero/non-zero-sum, repeated interaction, credible threats, signaling; probable outcome under explicitly stated player incentives.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "adversarial_agent_reasoning",
+    "title": "Adversarial-agent reasoning",
+    "description": "another actor optimizes against you; identify exploitable deterministic strategy, deceptive signal, incentive incompatibility, commitment problem.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "negotiation_judgements",
+    "title": "Negotiation judgements",
+    "description": "BATNA, reservation values, mutually beneficial ranges, concessions; distinguish agreement that dominates alternatives from one that only sounds balanced.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "probability_support_judgement",
+    "title": "Probability-support judgement",
+    "description": "state gives probabilities/confidence/evidence; statement \u201cit will probably be sunny in 3 days\u201d must be evaluated against forecast values and uncertainty; distinguish 51%, 80%, 99% language.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "probability_calibration_language",
+    "title": "Probability calibration language",
+    "description": "map \u201cpossible\u201d, \u201clikely\u201d, \u201cvery likely\u201d, \u201calmost certain\u201d to supplied quantitative conventions; identify text whose certainty overstates/understates evidence.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "forecast_consistency",
+    "title": "Forecast consistency",
+    "description": "multiple observations or forecasts through time; candidate prediction incompatible with current trajectory, confidence interval, seasonality or stated assumptions.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "counterfactual_plausibility",
+    "title": "Counterfactual plausibility",
+    "description": "given causal rules/state, judge \u201cif X had not happened, Y would still have happened\u201d; distinguish counterfactual inference from simple temporal reversal.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "base_rate_awareness",
+    "title": "Base-rate awareness",
+    "description": "rare event with noisy positive evidence; determine whether candidate conclusion ignores supplied prevalence/base rate.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "sampling_statistical_interpretation",
+    "title": "Sampling/statistical interpretation",
+    "description": "does a conclusion generalize beyond described sample? selection bias, survivorship, confounding, tiny sample, inappropriate average, percentage-vs-percentage-point confusion.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "unit_understanding",
+    "title": "Unit understanding",
+    "description": "compare quantities represented in different units; milliseconds vs seconds, MB vs GiB, km/h vs m/s, \u00b0C vs K when differences/absolute values matter, currencies with supplied conversion rates.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "dimensional_consistency",
+    "title": "Dimensional consistency",
+    "description": "is an equation/result dimensionally possible? energy vs power, rate vs amount, area vs length, throughput vs latency; detect numerically plausible but unit-invalid answers.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "order_of_magnitude_reasoning",
+    "title": "Order-of-magnitude reasoning",
+    "description": "is result roughly 10, 1k, 1M or 1B? detect decimal/exponent/unit conversion mistakes without requiring exact arithmetic.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "scale_plausibility",
+    "title": "Scale plausibility",
+    "description": "is 200 GB plausible for a text file containing 500 records? 2 ms plausible for a transatlantic round trip? grounded in explicitly provided reference ranges where possible.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "geometry_and_embodied_navigation",
+    "title": "Geometry and embodied navigation",
+    "description": "textual 2D/3D spaces, orientation, coordinates, obstacles and goals; walk/drive/fly/jump/crawl constraints; choose feasible action and detect collision/dead end.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "spatial_relation_reasoning",
+    "title": "Spatial-relation reasoning",
+    "description": "left/right/front/behind/inside/intersecting/north/south; viewpoint transformations; object A left of B and observer rotates 180\u00b0; relative vs absolute orientation.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "route_feasibility",
+    "title": "Route feasibility",
+    "description": "doors, one-way passages, bridge weight/height constraints, stairs vs wheelchair, vehicle turning radius, fuel/range; decide which route is actually traversable.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "embodied_affordances",
+    "title": "Embodied affordances",
+    "description": "can object be carried, climbed, entered, opened, driven through, used as support given stated dimensions/material/body capabilities?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "physical_commonsense",
+    "title": "Physical commonsense",
+    "description": "stack stability, containment, gravity, support, liquid flow, collision, friction, heating/cooling; plausible next physical state.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "mechanical_system_reasoning",
+    "title": "Mechanical-system reasoning",
+    "description": "gears, pulleys, valves, pumps, levers, simple electrical/mechanical state descriptions; direction/change propagation and failure-mode classification.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "object_permanence_state_tracking",
+    "title": "Object permanence/state tracking",
+    "description": "objects moved between locations/containers; after long distractor text identify where an object must, may or cannot be.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "temporal_ordering",
+    "title": "Temporal ordering",
+    "description": "events with explicit/relative dates, durations and dependencies; detect impossible chronology, calculate which events overlap, before/after relations.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "calendar_time_zone_understanding",
+    "title": "Calendar/time-zone understanding",
+    "description": "appointments described across zones, daylight-saving offsets supplied or derivable from state, recurring schedules, \u201cnext Friday\u201d relative to explicit reference date.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "historical_fact_verification",
+    "title": "Historical-fact verification",
+    "description": "given date/country plus reference excerpts, decide whether stated ruler, border, institution, technology, currency or event is compatible with that time.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "historical_anachronism_detection",
+    "title": "Historical anachronism detection",
+    "description": "objects, terminology, technologies, countries, institutions or social practices appearing before/after their described era.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "geographical_consistency",
+    "title": "Geographical consistency",
+    "description": "city-country-region relationships, distances/directions from supplied map-like facts, impossible travel sequence, address-country/currency/phone-code consistency.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "weather_state_interpretation",
+    "title": "Weather-state interpretation",
+    "description": "forecast table expressed textually; precipitation/cloud/wind/temperature state \u2192 supported natural-language judgement; distinguish \u201csunny\u201d, \u201cdry\u201d, \u201cwarm\u201d, \u201cstormy\u201d, \u201csafe for activity X\u201d.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "scientific_hypothesis_plausibility",
+    "title": "Scientific-hypothesis plausibility",
+    "description": "observations vs hypotheses; which hypotheses are consistent, falsified or underdetermined? distinguish prediction from post-hoc explanation.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "experimental_design_judgement",
+    "title": "Experimental-design judgement",
+    "description": "does experiment test stated hypothesis? proper control? variable actually manipulated? confounder? measurement cannot distinguish candidate explanations?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "measurement_uncertainty_reasoning",
+    "title": "Measurement/uncertainty reasoning",
+    "description": "significant figures, measurement interval, sensor error, uncertainty propagation qualitatively, whether claimed difference exceeds supplied uncertainty.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "biological_system_reasoning",
+    "title": "Biological-system reasoning",
+    "description": "text descriptions of cells, organisms, ecosystems, inheritance, physiology; identify plausible mechanisms, impossible category mixtures, cause/effect direction.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "biological_signal_understanding",
+    "title": "Biological signal understanding",
+    "description": "symptom/body-state narratives \u2192 pain location/type/intensity range, physical vs psychological vs mixed vs insufficient evidence; explicitly reward uncertainty rather than invented sensations.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "medical_differential_reasoning_benchmarks",
+    "title": "Medical differential-reasoning benchmarks",
+    "description": "symptoms plus candidate ICD descriptions \u2192 score compatibility, contradiction and missing evidence; include superficially similar diagnoses, impossible combinations and insufficient-information cases; benchmark reasoning, not patient diagnosis.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "medical_chronology_consistency",
+    "title": "Medical chronology consistency",
+    "description": "symptoms, medication, procedures and measurements over time; decide whether candidate explanation contradicts chronology or known state supplied in example.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "translation_correctness",
+    "title": "Translation correctness",
+    "description": "source plus candidate translations; meaning preserved? polarity/tense/quantity/register changed? false friend? dropped clause? added information?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "grammar_judgement",
+    "title": "Grammar judgement",
+    "description": "locate erroneous token/span among \\~20 words; agreement, tense, case, article, word order, punctuation; include grammatically valid but stylistically odd distractors.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "glossary_adherence",
+    "title": "Glossary adherence",
+    "description": "given N approved translations/technical terms, detect whether candidate translation uses required terms consistently; rank candidate glossary matches.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "synonym_semantic_substitution_scoring",
+    "title": "Synonym/semantic-substitution scoring",
+    "description": "which word/phrase can replace source expression in context without changing denotation, connotation, register or technical meaning?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "word_sense_disambiguation",
+    "title": "Word-sense disambiguation",
+    "description": "\u201cbank\u201d, \u201cport\u201d, \u201cmodel\u201d, \u201cclass\u201d, \u201ccell\u201d, \u201ccharge\u201d etc.; determine intended sense from context and rank alternatives.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "language_dialect_identification",
+    "title": "Language/dialect identification",
+    "description": "short/noisy/code-switched text; language family vs exact language; distinguish German/Dutch, Serbian/Croatian/Bosnian, Russian/Ukrainian etc.; permit uncertain/ambiguous.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "code_switch_understanding",
+    "title": "Code-switch understanding",
+    "description": "sentence changes languages midstream; assign spans/language, preserve named entities/loan words, understand cross-language coreference.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "pragmatic_intent_understanding",
+    "title": "Pragmatic-intent understanding",
+    "description": "\u201cCould you open the window?\u201d literal ability question vs request; indirect refusals, implied requests, soft commitments, rhetorical questions.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "sarcasm_and_humor_understanding",
+    "title": "Sarcasm and humor understanding",
+    "description": "sarcasm, irony, understatement, absurdity, incongruity, callback, pun, garden-path joke; classify mechanism and whether literal interpretation differs from intended meaning.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "humor_explanation_correctness",
+    "title": "Humor explanation correctness",
+    "description": "given joke plus candidate explanations, rank explanations; reject explanations inventing a pun or cultural reference absent from text.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "mood_atmosphere_understanding",
+    "title": "Mood/atmosphere understanding",
+    "description": "cinematic/story descriptions \u2192 tense, calm, ominous, melancholic, joyful, uncanny etc.; distinguish environmental mood from character emotion.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "tone_register_classification",
+    "title": "Tone/register classification",
+    "description": "formal, intimate, hostile, deferential, clinical, promotional, passive-aggressive, uncertain; intensity score; detect mismatch with intended audience.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "dialogue_coherence",
+    "title": "Dialogue coherence",
+    "description": "does response answer previous turn? wrong referent? repeats solved question? abrupt topic switch? ignores correction? assumes information never supplied?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "conversation_state_tracking",
+    "title": "Conversation-state tracking",
+    "description": "multi-turn text with changing choices/reservations/configuration; identify latest valid state rather than an obsolete earlier value.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "persona_consistency",
+    "title": "Persona consistency",
+    "description": "persona explicitly specifies age, occupation, language, knowledge and experiences; candidate utterance contradicts biography, chronology or knowledge access.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "theory_of_mind_false_belief_reasoning",
+    "title": "Theory-of-mind / false-belief reasoning",
+    "description": "Alice saw object moved? Bob did not; what does each person believe? nested beliefs, deception, stale information, private communication.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "embodied_unknowns",
+    "title": "Embodied unknowns",
+    "description": "what can this person/agent know given their location, sensors, messages, education and event exposure? reject omniscient answers.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "embodied_time_aware_world_views",
+    "title": "Embodied time-aware world views",
+    "description": "persona, age, birthplace, biography, explicitly supplied beliefs, media exposure and historical time; judge which beliefs/reactions are plausible for that described individual without substituting stereotypes.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "embodied_emotions",
+    "title": "Embodied emotions",
+    "description": "baseline emotional/physical state plus new event \u2192 plausible next emotions; tooth pain + exhaustion + bad news vs rested state; allow multiple plausible reactions and reject deterministic overconfidence.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "emotion_cause_attribution",
+    "title": "Emotion-cause attribution",
+    "description": "identify which described event most plausibly caused emotion vs merely co-occurred; distinguish disappointment, fear, embarrassment, anger, grief, relief, surprise.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "social_norm_reasoning",
+    "title": "Social-norm reasoning",
+    "description": "given explicit relationship/culture/context rules, classify action as expected, unusual, inappropriate or underdetermined; separate rule violation from personal dislike.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "relationship_permission_reasoning",
+    "title": "Relationship/permission reasoning",
+    "description": "manager/employee, parent/child, owner/guest, doctor/patient, service roles as explicitly defined: who can authorize/access/change what?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "embodied_animal_understanding",
+    "title": "Embodied animal understanding",
+    "description": "species-specific state of dogs, cats, birds, fish, horses, rodents etc.; probable next action, stress/fear/feeding behavior, threat level, predator/prey relation, health concern vs normal behavior.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "animal_affordance_constraint_reasoning",
+    "title": "Animal affordance/constraint reasoning",
+    "description": "can this species climb/swim/fly/squeeze through/open/reach the described object? age/size/injury/environment alter feasible actions.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "narrative_next_event_plausibility",
+    "title": "Narrative next-event plausibility",
+    "description": "given story state, rank candidate next events by causal continuity rather than genre clich\u00e9; impossible teleportation, forgotten injuries, unresolved physical constraints.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "character_goal_consistency",
+    "title": "Character-goal consistency",
+    "description": "does proposed action advance the character\u2019s explicitly stated goal? knowingly sacrifices one objective for another? action conflicts with known incentives?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "ocr_ngram_based_text_recognition",
+    "title": "OCR/ngram-based text recognition",
+    "description": "full document text plus focused sentence; tokenize into words/numbers and n-grams; identify customer number, invoice number, date, amount, reference, company/person/address from candidate spans.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "noisy_ocr_reconstruction",
+    "title": "Noisy-OCR reconstruction",
+    "description": "`I/1/l`, `O/0`, broken whitespace, hyphenation, duplicated characters; rank candidate reconstruction using surrounding textual constraints.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "document_field_association",
+    "title": "Document-field association",
+    "description": "multiple dates, IDs, addresses and amounts occur; determine which belongs to invoice, customer, supplier, delivery, payment or order rather than merely extracting nearest value.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "document_type_classification",
+    "title": "Document-type classification",
+    "description": "invoice, quote, reminder, order confirmation, cancellation, contract, bank statement, medical report, support ticket, shipping notice, application, receipt.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "document_workflow_state",
+    "title": "Document-workflow state",
+    "description": "quote\u2192order\u2192delivery\u2192invoice\u2192payment\u2192reminder; given documents/events, decide current state and which transitions have/have not happened.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "table_reasoning_from_linearized_text",
+    "title": "Table reasoning from linearized text",
+    "description": "rows/columns represented textually; lookup, compare, aggregate, identify max/min, join related rows, respect headers/units and missing cells.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "spreadsheet_formula_semantics_from_text",
+    "title": "Spreadsheet-formula semantics from text",
+    "description": "formula plus cell values/ranges serialized textually; decide result/error/dependency; identify relative-reference mistakes without requiring spreadsheet modality.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "form_completeness",
+    "title": "Form completeness",
+    "description": "required/conditional fields based on provided rules; missing signature, inconsistent checkbox/value, field supplied in wrong section, conditional field unnecessarily demanded.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "contract_clause_consistency",
+    "title": "Contract/clause consistency",
+    "description": "given explicit contract clauses, decide whether proposed action/deadline/payment condition follows, conflicts, is unspecified or requires another clause; no free-form legal advice required.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "requirement_traceability",
+    "title": "Requirement traceability",
+    "description": "requirements \u2192 design \u2192 implementation \u2192 tests; determine which requirement has no implementation/test, which test maps to no requirement, which artifact contradicts another.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "business_process_conformance",
+    "title": "Business-process conformance",
+    "description": "defined workflow plus observed event sequence; legal transition, skipped approval, wrong role, duplicate action, expired prerequisite, valid exception path.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "email_thread_state_understanding",
+    "title": "Email-thread state understanding",
+    "description": "who owes whom a response? latest agreed date/price/action? question already answered? quoted older text vs newest message; attachment mentioned but absent.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "action_item_extraction_verification",
+    "title": "Action-item extraction/verification",
+    "description": "candidate action item actually promised/requested? correct owner/deadline? distinguish suggestion from commitment and condition from action.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "product_catalog_matching",
+    "title": "Product/catalog matching",
+    "description": "natural-language request vs structured product descriptions serialized as text; rank correct SKU/model while respecting size/version/compatibility constraints.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "compatibility_matching",
+    "title": "Compatibility matching",
+    "description": "charger/device, software/plugin/runtime, replacement part/machine, datatype/API; distinguish physically similar from actually compatible.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "taxonomy_category_assignment",
+    "title": "Taxonomy/category assignment",
+    "description": "assign products/documents/issues/scientific concepts to hierarchical labels; nearest category vs overly general/overly specific class.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "multi_label_topic_classification",
+    "title": "Multi-label topic classification",
+    "description": "text may genuinely belong to multiple domains; select all supported labels without spraying generic labels; include hierarchical and overlapping domains.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "domain_identification",
+    "title": "Domain identification",
+    "description": "biology, chemistry, finance, networking, compiler engineering, law, linguistics, medicine, music, statistics etc.; score domain mixture rather than forcing one class.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "expertise_level_estimation_of_text",
+    "title": "Expertise-level estimation of text",
+    "description": "introductory, practitioner, specialist/research-level based on concepts assumed and reasoning depth\u2014not vocabulary complexity alone.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "explanation_necessity_judgement",
+    "title": "Explanation-necessity judgement",
+    "description": "is answer self-evident from supplied context, or does decision materially benefit from justification? distinguish safety/ambiguity/high-impact decisions from simple lookups.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "explanation_quality_judgement",
+    "title": "Explanation-quality judgement",
+    "description": "given decision and rationale, does rationale actually support decision, merely restate it, introduce unrelated facts, reverse causality or use invalid evidence?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "rationale_to_answer_consistency",
+    "title": "Rationale-to-answer consistency",
+    "description": "model selects A but its explanation logically supports B; numeric reasoning disagrees with final label; cited evidence contradicts final answer.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "constraint_satisfaction_judgement",
+    "title": "Constraint-satisfaction judgement",
+    "description": "candidate plan/output must obey many textual constraints: budget, size, dependency, date, allowed technologies, exclusions; identify exactly which constraints are violated.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "soft_vs_hard_constraint_discrimination",
+    "title": "Soft-vs-hard constraint discrimination",
+    "description": "\u201cmust\u201d, \u201cprefer\u201d, \u201cideally\u201d, \u201cunless\u201d, \u201cat most\u201d, \u201caround\u201d; rank options without treating preferences as requirements or vice versa.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "preference_learning_from_explicit_examples",
+    "title": "Preference learning from explicit examples",
+    "description": "several accepted/rejected choices plus reasons; infer which candidate better matches demonstrated preference while distinguishing stable preference from incidental features.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "multi_criteria_scoring_consistency",
+    "title": "Multi-criteria scoring consistency",
+    "description": "given explicit scoring rubric, does stated total/category follow component scores? candidate may manipulate weighting, normalize incorrectly or ignore veto criteria.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "rubric_based_quality_assessment",
+    "title": "Rubric-based quality assessment",
+    "description": "article, support response, code review, product description, explanation; supplied rubric defines factuality/completeness/style/etc.; score dimensions separately rather than generic \u201cgood/bad.\u201d",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "comparative_judgement_transitivity",
+    "title": "Comparative judgement transitivity",
+    "description": "A preferred to B, B to C under same criterion; detect inconsistent candidate ranking unless supplied context legitimately changes criterion.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "pairwise_preference_prediction",
+    "title": "Pairwise preference prediction",
+    "description": "two candidate outputs against explicit task/rubric; choose A/B/tie/insufficient evidence; useful primitive for reward/reranker training.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "set_coverage_diversity_judgement",
+    "title": "Set coverage / diversity judgement",
+    "description": "does selected set cover required topics/categories rather than containing five near-duplicates? rank candidate subsets by relevance plus non-redundancy.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "redundancy_detection",
+    "title": "Redundancy detection",
+    "description": "sentences, requirements, tests, retrieved documents, recommendations convey same semantic content despite different wording; exact vs partial redundancy.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "information_density_judgement",
+    "title": "Information-density judgement",
+    "description": "candidate contains useful distinct information vs verbosity/repetition; important for deciding compression/summarization without treating all length as bad.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "data_quality_validation",
+    "title": "Data-quality validation",
+    "description": "impossible ages/dates/ranges, inconsistent identifiers, duplicate IDs, unexpected missingness, categorical values outside domain, conflicting fields.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "synthetic_data_plausibility",
+    "title": "Synthetic-data plausibility",
+    "description": "does generated record obey supplied distributions, dependencies and business rules? identify impossible combinations and suspicious template repetition.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "class_label_leakage_detection",
+    "title": "Class-label leakage detection",
+    "description": "training example contains target label or deterministic proxy in input; filename/category/template directly reveals gold decision.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "dataset_example_quality",
+    "title": "Dataset-example quality",
+    "description": "ambiguous gold label, multiple correct answers, unsupported rationale, malformed state, trivial lexical shortcut, answer leaked in prompt, wrong difficulty.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "benchmark_contamination_clues",
+    "title": "Benchmark-contamination clues",
+    "description": "candidate task reproduces a supplied known example nearly verbatim vs legitimately same concept; n-gram/semantic overlap classifications from provided corpora.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "adversarial_example_detection",
+    "title": "Adversarial-example detection",
+    "description": "irrelevant distractors, conflicting metadata, misleading lexical overlap, injected false premise; determine which evidence is actually decision-relevant.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "spurious_correlation_resistance",
+    "title": "Spurious-correlation resistance",
+    "description": "training-style pattern says one label but causal/semantic evidence says another; names, formatting, length, position or irrelevant demographic-like attributes deliberately correlate with wrong answer.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "invariant_detection",
+    "title": "Invariant detection",
+    "description": "given examples/transitions/code/data, decide which property remains invariant; proposed operation preserves or breaks it.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "boundary_condition_judgement",
+    "title": "Boundary-condition judgement",
+    "description": "value exactly at min/max, zero, empty set, one-element collection, overflow threshold, inclusive/exclusive dates; determine which branch/rule applies.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "failure_mode_classification",
+    "title": "Failure-mode classification",
+    "description": "timeout, validation failure, authorization failure, dependency outage, resource exhaustion, logic bug, malformed input, user cancellation; infer from textual observations.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "recoverability_judgement",
+    "title": "Recoverability judgement",
+    "description": "retry, rollback, restart, compensate, request user input, permanent failure; classify based on supplied failure semantics.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "reversibility_destructiveness",
+    "title": "Reversibility/destructiveness",
+    "description": "actions/code/commands/business operations: reversible, compensatable, partially reversible, destructive; estimate blast radius from explicitly supplied resources.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "operational_urgency",
+    "title": "Operational urgency",
+    "description": "incident evidence \u2192 immediate intervention vs observe vs scheduled repair; based on explicit SLA/resource/error-rate thresholds rather than generic alarmism.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "change_risk_judgement",
+    "title": "Change-risk judgement",
+    "description": "small local refactor vs schema migration vs auth-system rewrite; score probable blast radius using dependency/state/test evidence, independent of code length.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "regression_likelihood_judgement",
+    "title": "Regression-likelihood judgement",
+    "description": "changed module has many dependents, public contract change, no tests, state migration, or isolated internal refactor; rank patches by regression risk from provided evidence.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "human_vs_machine_task_suitability",
+    "title": "Human-vs-machine task suitability",
+    "description": "given workflow requirements, classify deterministic automation, LLM-compatible judgment, requires external measurement, requires human authority, or hybrid verification.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "live_data_requirement",
+    "title": "Live-data requirement",
+    "description": "can decision be made completely from supplied text/state, or does correctness require current database/network/sensor/time-dependent information?",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "information_acquisition_value",
+    "title": "Information-acquisition value",
+    "description": "when state is insufficient, rank possible next questions/measurements by expected ability to disambiguate hypotheses rather than merely asking for more data.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "stopping_decision_sufficiency",
+    "title": "Stopping/decision sufficiency",
+    "description": "enough evidence already exists; gathering more data is unlikely to alter action vs decision should be deferred because critical uncertainty remains.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "confidence_vs_evidence_consistency",
+    "title": "Confidence-vs-evidence consistency",
+    "description": "answer may be correct but confidence unjustifiably high/low; score whether confidence follows amount/quality/consistency of supplied evidence.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "self_consistency_across_outputs",
+    "title": "Self-consistency across outputs",
+    "description": "category says \u201csafe\u201d, score says 0.92 dangerous, rationale says destructive; detect contradictions among multiple typed outputs.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "granularity_selection",
+    "title": "Granularity selection",
+    "description": "question supports exact value, interval, category, ranking or only unknown; choose the strongest answer type justified by evidence rather than inventing precision.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "abstraction_level_matching",
+    "title": "Abstraction-level matching",
+    "description": "question asks architecture-level issue but answer gives syntax detail; asks exact API but response gives generic concept; classify too abstract/appropriate/too specific.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "analogy_validity",
+    "title": "Analogy validity",
+    "description": "two systems share relevant structure vs superficial similarity; determine which properties transfer and where analogy breaks.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "category_error_detection",
+    "title": "Category-error detection",
+    "description": "treating latency as throughput, probability as confidence, class as instance, map as territory, correlation as cause, implementation as specification, price as value.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "cognitive_bias_illogic_detection",
+    "title": "Cognitive-bias/illogic detection",
+    "description": "base-rate neglect, sunk cost, conjunction fallacy, framing, survivorship bias, anchoring, denominator neglect, availability bias; identify the reasoning error without assuming every surprising choice is biased.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "contradiction_resolution",
+    "title": "Contradiction-resolution",
+    "description": "multiple claims disagree; determine whether genuinely contradictory, about different time periods/entities/scopes, or reconcilable through qualifiers.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "scope_reasoning",
+    "title": "Scope reasoning",
+    "description": "\u201call users\u201d vs \u201cpaid users\u201d; \u201cEurope\u201d vs \u201cEU\u201d; \u201cmay\u201d vs \u201cwill\u201d; \u201cunder load\u201d vs universally; detect candidate conclusions that silently broaden scope.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "quantifier_reasoning_in_natural_text",
+    "title": "Quantifier reasoning in natural text",
+    "description": "`all`, `none`, `some`, `at least one`, `exactly one`, `most`, `not every`; identify when paraphrase changes logical force without turning this into purely formal-logic tasks.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "negation_polarity_tracking",
+    "title": "Negation/polarity tracking",
+    "description": "nested negation, \u201cnot uncommon\u201d, \u201cfails unless\u201d, \u201ccannot exclude\u201d, \u201conly if\u201d; determine actual proposition and catch polarity-flipped summaries/translations.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "reference_coreference_resolution",
+    "title": "Reference/coreference resolution",
+    "description": "which \u201cit\u201d, \u201cthey\u201d, \u201cformer\u201d, \u201clatter\u201d, \u201cthis version\u201d, \u201cthat company\u201d refers to; long technical/business documents with plausible distractors.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "comparative_language_reasoning",
+    "title": "Comparative-language reasoning",
+    "description": "\u201cA is 20% faster than B\u201d, \u201cB takes 20% longer\u201d, \u201cno worse than\u201d, \u201csecond highest\u201d; decide candidate ordering and detect non-equivalent paraphrases.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "definition_adherence",
+    "title": "Definition adherence",
+    "description": "state explicitly defines a domain-specific term; later decision must use that local definition even if common usage differs.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "local_rule_over_world_knowledge_judgement",
+    "title": "Local-rule-over-world-knowledge judgement",
+    "description": "synthetic world says red tokens are valid only on Tuesdays; model must follow supplied world state rather than pretrained associations.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "world_model_consistency",
+    "title": "World-model consistency",
+    "description": "large textual state establishes entities/properties/rules; candidate event must respect all previous state, not just immediately preceding sentence.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "long_context_distractor_resistance",
+    "title": "Long-context distractor resistance",
+    "description": "relevant fact appears far from query among semantically similar but irrelevant material; identify correct evidence without positional bias.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "needle_set_retrieval",
+    "title": "Needle-set retrieval",
+    "description": "multiple separate facts across long state jointly determine answer; one fact alone suggests wrong answer; useful for testing distributed evidence integration.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "cross_domain_synthesis",
+    "title": "Cross-domain synthesis",
+    "description": "decision requires combining e.g. unit conversion + API constraint + budget, or geography + invoice metadata + chronology; individual subtasks easy, composition determines gold.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "minimal_sufficient_explanation_selection",
+    "title": "Minimal-sufficient-explanation selection",
+    "description": "several explanations are true but some include unnecessary unsupported assumptions; select the explanation requiring the fewest additional assumptions while covering evidence.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "competing_hypothesis_discrimination",
+    "title": "Competing-hypothesis discrimination",
+    "description": "multiple plausible explanations; identify observations that favor one, observations shared by all, and what new evidence would separate them.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "mechanism_vs_pattern_distinction",
+    "title": "Mechanism-vs-pattern distinction",
+    "description": "data exhibits correlation/pattern, but proposed explanation claims a mechanism not established; score evidential support for mechanism separately from predictive usefulness.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "decision_robustness",
+    "title": "Decision robustness",
+    "description": "small plausible changes to uncertain inputs should or should not change chosen action; classify robust vs knife-edge decisions.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "sensitivity_analysis",
+    "title": "Sensitivity analysis",
+    "description": "which parameter matters most to decision? e.g. cloud cost dominated by GPU hours rather than storage; ranking should change only when a threshold is crossed.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "dominated_information_detection",
+    "title": "Dominated-information detection",
+    "description": "new evidence is redundant because stronger evidence already implies it; useful for deciding whether an additional test/query has information value.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "consistency_under_paraphrase",
+    "title": "Consistency under paraphrase",
+    "description": "same state/query expressed using alternate wording should yield same typed decision; detect lexical-position dependence.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "consistency_under_irrelevant_context_insertion",
+    "title": "Consistency under irrelevant-context insertion",
+    "description": "add true but decision-irrelevant facts; answer should remain unchanged.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "consistency_under_option_permutation",
+    "title": "Consistency under option permutation",
+    "description": "candidate options reordered or relabeled; output should follow semantics rather than positional preference.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "calibration_under_ambiguity",
+    "title": "Calibration under ambiguity",
+    "description": "clean cases deserve high confidence, near-boundary or conflicting cases lower confidence; intentionally include cases where correct output is tie/null rather than forced class.",
+    "source": "v5-capability-spec",
+    "cases": 100
+  },
+  {
+    "slug": "gpqa_diamond",
+    "title": "GPQA Diamond",
+    "description": "GPQA Diamond is a benchmark for evaluating the reasoning capabilities of language models.",
+    "source": "gpqa",
+    "cases": 198
+  },
+  {
+    "slug": "action_item_assignment",
+    "title": "action item assignment",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "ad_policy_violation",
+    "title": "ad policy violation",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "allergen_present",
+    "title": "allergen present",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "app_review_intent",
+    "title": "app review intent",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "churn_risk",
+    "title": "churn risk",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "city_service_request",
+    "title": "city service request",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "code_review_intent",
+    "title": "code review intent",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "commit_intent",
+    "title": "commit intent",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "contains_pii",
+    "title": "contains pii",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "contains_spoiler",
+    "title": "contains spoiler",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "content_moderation",
+    "title": "content moderation",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "content_type",
+    "title": "content type",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "contract_clause_type",
+    "title": "contract clause type",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "delivery_exception",
+    "title": "delivery exception",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "dietary_vegan",
+    "title": "dietary vegan",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "document_type",
+    "title": "document type",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "email_intent",
+    "title": "email intent",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "email_intent_hard",
+    "title": "email intent hard",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "expense_category",
+    "title": "expense category",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "fair_housing_violation",
+    "title": "fair housing violation",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "formality_level",
+    "title": "formality level",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "frustration_level",
+    "title": "frustration level",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "frustration_level_hard",
+    "title": "frustration level hard",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "gaming_report_type",
+    "title": "gaming report type",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "grammar_issue",
+    "title": "grammar issue",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "hazmat_shipping",
+    "title": "hazmat shipping",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "home_service_routing",
+    "title": "home service routing",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "incident_severity",
+    "title": "incident severity",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "incident_severity_hard",
+    "title": "incident severity hard",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "insurance_claim_priority",
+    "title": "insurance claim priority",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "lead_qualification",
+    "title": "lead qualification",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "meeting_conflict",
+    "title": "meeting conflict",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "news_topic",
+    "title": "news topic",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "oncall_route",
+    "title": "oncall route",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "phishing_email",
+    "title": "phishing email",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "question_duplicate",
+    "title": "question duplicate",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "reading_level",
+    "title": "reading level",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "recipe_cuisine",
+    "title": "recipe cuisine",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "refund_eligible",
+    "title": "refund eligible",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "refund_eligible_hard",
+    "title": "refund eligible hard",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "return_reason",
+    "title": "return reason",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "review_sentiment",
+    "title": "review sentiment",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "review_sentiment_hard",
+    "title": "review sentiment hard",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "secret_leak",
+    "title": "secret leak",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "secret_leak_hard",
+    "title": "secret leak hard",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "sql_injection_risk",
+    "title": "sql injection risk",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "support_department",
+    "title": "support department",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "support_department_hard",
+    "title": "support department hard",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "suspicious_transaction",
+    "title": "suspicious transaction",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "symptom_triage",
+    "title": "symptom triage",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "travel_policy_violation",
+    "title": "travel policy violation",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "urgency",
+    "title": "urgency",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "urgency_hard",
+    "title": "urgency hard",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "veterinary_triage",
+    "title": "veterinary triage",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "voice_assistant_intent",
+    "title": "voice assistant intent",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "warranty_claim_eligible",
+    "title": "warranty claim eligible",
+    "source": "v3-preserved",
+    "cases": 100
+  },
+  {
+    "slug": "weather_alert_severity",
+    "title": "weather alert severity",
+    "source": "v3-preserved",
+    "cases": 100
+  }
+]

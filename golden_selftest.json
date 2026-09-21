@@ -1,0 +1,1381 @@
+{
+  "hard_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "math_quantitative_decisions": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "oos_abstention_ambiguity": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "pii_sensitive_data_classification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "routing_intent_support_priority": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "rule_following_formal_logic": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "security_policy_risk": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "structured_schema_decisions": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "tool_action_selection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "typed_jev_native_replay": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "code_quality_judgements": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "program_behavior_prediction": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "code_requirement_satisfaction": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "patch_diff_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "test_quality_and_adequacy": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "api_contract_compatibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "dependency_api_existence_judgements": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "version_compatibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "environment_portability_judgements": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "concurrency_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "idempotency_judgements": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "error_handling_quality": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "algorithm_data_structure_appropriateness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "complexity_estimation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "performance_bottleneck_attribution": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "parallelization_suitability": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "database_query_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "regex_pattern_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "state_machine_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "serialization_compatibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "data_migration_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "distributed_systems_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "cache_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "observability_adequacy": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "log_event_sequence_diagnosis": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "configuration_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "command_line_semantics": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "open_source_license_compatibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "accessibility_semantics_from_source": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "graph_logic": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "graph_knowledge": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "ontology_taxonomy_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "graph_path_relevance": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "temporal_graph_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "causal_chain_validation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "root_cause_attribution": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "evidence_provenance": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "source_reliability_in_context": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "semantic_similarity_and_factual_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "summary_completeness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "claim_entailment": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "unknown_known_state_classification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "answerability_from_provided_context": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "evidence_sufficiency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "fact_vs_inference_classification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "hallucination_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "topic_keyword_fidelity": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "information_retrieval_relevance": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "recommendation_reranking_quality": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "entity_resolution": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "record_deduplication": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "cross_document_reconciliation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "document_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "booking_accounting_mapping": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "accounting_reasonableness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "invoice_anomaly_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "fraud_scam_likelihood": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "transaction_anomaly_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "commercial_price_plausibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "budget_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "resource_planning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "capacity_planning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "inventory_decisions": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "scheduling_feasibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "prioritization_under_constraints": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "pareto_optimal_decision_taking": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "expected_utility_decisions": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "bayesian_evidence_updating": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "game_theory_judgements": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "adversarial_agent_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "negotiation_judgements": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "probability_support_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "probability_calibration_language": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "forecast_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "counterfactual_plausibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "base_rate_awareness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "sampling_statistical_interpretation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "unit_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "dimensional_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "order_of_magnitude_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "scale_plausibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "geometry_and_embodied_navigation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "spatial_relation_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "route_feasibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "embodied_affordances": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "physical_commonsense": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "mechanical_system_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "object_permanence_state_tracking": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "temporal_ordering": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "calendar_time_zone_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "historical_fact_verification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "historical_anachronism_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "geographical_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "weather_state_interpretation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "scientific_hypothesis_plausibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "experimental_design_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "measurement_uncertainty_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "biological_system_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "biological_signal_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "medical_differential_reasoning_benchmarks": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "medical_chronology_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "translation_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "grammar_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "glossary_adherence": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "synonym_semantic_substitution_scoring": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "word_sense_disambiguation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "language_dialect_identification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "code_switch_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "pragmatic_intent_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "sarcasm_and_humor_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "humor_explanation_correctness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "mood_atmosphere_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "tone_register_classification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "dialogue_coherence": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "conversation_state_tracking": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "persona_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "theory_of_mind_false_belief_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "embodied_unknowns": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "embodied_time_aware_world_views": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "embodied_emotions": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "emotion_cause_attribution": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "social_norm_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "relationship_permission_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "embodied_animal_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "animal_affordance_constraint_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "narrative_next_event_plausibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "character_goal_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "ocr_ngram_based_text_recognition": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "noisy_ocr_reconstruction": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "document_field_association": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "document_type_classification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "document_workflow_state": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "table_reasoning_from_linearized_text": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "spreadsheet_formula_semantics_from_text": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "form_completeness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "contract_clause_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "requirement_traceability": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "business_process_conformance": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "email_thread_state_understanding": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "action_item_extraction_verification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "product_catalog_matching": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "compatibility_matching": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "taxonomy_category_assignment": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "multi_label_topic_classification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "domain_identification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "expertise_level_estimation_of_text": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "explanation_necessity_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "explanation_quality_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "rationale_to_answer_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "constraint_satisfaction_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "soft_vs_hard_constraint_discrimination": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "preference_learning_from_explicit_examples": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "multi_criteria_scoring_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "rubric_based_quality_assessment": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "comparative_judgement_transitivity": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "pairwise_preference_prediction": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "set_coverage_diversity_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "redundancy_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "information_density_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "data_quality_validation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "synthetic_data_plausibility": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "class_label_leakage_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "dataset_example_quality": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "benchmark_contamination_clues": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "adversarial_example_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "spurious_correlation_resistance": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "invariant_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "boundary_condition_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "failure_mode_classification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "recoverability_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "reversibility_destructiveness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "operational_urgency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "change_risk_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "regression_likelihood_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "human_vs_machine_task_suitability": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "live_data_requirement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "information_acquisition_value": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "stopping_decision_sufficiency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "confidence_vs_evidence_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "self_consistency_across_outputs": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "granularity_selection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "abstraction_level_matching": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "analogy_validity": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "category_error_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "cognitive_bias_illogic_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "contradiction_resolution": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "scope_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "quantifier_reasoning_in_natural_text": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "negation_polarity_tracking": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "reference_coreference_resolution": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "comparative_language_reasoning": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "definition_adherence": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "local_rule_over_world_knowledge_judgement": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "world_model_consistency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "long_context_distractor_resistance": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "needle_set_retrieval": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "cross_domain_synthesis": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "minimal_sufficient_explanation_selection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "competing_hypothesis_discrimination": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "mechanism_vs_pattern_distinction": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "decision_robustness": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "sensitivity_analysis": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "dominated_information_detection": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "consistency_under_paraphrase": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "consistency_under_irrelevant_context_insertion": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "consistency_under_option_permutation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "calibration_under_ambiguity": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "action_item_assignment": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "ad_policy_violation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "allergen_present": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "app_review_intent": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "churn_risk": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "city_service_request": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "code_review_intent": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "commit_intent": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "contains_pii": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "contains_spoiler": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "content_moderation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "content_type": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "contract_clause_type": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "delivery_exception": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "dietary_vegan": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "document_type": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "email_intent": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "email_intent_hard": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "expense_category": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "fair_housing_violation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "formality_level": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "frustration_level": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "frustration_level_hard": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "gaming_report_type": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "gpqa_diamond": {
+    "n": 198,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "grammar_issue": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "hazmat_shipping": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "home_service_routing": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "incident_severity": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "incident_severity_hard": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "insurance_claim_priority": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "lead_qualification": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "meeting_conflict": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "news_topic": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "oncall_route": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "phishing_email": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "question_duplicate": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "reading_level": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "recipe_cuisine": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "refund_eligible": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "refund_eligible_hard": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "return_reason": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "review_sentiment": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "review_sentiment_hard": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "secret_leak": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "secret_leak_hard": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "sql_injection_risk": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "support_department": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "support_department_hard": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "suspicious_transaction": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "symptom_triage": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "travel_policy_violation": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "urgency": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "urgency_hard": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "veterinary_triage": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "voice_assistant_intent": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "warranty_claim_eligible": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": null
+  },
+  "weather_alert_severity": {
+    "n": 100,
+    "accuracy": 1.0,
+    "score_mae": 0.0
+  },
+  "micro": {
+    "n": 27598,
+    "accuracy": 1.0
+  }
+}

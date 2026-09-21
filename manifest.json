@@ -1,0 +1,2290 @@
+{
+  "name": "systemone-capability-benchmark-jsonl-v5-full",
+  "version": 5,
+  "created": "2026-09-21",
+  "official_openapi_url": "https://api.typesafe.ai/openapi.json",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "model_alias": "REPLACED_BY_TYPESAFE_MODEL",
+  "capabilities": {
+    "hard_reasoning": {
+      "cases": 100,
+      "requests": "requests/hard_reasoning.jsonl",
+      "responses": "responses/hard_reasoning.jsonl",
+      "metadata": "metadata/hard_reasoning.jsonl"
+    },
+    "math_quantitative_decisions": {
+      "cases": 100,
+      "requests": "requests/math_quantitative_decisions.jsonl",
+      "responses": "responses/math_quantitative_decisions.jsonl",
+      "metadata": "metadata/math_quantitative_decisions.jsonl"
+    },
+    "oos_abstention_ambiguity": {
+      "cases": 100,
+      "requests": "requests/oos_abstention_ambiguity.jsonl",
+      "responses": "responses/oos_abstention_ambiguity.jsonl",
+      "metadata": "metadata/oos_abstention_ambiguity.jsonl"
+    },
+    "pii_sensitive_data_classification": {
+      "cases": 100,
+      "requests": "requests/pii_sensitive_data_classification.jsonl",
+      "responses": "responses/pii_sensitive_data_classification.jsonl",
+      "metadata": "metadata/pii_sensitive_data_classification.jsonl"
+    },
+    "routing_intent_support_priority": {
+      "cases": 100,
+      "requests": "requests/routing_intent_support_priority.jsonl",
+      "responses": "responses/routing_intent_support_priority.jsonl",
+      "metadata": "metadata/routing_intent_support_priority.jsonl"
+    },
+    "rule_following_formal_logic": {
+      "cases": 100,
+      "requests": "requests/rule_following_formal_logic.jsonl",
+      "responses": "responses/rule_following_formal_logic.jsonl",
+      "metadata": "metadata/rule_following_formal_logic.jsonl"
+    },
+    "security_policy_risk": {
+      "cases": 100,
+      "requests": "requests/security_policy_risk.jsonl",
+      "responses": "responses/security_policy_risk.jsonl",
+      "metadata": "metadata/security_policy_risk.jsonl"
+    },
+    "structured_schema_decisions": {
+      "cases": 100,
+      "requests": "requests/structured_schema_decisions.jsonl",
+      "responses": "responses/structured_schema_decisions.jsonl",
+      "metadata": "metadata/structured_schema_decisions.jsonl"
+    },
+    "tool_action_selection": {
+      "cases": 100,
+      "requests": "requests/tool_action_selection.jsonl",
+      "responses": "responses/tool_action_selection.jsonl",
+      "metadata": "metadata/tool_action_selection.jsonl"
+    },
+    "typed_jev_native_replay": {
+      "cases": 100,
+      "requests": "requests/typed_jev_native_replay.jsonl",
+      "responses": "responses/typed_jev_native_replay.jsonl",
+      "metadata": "metadata/typed_jev_native_replay.jsonl"
+    },
+    "code_quality_judgements": {
+      "cases": 100,
+      "title": "Code quality judgements",
+      "description": "does documentation and code align? is a method too long given a specified max length? categorize cyclomatic complexity; does a test actually test the intended behavior? are important branches untested? what will the code return? will it produce the declared schema? does it call external functions? is it side-effect free? does it mutate state? arbitrary-code-execution potential? should this code be optimized or is optimization unlikely to matter? does it need explanatory comments? does it require a live datasource? browser/server/both? memory/CPU/GPU intensity; thread safety; blocking behavior; command destructiveness; estimated runtime class; programming-language identification; application-domain classification.",
+      "requests": "requests/code_quality_judgements.jsonl",
+      "responses": "responses/code_quality_judgements.jsonl",
+      "metadata": "metadata/code_quality_judgements.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "program_behavior_prediction": {
+      "cases": 100,
+      "title": "Program-behavior prediction",
+      "description": "given short code, predict output, exception, state mutation, filesystem/network effects, stdout/stderr, exit status, returned type, number of iterations, whether execution terminates; classic interview-style traps but also realistic application code.",
+      "requests": "requests/program_behavior_prediction.jsonl",
+      "responses": "responses/program_behavior_prediction.jsonl",
+      "metadata": "metadata/program_behavior_prediction.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "code_requirement_satisfaction": {
+      "cases": 100,
+      "title": "Code requirement satisfaction",
+      "description": "given a natural-language task and candidate implementation, decide which requirements are actually implemented, partially implemented, contradicted, or absent; distinguish superficial keyword matches from behavioral compliance.",
+      "requests": "requests/code_requirement_satisfaction.jsonl",
+      "responses": "responses/code_requirement_satisfaction.jsonl",
+      "metadata": "metadata/code_requirement_satisfaction.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "patch_diff_correctness": {
+      "cases": 100,
+      "title": "Patch/diff correctness",
+      "description": "given original code, requested change and patch, decide whether the patch actually solves the request; identify unrelated behavior changes, regressions, incomplete modifications, stale tests, obsolete branches.",
+      "requests": "requests/patch_diff_correctness.jsonl",
+      "responses": "responses/patch_diff_correctness.jsonl",
+      "metadata": "metadata/patch_diff_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "test_quality_and_adequacy": {
+      "cases": 100,
+      "title": "Test quality and adequacy",
+      "description": "does the test exercise the behavior named by its title? can it pass despite a broken implementation? does it test implementation details rather than contract? missing boundary conditions? duplicated tests? property/invariant that should be tested? score semantic coverage independently from line coverage.",
+      "requests": "requests/test_quality_and_adequacy.jsonl",
+      "responses": "responses/test_quality_and_adequacy.jsonl",
+      "metadata": "metadata/test_quality_and_adequacy.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "api_contract_compatibility": {
+      "cases": 100,
+      "title": "API-contract compatibility",
+      "description": "does client request match server contract? path/method/header/content-type mismatch; required vs optional fields; return shape; pagination contract; sync/async mismatch; REST/OpenAPI/GraphQL/RPC examples; backwards compatibility.",
+      "requests": "requests/api_contract_compatibility.jsonl",
+      "responses": "responses/api_contract_compatibility.jsonl",
+      "metadata": "metadata/api_contract_compatibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "dependency_api_existence_judgements": {
+      "cases": 100,
+      "title": "Dependency/API existence judgements",
+      "description": "does the referenced method plausibly belong to the named library/version? candidate calls from documentation vs fabricated APIs; deprecated methods; package-name confusion; stdlib vs third-party dependency; import-path compatibility.",
+      "requests": "requests/dependency_api_existence_judgements.jsonl",
+      "responses": "responses/dependency_api_existence_judgements.jsonl",
+      "metadata": "metadata/dependency_api_existence_judgements.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "version_compatibility": {
+      "cases": 100,
+      "title": "Version compatibility",
+      "description": "given dependency/runtime versions and feature usage, decide compatible/incompatible/unknown; Python/Node/Rust/Java versions, CUDA/runtime pairs, database versions, browser features, serialization formats.",
+      "requests": "requests/version_compatibility.jsonl",
+      "responses": "responses/version_compatibility.jsonl",
+      "metadata": "metadata/version_compatibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "environment_portability_judgements": {
+      "cases": 100,
+      "title": "Environment/portability judgements",
+      "description": "browser-only, Node-only, POSIX-only, Windows-specific, GPU-required, CUDA-specific, root-required, interactive-terminal-dependent, filesystem-dependent, locale-dependent, architecture-dependent, isomorphic.",
+      "requests": "requests/environment_portability_judgements.jsonl",
+      "responses": "responses/environment_portability_judgements.jsonl",
+      "metadata": "metadata/environment_portability_judgements.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "concurrency_correctness": {
+      "cases": 100,
+      "title": "Concurrency correctness",
+      "description": "race conditions, shared mutable state, atomicity assumptions, lock ordering, possible deadlock, async misuse, reentrancy, thread safety, process safety, duplicate-job execution.",
+      "requests": "requests/concurrency_correctness.jsonl",
+      "responses": "responses/concurrency_correctness.jsonl",
+      "metadata": "metadata/concurrency_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "idempotency_judgements": {
+      "cases": 100,
+      "title": "Idempotency judgements",
+      "description": "HTTP retries, payment processing, migration scripts, queue consumers, file transformations: can repeated execution alter the outcome incorrectly? distinguish read-only, naturally idempotent, explicitly idempotent and non-idempotent operations.",
+      "requests": "requests/idempotency_judgements.jsonl",
+      "responses": "responses/idempotency_judgements.jsonl",
+      "metadata": "metadata/idempotency_judgements.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "error_handling_quality": {
+      "cases": 100,
+      "title": "Error-handling quality",
+      "description": "exception swallowed? retry useful or harmful? retryable vs permanent failure; cleanup guaranteed? fallback masks corruption? error loses useful context? timeout required? failure leaves inconsistent state?",
+      "requests": "requests/error_handling_quality.jsonl",
+      "responses": "responses/error_handling_quality.jsonl",
+      "metadata": "metadata/error_handling_quality.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "algorithm_data_structure_appropriateness": {
+      "cases": 100,
+      "title": "Algorithm/data-structure appropriateness",
+      "description": "list vs hash map vs tree vs heap; full sort vs top-k; linear scan vs indexed lookup; algorithm asymptotically inappropriate? optimization justified by expected input sizes?",
+      "requests": "requests/algorithm_data_structure_appropriateness.jsonl",
+      "responses": "responses/algorithm_data_structure_appropriateness.jsonl",
+      "metadata": "metadata/algorithm_data_structure_appropriateness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "complexity_estimation": {
+      "cases": 100,
+      "title": "Complexity estimation",
+      "description": "categorize time/memory complexity; distinguish worst/average/amortized; identify input variable controlling complexity; detect accidental quadratic behavior; score practical rather than merely asymptotic cost.",
+      "requests": "requests/complexity_estimation.jsonl",
+      "responses": "responses/complexity_estimation.jsonl",
+      "metadata": "metadata/complexity_estimation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "performance_bottleneck_attribution": {
+      "cases": 100,
+      "title": "Performance-bottleneck attribution",
+      "description": "given code plus timings, identify CPU, I/O, memory bandwidth, network, lock contention, serialization, database, accelerator or startup bottleneck; decide whether proposed optimization affects the bottleneck.",
+      "requests": "requests/performance_bottleneck_attribution.jsonl",
+      "responses": "responses/performance_bottleneck_attribution.jsonl",
+      "metadata": "metadata/performance_bottleneck_attribution.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "parallelization_suitability": {
+      "cases": 100,
+      "title": "Parallelization suitability",
+      "description": "is the task embarrassingly parallel? state synchronization needed? batchable? vectorizable? GPU-friendly? multiprocessing useful? parallelism likely slower because workload is tiny?",
+      "requests": "requests/parallelization_suitability.jsonl",
+      "responses": "responses/parallelization_suitability.jsonl",
+      "metadata": "metadata/parallelization_suitability.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "database_query_reasoning": {
+      "cases": 100,
+      "title": "Database-query reasoning",
+      "description": "SQL result semantics, incorrect joins, duplicate rows, missing predicates, NULL semantics, aggregation correctness, N+1 queries, index usefulness, transaction isolation assumptions.",
+      "requests": "requests/database_query_reasoning.jsonl",
+      "responses": "responses/database_query_reasoning.jsonl",
+      "metadata": "metadata/database_query_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "regex_pattern_correctness": {
+      "cases": 100,
+      "title": "Regex/pattern correctness",
+      "description": "does regex accept/reject supplied examples? catastrophic-backtracking potential; anchored vs substring matching; Unicode assumptions; overly broad/overly strict validation.",
+      "requests": "requests/regex_pattern_correctness.jsonl",
+      "responses": "responses/regex_pattern_correctness.jsonl",
+      "metadata": "metadata/regex_pattern_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "state_machine_correctness": {
+      "cases": 100,
+      "title": "State-machine correctness",
+      "description": "given states/events/transitions, is a transition legal? unreachable states? missing terminal state? event sequence impossible? transition introduces invariant violation?",
+      "requests": "requests/state_machine_correctness.jsonl",
+      "responses": "responses/state_machine_correctness.jsonl",
+      "metadata": "metadata/state_machine_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "serialization_compatibility": {
+      "cases": 100,
+      "title": "Serialization compatibility",
+      "description": "JSON/JSONL/YAML/CSV/Protobuf-like representations; numeric/string coercion, enum incompatibilities, absent/null distinction, precision loss, ordering assumptions.",
+      "requests": "requests/serialization_compatibility.jsonl",
+      "responses": "responses/serialization_compatibility.jsonl",
+      "metadata": "metadata/serialization_compatibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "data_migration_correctness": {
+      "cases": 100,
+      "title": "Data-migration correctness",
+      "description": "old/new schema plus transformation: is information lost? reversible? duplicate creation possible? migration safe to retry? values mapped to wrong enum/unit?",
+      "requests": "requests/data_migration_correctness.jsonl",
+      "responses": "responses/data_migration_correctness.jsonl",
+      "metadata": "metadata/data_migration_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "distributed_systems_consistency": {
+      "cases": 100,
+      "title": "Distributed-systems consistency",
+      "description": "event order, stale replicas, at-least-once delivery, duplicate messages, leader changes, eventual consistency; decide whether observed states are possible and whether invariants survive.",
+      "requests": "requests/distributed_systems_consistency.jsonl",
+      "responses": "responses/distributed_systems_consistency.jsonl",
+      "metadata": "metadata/distributed_systems_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "cache_correctness": {
+      "cases": 100,
+      "title": "Cache correctness",
+      "description": "stale cache, incorrect keying, tenant leakage, invalidation mistakes, TTL assumptions, cacheable vs non-cacheable responses, derived-data dependency changes.",
+      "requests": "requests/cache_correctness.jsonl",
+      "responses": "responses/cache_correctness.jsonl",
+      "metadata": "metadata/cache_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "observability_adequacy": {
+      "cases": 100,
+      "title": "Observability adequacy",
+      "description": "given system behavior and logs/metrics/traces, decide whether evidence can distinguish likely failure modes; identify missing correlation IDs, timings, error context, cardinality problems.",
+      "requests": "requests/observability_adequacy.jsonl",
+      "responses": "responses/observability_adequacy.jsonl",
+      "metadata": "metadata/observability_adequacy.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "log_event_sequence_diagnosis": {
+      "cases": 100,
+      "title": "Log/event-sequence diagnosis",
+      "description": "given textual logs, decide most plausible execution path, component that failed first, causal vs downstream errors, whether retries recovered, whether timestamps violate expected ordering.",
+      "requests": "requests/log_event_sequence_diagnosis.jsonl",
+      "responses": "responses/log_event_sequence_diagnosis.jsonl",
+      "metadata": "metadata/log_event_sequence_diagnosis.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "configuration_correctness": {
+      "cases": 100,
+      "title": "Configuration correctness",
+      "description": "`Dockerfile`, Compose, Kubernetes, CI, package config, compiler config, environment variables represented as text; incompatible options, wrong paths, missing required keys, overridden values.",
+      "requests": "requests/configuration_correctness.jsonl",
+      "responses": "responses/configuration_correctness.jsonl",
+      "metadata": "metadata/configuration_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "command_line_semantics": {
+      "cases": 100,
+      "title": "Command-line semantics",
+      "description": "what does this pipeline actually do? destructive/non-destructive; local/network effects; blocking? requires stdin? can glob expand dangerously? expected output class; approximate runtime category.",
+      "requests": "requests/command_line_semantics.jsonl",
+      "responses": "responses/command_line_semantics.jsonl",
+      "metadata": "metadata/command_line_semantics.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "open_source_license_compatibility": {
+      "cases": 100,
+      "title": "Open-source/license compatibility",
+      "description": "given licenses and distribution arrangement, classify likely compatibility/obligation category from supplied license rules; notice/source-distribution requirements; distinguish linking, copying and mere tool usage.",
+      "requests": "requests/open_source_license_compatibility.jsonl",
+      "responses": "responses/open_source_license_compatibility.jsonl",
+      "metadata": "metadata/open_source_license_compatibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "accessibility_semantics_from_source": {
+      "cases": 100,
+      "title": "Accessibility semantics from source",
+      "description": "HTML/ARIA/textual component representation: correct label association? keyboard reachable? heading hierarchy? interactive element role? duplicate labels? accessibility claim unsupported?",
+      "requests": "requests/accessibility_semantics_from_source.jsonl",
+      "responses": "responses/accessibility_semantics_from_source.jsonl",
+      "metadata": "metadata/accessibility_semantics_from_source.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "graph_logic": {
+      "cases": 100,
+      "title": "Graph logic",
+      "description": "given reasoning/causal graph, judge whether edges are supported, merely correlated, impossible, circular, redundant or hallucinated; determine whether conclusion follows from reachable evidence.",
+      "requests": "requests/graph_logic.jsonl",
+      "responses": "responses/graph_logic.jsonl",
+      "metadata": "metadata/graph_logic.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "graph_knowledge": {
+      "cases": 100,
+      "title": "Graph knowledge",
+      "description": "given concept/entity graph, judge whether relation types are correct: `is-a`, `part-of`, `causes`, `located-in`, `authored-by`, `depends-on`; score semantic closeness of candidate edges.",
+      "requests": "requests/graph_knowledge.jsonl",
+      "responses": "responses/graph_knowledge.jsonl",
+      "metadata": "metadata/graph_knowledge.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "ontology_taxonomy_consistency": {
+      "cases": 100,
+      "title": "Ontology/taxonomy consistency",
+      "description": "dog\u2192mammal valid, mammal\u2192dog too specific; instance-vs-class mistakes; disjoint categories; transitive relationships; parent category chosen at wrong abstraction level.",
+      "requests": "requests/ontology_taxonomy_consistency.jsonl",
+      "responses": "responses/ontology_taxonomy_consistency.jsonl",
+      "metadata": "metadata/ontology_taxonomy_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "graph_path_relevance": {
+      "cases": 100,
+      "title": "Graph-path relevance",
+      "description": "given query and a knowledge graph, rank possible paths by how directly they explain/connect the concepts; reject paths connected only through generic hubs.",
+      "requests": "requests/graph_path_relevance.jsonl",
+      "responses": "responses/graph_path_relevance.jsonl",
+      "metadata": "metadata/graph_path_relevance.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "temporal_graph_consistency": {
+      "cases": 100,
+      "title": "Temporal graph consistency",
+      "description": "edge valid only before/after date X; employment, ownership, dependency/version, historical relationships; detect relations impossible simultaneously.",
+      "requests": "requests/temporal_graph_consistency.jsonl",
+      "responses": "responses/temporal_graph_consistency.jsonl",
+      "metadata": "metadata/temporal_graph_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "causal_chain_validation": {
+      "cases": 100,
+      "title": "Causal-chain validation",
+      "description": "A preceded B but did not necessarily cause B; intervention evidence vs correlation; mediators/confounders; identify unsupported causal step in multi-hop explanation.",
+      "requests": "requests/causal_chain_validation.jsonl",
+      "responses": "responses/causal_chain_validation.jsonl",
+      "metadata": "metadata/causal_chain_validation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "root_cause_attribution": {
+      "cases": 100,
+      "title": "Root-cause attribution",
+      "description": "given symptoms/events and dependency graph, rank plausible root causes separately from downstream manifestations; include cases with insufficient evidence or multiple equally compatible causes.",
+      "requests": "requests/root_cause_attribution.jsonl",
+      "responses": "responses/root_cause_attribution.jsonl",
+      "metadata": "metadata/root_cause_attribution.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "evidence_provenance": {
+      "cases": 100,
+      "title": "Evidence provenance",
+      "description": "given claims and source snippets, map each claim to supporting evidence; unsupported, directly supported, inferred, contradicted, or sourced from the wrong document.",
+      "requests": "requests/evidence_provenance.jsonl",
+      "responses": "responses/evidence_provenance.jsonl",
+      "metadata": "metadata/evidence_provenance.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "source_reliability_in_context": {
+      "cases": 100,
+      "title": "Source reliability in-context",
+      "description": "given explicit metadata such as primary record, repost, anonymous comment, official specification, outdated manual, decide which source is suitable for which claim without relying on source prestige alone.",
+      "requests": "requests/source_reliability_in_context.jsonl",
+      "responses": "responses/source_reliability_in_context.jsonl",
+      "metadata": "metadata/source_reliability_in_context.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "semantic_similarity_and_factual_correctness": {
+      "cases": 100,
+      "title": "Semantic similarity and factual correctness",
+      "description": "does summary preserve source meaning? contradiction vs paraphrase; over-generalization; omitted qualifier; invented detail; unsupported certainty; incorrect entity/date/quantity.",
+      "requests": "requests/semantic_similarity_and_factual_correctness.jsonl",
+      "responses": "responses/semantic_similarity_and_factual_correctness.jsonl",
+      "metadata": "metadata/semantic_similarity_and_factual_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "summary_completeness": {
+      "cases": 100,
+      "title": "Summary completeness",
+      "description": "does summary cover all materially distinct topics? which topic is absent? does it spend disproportionate space on minor detail? distinguish concise-but-complete from lossy.",
+      "requests": "requests/summary_completeness.jsonl",
+      "responses": "responses/summary_completeness.jsonl",
+      "metadata": "metadata/summary_completeness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "claim_entailment": {
+      "cases": 100,
+      "title": "Claim entailment",
+      "description": "source says \u201cmay reduce latency\u201d; candidate says \u201creduces latency\u201d: unsupported certainty. Source says 8\u201312%; candidate says 10%: approximation vs fabrication. Multi-sentence entailment and contradiction.",
+      "requests": "requests/claim_entailment.jsonl",
+      "responses": "responses/claim_entailment.jsonl",
+      "metadata": "metadata/claim_entailment.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "unknown_known_state_classification": {
+      "cases": 100,
+      "title": "Unknown/known-state classification",
+      "description": "given evidence set, distinguish true, false, likely, possible and genuinely unknown rather than guessing a binary answer.",
+      "requests": "requests/unknown_known_state_classification.jsonl",
+      "responses": "responses/unknown_known_state_classification.jsonl",
+      "metadata": "metadata/unknown_known_state_classification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "answerability_from_provided_context": {
+      "cases": 100,
+      "title": "Answerability from provided context",
+      "description": "question may have a real-world answer but cannot be answered from supplied state; distinguish \u201cunknown to the model state\u201d from \u201cfactually unknowable\u201d and \u201cexplicitly contradicted.\u201d",
+      "requests": "requests/answerability_from_provided_context.jsonl",
+      "responses": "responses/answerability_from_provided_context.jsonl",
+      "metadata": "metadata/answerability_from_provided_context.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "evidence_sufficiency": {
+      "cases": 100,
+      "title": "Evidence sufficiency",
+      "description": "is there enough evidence to make a requested decision at confidence threshold X? decide what additional evidence would discriminate between remaining alternatives.",
+      "requests": "requests/evidence_sufficiency.jsonl",
+      "responses": "responses/evidence_sufficiency.jsonl",
+      "metadata": "metadata/evidence_sufficiency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "fact_vs_inference_classification": {
+      "cases": 100,
+      "title": "Fact-vs-inference classification",
+      "description": "identify statements explicitly present, deductively derivable, probabilistically inferred, merely plausible, or unsupported.",
+      "requests": "requests/fact_vs_inference_classification.jsonl",
+      "responses": "responses/fact_vs_inference_classification.jsonl",
+      "metadata": "metadata/fact_vs_inference_classification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "hallucination_detection": {
+      "cases": 100,
+      "title": "Hallucination detection",
+      "description": "candidate response introduces person, date, dependency, number, cause, quotation, API, event or feature absent from source; include subtle composite hallucinations formed by combining true fragments.",
+      "requests": "requests/hallucination_detection.jsonl",
+      "responses": "responses/hallucination_detection.jsonl",
+      "metadata": "metadata/hallucination_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "topic_keyword_fidelity": {
+      "cases": 100,
+      "title": "Topic/keyword fidelity",
+      "description": "do keywords describe the source? overly broad/narrow terms; missing dominant topic; term present only incidentally; rank keywords by representativeness.",
+      "requests": "requests/topic_keyword_fidelity.jsonl",
+      "responses": "responses/topic_keyword_fidelity.jsonl",
+      "metadata": "metadata/topic_keyword_fidelity.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "information_retrieval_relevance": {
+      "cases": 100,
+      "title": "Information-retrieval relevance",
+      "description": "query plus 20\u2013100 passages/items; rank relevance; distinguish exact lexical overlap from semantic relevance; IT/API/code/CSS/HTML/legal/scientific/general domains.",
+      "requests": "requests/information_retrieval_relevance.jsonl",
+      "responses": "responses/information_retrieval_relevance.jsonl",
+      "metadata": "metadata/information_retrieval_relevance.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "recommendation_reranking_quality": {
+      "cases": 100,
+      "title": "Recommendation/reranking quality",
+      "description": "query, explicit preferences/constraints, candidate products/documents/actions/items; order by fit; hard constraint violation must dominate superficial similarity; ties and insufficient-information cases.",
+      "requests": "requests/recommendation_reranking_quality.jsonl",
+      "responses": "responses/recommendation_reranking_quality.jsonl",
+      "metadata": "metadata/recommendation_reranking_quality.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "entity_resolution": {
+      "cases": 100,
+      "title": "Entity resolution",
+      "description": "are \u201cInternational Business Machines\u201d, \u201cIBM Corp.\u201d and \u201cIBM\u201d same entity in this context? distinguish same-name different entities using address/date/domain/account metadata.",
+      "requests": "requests/entity_resolution.jsonl",
+      "responses": "responses/entity_resolution.jsonl",
+      "metadata": "metadata/entity_resolution.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "record_deduplication": {
+      "cases": 100,
+      "title": "Record deduplication",
+      "description": "decide exact duplicate, near duplicate, updated record, related-but-distinct, or ambiguous using noisy text fields.",
+      "requests": "requests/record_deduplication.jsonl",
+      "responses": "responses/record_deduplication.jsonl",
+      "metadata": "metadata/record_deduplication.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "cross_document_reconciliation": {
+      "cases": 100,
+      "title": "Cross-document reconciliation",
+      "description": "invoice vs purchase order vs delivery note; resume vs application form; API docs vs implementation; identify matching, missing, contradictory and outdated facts.",
+      "requests": "requests/cross_document_reconciliation.jsonl",
+      "responses": "responses/cross_document_reconciliation.jsonl",
+      "metadata": "metadata/cross_document_reconciliation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "document_consistency": {
+      "cases": 100,
+      "title": "Document consistency",
+      "description": "invoice subtotal/tax/total agreement; stated address vs country code; account owner vs invoice party; dates in plausible order; internal references resolve.",
+      "requests": "requests/document_consistency.jsonl",
+      "responses": "responses/document_consistency.jsonl",
+      "metadata": "metadata/document_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "booking_accounting_mapping": {
+      "cases": 100,
+      "title": "Booking/accounting mapping",
+      "description": "bank-statement descriptions \u2192 rent, payroll, cloud hosting, office equipment, tax, fee, refund, transfer, subscription etc.; debit/credit implications; recurring vs exceptional; business/private/unknown.",
+      "requests": "requests/booking_accounting_mapping.jsonl",
+      "responses": "responses/booking_accounting_mapping.jsonl",
+      "metadata": "metadata/booking_accounting_mapping.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "accounting_reasonableness": {
+      "cases": 100,
+      "title": "Accounting reasonableness",
+      "description": "is booking category compatible with description? VAT treatment stated in supplied rules? asset vs expense under supplied threshold? candidate mapping clearly impossible or merely uncertain?",
+      "requests": "requests/accounting_reasonableness.jsonl",
+      "responses": "responses/accounting_reasonableness.jsonl",
+      "metadata": "metadata/accounting_reasonableness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "invoice_anomaly_detection": {
+      "cases": 100,
+      "title": "Invoice anomaly detection",
+      "description": "implausible totals, duplicate positions, unusual quantity\u00d7price, inconsistent tax, dates, currencies, IBAN/country/address mismatch, changed payment destination.",
+      "requests": "requests/invoice_anomaly_detection.jsonl",
+      "responses": "responses/invoice_anomaly_detection.jsonl",
+      "metadata": "metadata/invoice_anomaly_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "fraud_scam_likelihood": {
+      "cases": 100,
+      "title": "Fraud/scam likelihood",
+      "description": "emails, invoices, letters, account-change requests, fake support messages; German phone but unrelated foreign banking coordinates, domain typo, impossible chronology, urgency combined with credential/payment request; score individual evidence rather than \u201codd = fraud.\u201d",
+      "requests": "requests/fraud_scam_likelihood.jsonl",
+      "responses": "responses/fraud_scam_likelihood.jsonl",
+      "metadata": "metadata/fraud_scam_likelihood.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "transaction_anomaly_detection": {
+      "cases": 100,
+      "title": "Transaction anomaly detection",
+      "description": "usual transaction pattern supplied in state; detect unusual amount, merchant, geography, frequency, timing or counterparty while tolerating legitimate one-off changes.",
+      "requests": "requests/transaction_anomaly_detection.jsonl",
+      "responses": "responses/transaction_anomaly_detection.jsonl",
+      "metadata": "metadata/transaction_anomaly_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "commercial_price_plausibility": {
+      "cases": 100,
+      "title": "Commercial-price plausibility",
+      "description": "given supplied catalogue/reference prices, judge invoice/order positions as plausible, unusually high/low, incompatible unit or quantity, or not comparable.",
+      "requests": "requests/commercial_price_plausibility.jsonl",
+      "responses": "responses/commercial_price_plausibility.jsonl",
+      "metadata": "metadata/commercial_price_plausibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "budget_consistency": {
+      "cases": 100,
+      "title": "Budget consistency",
+      "description": "proposed spend vs budget categories, recurring costs, commitments and reserve; identify oversubscription, double-counting or nominally cheap option causing downstream cost.",
+      "requests": "requests/budget_consistency.jsonl",
+      "responses": "responses/budget_consistency.jsonl",
+      "metadata": "metadata/budget_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "resource_planning": {
+      "cases": 100,
+      "title": "Resource planning",
+      "description": "staff, compute, storage, inventory, time, materials, advertising budget; what is required, optional, excessive or missing; quantities under explicit workload assumptions.",
+      "requests": "requests/resource_planning.jsonl",
+      "responses": "responses/resource_planning.jsonl",
+      "metadata": "metadata/resource_planning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "capacity_planning": {
+      "cases": 100,
+      "title": "Capacity planning",
+      "description": "requests/s, workers, memory, storage growth, production capacity, hotel seats, warehouse space; choose sufficient capacity tier and detect impossible utilization assumptions.",
+      "requests": "requests/capacity_planning.jsonl",
+      "responses": "responses/capacity_planning.jsonl",
+      "metadata": "metadata/capacity_planning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "inventory_decisions": {
+      "cases": 100,
+      "title": "Inventory decisions",
+      "description": "demand forecasts, lead times, spoilage, safety stock; reorder/hold/clearance decisions; distinguish shortage risk from overstock risk.",
+      "requests": "requests/inventory_decisions.jsonl",
+      "responses": "responses/inventory_decisions.jsonl",
+      "metadata": "metadata/inventory_decisions.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "scheduling_feasibility": {
+      "cases": 100,
+      "title": "Scheduling feasibility",
+      "description": "jobs, dependencies, workers, durations, calendars; is schedule possible? earliest feasible slot? conflicting resources? missed prerequisite?",
+      "requests": "requests/scheduling_feasibility.jsonl",
+      "responses": "responses/scheduling_feasibility.jsonl",
+      "metadata": "metadata/scheduling_feasibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "prioritization_under_constraints": {
+      "cases": 100,
+      "title": "Prioritization under constraints",
+      "description": "rank tasks using explicit impact, urgency, dependency, cost and deadline; reject \u201curgent-looking\u201d low-value work when criteria disagree.",
+      "requests": "requests/prioritization_under_constraints.jsonl",
+      "responses": "responses/prioritization_under_constraints.jsonl",
+      "metadata": "metadata/prioritization_under_constraints.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "pareto_optimal_decision_taking": {
+      "cases": 100,
+      "title": "Pareto-optimal decision taking",
+      "description": "multiple objectives such as latency/cost/accuracy/reliability; identify dominated options, Pareto frontier, and goal-compatible choices without pretending one global optimum exists.",
+      "requests": "requests/pareto_optimal_decision_taking.jsonl",
+      "responses": "responses/pareto_optimal_decision_taking.jsonl",
+      "metadata": "metadata/pareto_optimal_decision_taking.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "expected_utility_decisions": {
+      "cases": 100,
+      "title": "Expected-utility decisions",
+      "description": "explicit outcomes, probabilities and utility/cost; select or rank choices; include loss aversion traps, tiny-probability/high-cost events and cases where expected value differs from expected utility.",
+      "requests": "requests/expected_utility_decisions.jsonl",
+      "responses": "responses/expected_utility_decisions.jsonl",
+      "metadata": "metadata/expected_utility_decisions.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "bayesian_evidence_updating": {
+      "cases": 100,
+      "title": "Bayesian evidence updating",
+      "description": "prior plus diagnostic evidence/likelihood information; decide which hypothesis should gain/lose probability, rank posteriors, detect evidence that is actually non-informative.",
+      "requests": "requests/bayesian_evidence_updating.jsonl",
+      "responses": "responses/bayesian_evidence_updating.jsonl",
+      "metadata": "metadata/bayesian_evidence_updating.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "game_theory_judgements": {
+      "cases": 100,
+      "title": "Game-theory judgements",
+      "description": "dominant strategies, best response, coordination, prisoner\u2019s dilemma, zero/non-zero-sum, repeated interaction, credible threats, signaling; probable outcome under explicitly stated player incentives.",
+      "requests": "requests/game_theory_judgements.jsonl",
+      "responses": "responses/game_theory_judgements.jsonl",
+      "metadata": "metadata/game_theory_judgements.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "adversarial_agent_reasoning": {
+      "cases": 100,
+      "title": "Adversarial-agent reasoning",
+      "description": "another actor optimizes against you; identify exploitable deterministic strategy, deceptive signal, incentive incompatibility, commitment problem.",
+      "requests": "requests/adversarial_agent_reasoning.jsonl",
+      "responses": "responses/adversarial_agent_reasoning.jsonl",
+      "metadata": "metadata/adversarial_agent_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "negotiation_judgements": {
+      "cases": 100,
+      "title": "Negotiation judgements",
+      "description": "BATNA, reservation values, mutually beneficial ranges, concessions; distinguish agreement that dominates alternatives from one that only sounds balanced.",
+      "requests": "requests/negotiation_judgements.jsonl",
+      "responses": "responses/negotiation_judgements.jsonl",
+      "metadata": "metadata/negotiation_judgements.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "probability_support_judgement": {
+      "cases": 100,
+      "title": "Probability-support judgement",
+      "description": "state gives probabilities/confidence/evidence; statement \u201cit will probably be sunny in 3 days\u201d must be evaluated against forecast values and uncertainty; distinguish 51%, 80%, 99% language.",
+      "requests": "requests/probability_support_judgement.jsonl",
+      "responses": "responses/probability_support_judgement.jsonl",
+      "metadata": "metadata/probability_support_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "probability_calibration_language": {
+      "cases": 100,
+      "title": "Probability calibration language",
+      "description": "map \u201cpossible\u201d, \u201clikely\u201d, \u201cvery likely\u201d, \u201calmost certain\u201d to supplied quantitative conventions; identify text whose certainty overstates/understates evidence.",
+      "requests": "requests/probability_calibration_language.jsonl",
+      "responses": "responses/probability_calibration_language.jsonl",
+      "metadata": "metadata/probability_calibration_language.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "forecast_consistency": {
+      "cases": 100,
+      "title": "Forecast consistency",
+      "description": "multiple observations or forecasts through time; candidate prediction incompatible with current trajectory, confidence interval, seasonality or stated assumptions.",
+      "requests": "requests/forecast_consistency.jsonl",
+      "responses": "responses/forecast_consistency.jsonl",
+      "metadata": "metadata/forecast_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "counterfactual_plausibility": {
+      "cases": 100,
+      "title": "Counterfactual plausibility",
+      "description": "given causal rules/state, judge \u201cif X had not happened, Y would still have happened\u201d; distinguish counterfactual inference from simple temporal reversal.",
+      "requests": "requests/counterfactual_plausibility.jsonl",
+      "responses": "responses/counterfactual_plausibility.jsonl",
+      "metadata": "metadata/counterfactual_plausibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "base_rate_awareness": {
+      "cases": 100,
+      "title": "Base-rate awareness",
+      "description": "rare event with noisy positive evidence; determine whether candidate conclusion ignores supplied prevalence/base rate.",
+      "requests": "requests/base_rate_awareness.jsonl",
+      "responses": "responses/base_rate_awareness.jsonl",
+      "metadata": "metadata/base_rate_awareness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "sampling_statistical_interpretation": {
+      "cases": 100,
+      "title": "Sampling/statistical interpretation",
+      "description": "does a conclusion generalize beyond described sample? selection bias, survivorship, confounding, tiny sample, inappropriate average, percentage-vs-percentage-point confusion.",
+      "requests": "requests/sampling_statistical_interpretation.jsonl",
+      "responses": "responses/sampling_statistical_interpretation.jsonl",
+      "metadata": "metadata/sampling_statistical_interpretation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "unit_understanding": {
+      "cases": 100,
+      "title": "Unit understanding",
+      "description": "compare quantities represented in different units; milliseconds vs seconds, MB vs GiB, km/h vs m/s, \u00b0C vs K when differences/absolute values matter, currencies with supplied conversion rates.",
+      "requests": "requests/unit_understanding.jsonl",
+      "responses": "responses/unit_understanding.jsonl",
+      "metadata": "metadata/unit_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "dimensional_consistency": {
+      "cases": 100,
+      "title": "Dimensional consistency",
+      "description": "is an equation/result dimensionally possible? energy vs power, rate vs amount, area vs length, throughput vs latency; detect numerically plausible but unit-invalid answers.",
+      "requests": "requests/dimensional_consistency.jsonl",
+      "responses": "responses/dimensional_consistency.jsonl",
+      "metadata": "metadata/dimensional_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "order_of_magnitude_reasoning": {
+      "cases": 100,
+      "title": "Order-of-magnitude reasoning",
+      "description": "is result roughly 10, 1k, 1M or 1B? detect decimal/exponent/unit conversion mistakes without requiring exact arithmetic.",
+      "requests": "requests/order_of_magnitude_reasoning.jsonl",
+      "responses": "responses/order_of_magnitude_reasoning.jsonl",
+      "metadata": "metadata/order_of_magnitude_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "scale_plausibility": {
+      "cases": 100,
+      "title": "Scale plausibility",
+      "description": "is 200 GB plausible for a text file containing 500 records? 2 ms plausible for a transatlantic round trip? grounded in explicitly provided reference ranges where possible.",
+      "requests": "requests/scale_plausibility.jsonl",
+      "responses": "responses/scale_plausibility.jsonl",
+      "metadata": "metadata/scale_plausibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "geometry_and_embodied_navigation": {
+      "cases": 100,
+      "title": "Geometry and embodied navigation",
+      "description": "textual 2D/3D spaces, orientation, coordinates, obstacles and goals; walk/drive/fly/jump/crawl constraints; choose feasible action and detect collision/dead end.",
+      "requests": "requests/geometry_and_embodied_navigation.jsonl",
+      "responses": "responses/geometry_and_embodied_navigation.jsonl",
+      "metadata": "metadata/geometry_and_embodied_navigation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "spatial_relation_reasoning": {
+      "cases": 100,
+      "title": "Spatial-relation reasoning",
+      "description": "left/right/front/behind/inside/intersecting/north/south; viewpoint transformations; object A left of B and observer rotates 180\u00b0; relative vs absolute orientation.",
+      "requests": "requests/spatial_relation_reasoning.jsonl",
+      "responses": "responses/spatial_relation_reasoning.jsonl",
+      "metadata": "metadata/spatial_relation_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "route_feasibility": {
+      "cases": 100,
+      "title": "Route feasibility",
+      "description": "doors, one-way passages, bridge weight/height constraints, stairs vs wheelchair, vehicle turning radius, fuel/range; decide which route is actually traversable.",
+      "requests": "requests/route_feasibility.jsonl",
+      "responses": "responses/route_feasibility.jsonl",
+      "metadata": "metadata/route_feasibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "embodied_affordances": {
+      "cases": 100,
+      "title": "Embodied affordances",
+      "description": "can object be carried, climbed, entered, opened, driven through, used as support given stated dimensions/material/body capabilities?",
+      "requests": "requests/embodied_affordances.jsonl",
+      "responses": "responses/embodied_affordances.jsonl",
+      "metadata": "metadata/embodied_affordances.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "physical_commonsense": {
+      "cases": 100,
+      "title": "Physical commonsense",
+      "description": "stack stability, containment, gravity, support, liquid flow, collision, friction, heating/cooling; plausible next physical state.",
+      "requests": "requests/physical_commonsense.jsonl",
+      "responses": "responses/physical_commonsense.jsonl",
+      "metadata": "metadata/physical_commonsense.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "mechanical_system_reasoning": {
+      "cases": 100,
+      "title": "Mechanical-system reasoning",
+      "description": "gears, pulleys, valves, pumps, levers, simple electrical/mechanical state descriptions; direction/change propagation and failure-mode classification.",
+      "requests": "requests/mechanical_system_reasoning.jsonl",
+      "responses": "responses/mechanical_system_reasoning.jsonl",
+      "metadata": "metadata/mechanical_system_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "object_permanence_state_tracking": {
+      "cases": 100,
+      "title": "Object permanence/state tracking",
+      "description": "objects moved between locations/containers; after long distractor text identify where an object must, may or cannot be.",
+      "requests": "requests/object_permanence_state_tracking.jsonl",
+      "responses": "responses/object_permanence_state_tracking.jsonl",
+      "metadata": "metadata/object_permanence_state_tracking.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "temporal_ordering": {
+      "cases": 100,
+      "title": "Temporal ordering",
+      "description": "events with explicit/relative dates, durations and dependencies; detect impossible chronology, calculate which events overlap, before/after relations.",
+      "requests": "requests/temporal_ordering.jsonl",
+      "responses": "responses/temporal_ordering.jsonl",
+      "metadata": "metadata/temporal_ordering.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "calendar_time_zone_understanding": {
+      "cases": 100,
+      "title": "Calendar/time-zone understanding",
+      "description": "appointments described across zones, daylight-saving offsets supplied or derivable from state, recurring schedules, \u201cnext Friday\u201d relative to explicit reference date.",
+      "requests": "requests/calendar_time_zone_understanding.jsonl",
+      "responses": "responses/calendar_time_zone_understanding.jsonl",
+      "metadata": "metadata/calendar_time_zone_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "historical_fact_verification": {
+      "cases": 100,
+      "title": "Historical-fact verification",
+      "description": "given date/country plus reference excerpts, decide whether stated ruler, border, institution, technology, currency or event is compatible with that time.",
+      "requests": "requests/historical_fact_verification.jsonl",
+      "responses": "responses/historical_fact_verification.jsonl",
+      "metadata": "metadata/historical_fact_verification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "historical_anachronism_detection": {
+      "cases": 100,
+      "title": "Historical anachronism detection",
+      "description": "objects, terminology, technologies, countries, institutions or social practices appearing before/after their described era.",
+      "requests": "requests/historical_anachronism_detection.jsonl",
+      "responses": "responses/historical_anachronism_detection.jsonl",
+      "metadata": "metadata/historical_anachronism_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "geographical_consistency": {
+      "cases": 100,
+      "title": "Geographical consistency",
+      "description": "city-country-region relationships, distances/directions from supplied map-like facts, impossible travel sequence, address-country/currency/phone-code consistency.",
+      "requests": "requests/geographical_consistency.jsonl",
+      "responses": "responses/geographical_consistency.jsonl",
+      "metadata": "metadata/geographical_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "weather_state_interpretation": {
+      "cases": 100,
+      "title": "Weather-state interpretation",
+      "description": "forecast table expressed textually; precipitation/cloud/wind/temperature state \u2192 supported natural-language judgement; distinguish \u201csunny\u201d, \u201cdry\u201d, \u201cwarm\u201d, \u201cstormy\u201d, \u201csafe for activity X\u201d.",
+      "requests": "requests/weather_state_interpretation.jsonl",
+      "responses": "responses/weather_state_interpretation.jsonl",
+      "metadata": "metadata/weather_state_interpretation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "scientific_hypothesis_plausibility": {
+      "cases": 100,
+      "title": "Scientific-hypothesis plausibility",
+      "description": "observations vs hypotheses; which hypotheses are consistent, falsified or underdetermined? distinguish prediction from post-hoc explanation.",
+      "requests": "requests/scientific_hypothesis_plausibility.jsonl",
+      "responses": "responses/scientific_hypothesis_plausibility.jsonl",
+      "metadata": "metadata/scientific_hypothesis_plausibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "experimental_design_judgement": {
+      "cases": 100,
+      "title": "Experimental-design judgement",
+      "description": "does experiment test stated hypothesis? proper control? variable actually manipulated? confounder? measurement cannot distinguish candidate explanations?",
+      "requests": "requests/experimental_design_judgement.jsonl",
+      "responses": "responses/experimental_design_judgement.jsonl",
+      "metadata": "metadata/experimental_design_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "measurement_uncertainty_reasoning": {
+      "cases": 100,
+      "title": "Measurement/uncertainty reasoning",
+      "description": "significant figures, measurement interval, sensor error, uncertainty propagation qualitatively, whether claimed difference exceeds supplied uncertainty.",
+      "requests": "requests/measurement_uncertainty_reasoning.jsonl",
+      "responses": "responses/measurement_uncertainty_reasoning.jsonl",
+      "metadata": "metadata/measurement_uncertainty_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "biological_system_reasoning": {
+      "cases": 100,
+      "title": "Biological-system reasoning",
+      "description": "text descriptions of cells, organisms, ecosystems, inheritance, physiology; identify plausible mechanisms, impossible category mixtures, cause/effect direction.",
+      "requests": "requests/biological_system_reasoning.jsonl",
+      "responses": "responses/biological_system_reasoning.jsonl",
+      "metadata": "metadata/biological_system_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "biological_signal_understanding": {
+      "cases": 100,
+      "title": "Biological signal understanding",
+      "description": "symptom/body-state narratives \u2192 pain location/type/intensity range, physical vs psychological vs mixed vs insufficient evidence; explicitly reward uncertainty rather than invented sensations.",
+      "requests": "requests/biological_signal_understanding.jsonl",
+      "responses": "responses/biological_signal_understanding.jsonl",
+      "metadata": "metadata/biological_signal_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "medical_differential_reasoning_benchmarks": {
+      "cases": 100,
+      "title": "Medical differential-reasoning benchmarks",
+      "description": "symptoms plus candidate ICD descriptions \u2192 score compatibility, contradiction and missing evidence; include superficially similar diagnoses, impossible combinations and insufficient-information cases; benchmark reasoning, not patient diagnosis.",
+      "requests": "requests/medical_differential_reasoning_benchmarks.jsonl",
+      "responses": "responses/medical_differential_reasoning_benchmarks.jsonl",
+      "metadata": "metadata/medical_differential_reasoning_benchmarks.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "medical_chronology_consistency": {
+      "cases": 100,
+      "title": "Medical chronology consistency",
+      "description": "symptoms, medication, procedures and measurements over time; decide whether candidate explanation contradicts chronology or known state supplied in example.",
+      "requests": "requests/medical_chronology_consistency.jsonl",
+      "responses": "responses/medical_chronology_consistency.jsonl",
+      "metadata": "metadata/medical_chronology_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "translation_correctness": {
+      "cases": 100,
+      "title": "Translation correctness",
+      "description": "source plus candidate translations; meaning preserved? polarity/tense/quantity/register changed? false friend? dropped clause? added information?",
+      "requests": "requests/translation_correctness.jsonl",
+      "responses": "responses/translation_correctness.jsonl",
+      "metadata": "metadata/translation_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "grammar_judgement": {
+      "cases": 100,
+      "title": "Grammar judgement",
+      "description": "locate erroneous token/span among \\~20 words; agreement, tense, case, article, word order, punctuation; include grammatically valid but stylistically odd distractors.",
+      "requests": "requests/grammar_judgement.jsonl",
+      "responses": "responses/grammar_judgement.jsonl",
+      "metadata": "metadata/grammar_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "glossary_adherence": {
+      "cases": 100,
+      "title": "Glossary adherence",
+      "description": "given N approved translations/technical terms, detect whether candidate translation uses required terms consistently; rank candidate glossary matches.",
+      "requests": "requests/glossary_adherence.jsonl",
+      "responses": "responses/glossary_adherence.jsonl",
+      "metadata": "metadata/glossary_adherence.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "synonym_semantic_substitution_scoring": {
+      "cases": 100,
+      "title": "Synonym/semantic-substitution scoring",
+      "description": "which word/phrase can replace source expression in context without changing denotation, connotation, register or technical meaning?",
+      "requests": "requests/synonym_semantic_substitution_scoring.jsonl",
+      "responses": "responses/synonym_semantic_substitution_scoring.jsonl",
+      "metadata": "metadata/synonym_semantic_substitution_scoring.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "word_sense_disambiguation": {
+      "cases": 100,
+      "title": "Word-sense disambiguation",
+      "description": "\u201cbank\u201d, \u201cport\u201d, \u201cmodel\u201d, \u201cclass\u201d, \u201ccell\u201d, \u201ccharge\u201d etc.; determine intended sense from context and rank alternatives.",
+      "requests": "requests/word_sense_disambiguation.jsonl",
+      "responses": "responses/word_sense_disambiguation.jsonl",
+      "metadata": "metadata/word_sense_disambiguation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "language_dialect_identification": {
+      "cases": 100,
+      "title": "Language/dialect identification",
+      "description": "short/noisy/code-switched text; language family vs exact language; distinguish German/Dutch, Serbian/Croatian/Bosnian, Russian/Ukrainian etc.; permit uncertain/ambiguous.",
+      "requests": "requests/language_dialect_identification.jsonl",
+      "responses": "responses/language_dialect_identification.jsonl",
+      "metadata": "metadata/language_dialect_identification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "code_switch_understanding": {
+      "cases": 100,
+      "title": "Code-switch understanding",
+      "description": "sentence changes languages midstream; assign spans/language, preserve named entities/loan words, understand cross-language coreference.",
+      "requests": "requests/code_switch_understanding.jsonl",
+      "responses": "responses/code_switch_understanding.jsonl",
+      "metadata": "metadata/code_switch_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "pragmatic_intent_understanding": {
+      "cases": 100,
+      "title": "Pragmatic-intent understanding",
+      "description": "\u201cCould you open the window?\u201d literal ability question vs request; indirect refusals, implied requests, soft commitments, rhetorical questions.",
+      "requests": "requests/pragmatic_intent_understanding.jsonl",
+      "responses": "responses/pragmatic_intent_understanding.jsonl",
+      "metadata": "metadata/pragmatic_intent_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "sarcasm_and_humor_understanding": {
+      "cases": 100,
+      "title": "Sarcasm and humor understanding",
+      "description": "sarcasm, irony, understatement, absurdity, incongruity, callback, pun, garden-path joke; classify mechanism and whether literal interpretation differs from intended meaning.",
+      "requests": "requests/sarcasm_and_humor_understanding.jsonl",
+      "responses": "responses/sarcasm_and_humor_understanding.jsonl",
+      "metadata": "metadata/sarcasm_and_humor_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "humor_explanation_correctness": {
+      "cases": 100,
+      "title": "Humor explanation correctness",
+      "description": "given joke plus candidate explanations, rank explanations; reject explanations inventing a pun or cultural reference absent from text.",
+      "requests": "requests/humor_explanation_correctness.jsonl",
+      "responses": "responses/humor_explanation_correctness.jsonl",
+      "metadata": "metadata/humor_explanation_correctness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "mood_atmosphere_understanding": {
+      "cases": 100,
+      "title": "Mood/atmosphere understanding",
+      "description": "cinematic/story descriptions \u2192 tense, calm, ominous, melancholic, joyful, uncanny etc.; distinguish environmental mood from character emotion.",
+      "requests": "requests/mood_atmosphere_understanding.jsonl",
+      "responses": "responses/mood_atmosphere_understanding.jsonl",
+      "metadata": "metadata/mood_atmosphere_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "tone_register_classification": {
+      "cases": 100,
+      "title": "Tone/register classification",
+      "description": "formal, intimate, hostile, deferential, clinical, promotional, passive-aggressive, uncertain; intensity score; detect mismatch with intended audience.",
+      "requests": "requests/tone_register_classification.jsonl",
+      "responses": "responses/tone_register_classification.jsonl",
+      "metadata": "metadata/tone_register_classification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "dialogue_coherence": {
+      "cases": 100,
+      "title": "Dialogue coherence",
+      "description": "does response answer previous turn? wrong referent? repeats solved question? abrupt topic switch? ignores correction? assumes information never supplied?",
+      "requests": "requests/dialogue_coherence.jsonl",
+      "responses": "responses/dialogue_coherence.jsonl",
+      "metadata": "metadata/dialogue_coherence.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "conversation_state_tracking": {
+      "cases": 100,
+      "title": "Conversation-state tracking",
+      "description": "multi-turn text with changing choices/reservations/configuration; identify latest valid state rather than an obsolete earlier value.",
+      "requests": "requests/conversation_state_tracking.jsonl",
+      "responses": "responses/conversation_state_tracking.jsonl",
+      "metadata": "metadata/conversation_state_tracking.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "persona_consistency": {
+      "cases": 100,
+      "title": "Persona consistency",
+      "description": "persona explicitly specifies age, occupation, language, knowledge and experiences; candidate utterance contradicts biography, chronology or knowledge access.",
+      "requests": "requests/persona_consistency.jsonl",
+      "responses": "responses/persona_consistency.jsonl",
+      "metadata": "metadata/persona_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "theory_of_mind_false_belief_reasoning": {
+      "cases": 100,
+      "title": "Theory-of-mind / false-belief reasoning",
+      "description": "Alice saw object moved? Bob did not; what does each person believe? nested beliefs, deception, stale information, private communication.",
+      "requests": "requests/theory_of_mind_false_belief_reasoning.jsonl",
+      "responses": "responses/theory_of_mind_false_belief_reasoning.jsonl",
+      "metadata": "metadata/theory_of_mind_false_belief_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "embodied_unknowns": {
+      "cases": 100,
+      "title": "Embodied unknowns",
+      "description": "what can this person/agent know given their location, sensors, messages, education and event exposure? reject omniscient answers.",
+      "requests": "requests/embodied_unknowns.jsonl",
+      "responses": "responses/embodied_unknowns.jsonl",
+      "metadata": "metadata/embodied_unknowns.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "embodied_time_aware_world_views": {
+      "cases": 100,
+      "title": "Embodied time-aware world views",
+      "description": "persona, age, birthplace, biography, explicitly supplied beliefs, media exposure and historical time; judge which beliefs/reactions are plausible for that described individual without substituting stereotypes.",
+      "requests": "requests/embodied_time_aware_world_views.jsonl",
+      "responses": "responses/embodied_time_aware_world_views.jsonl",
+      "metadata": "metadata/embodied_time_aware_world_views.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "embodied_emotions": {
+      "cases": 100,
+      "title": "Embodied emotions",
+      "description": "baseline emotional/physical state plus new event \u2192 plausible next emotions; tooth pain + exhaustion + bad news vs rested state; allow multiple plausible reactions and reject deterministic overconfidence.",
+      "requests": "requests/embodied_emotions.jsonl",
+      "responses": "responses/embodied_emotions.jsonl",
+      "metadata": "metadata/embodied_emotions.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "emotion_cause_attribution": {
+      "cases": 100,
+      "title": "Emotion-cause attribution",
+      "description": "identify which described event most plausibly caused emotion vs merely co-occurred; distinguish disappointment, fear, embarrassment, anger, grief, relief, surprise.",
+      "requests": "requests/emotion_cause_attribution.jsonl",
+      "responses": "responses/emotion_cause_attribution.jsonl",
+      "metadata": "metadata/emotion_cause_attribution.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "social_norm_reasoning": {
+      "cases": 100,
+      "title": "Social-norm reasoning",
+      "description": "given explicit relationship/culture/context rules, classify action as expected, unusual, inappropriate or underdetermined; separate rule violation from personal dislike.",
+      "requests": "requests/social_norm_reasoning.jsonl",
+      "responses": "responses/social_norm_reasoning.jsonl",
+      "metadata": "metadata/social_norm_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "relationship_permission_reasoning": {
+      "cases": 100,
+      "title": "Relationship/permission reasoning",
+      "description": "manager/employee, parent/child, owner/guest, doctor/patient, service roles as explicitly defined: who can authorize/access/change what?",
+      "requests": "requests/relationship_permission_reasoning.jsonl",
+      "responses": "responses/relationship_permission_reasoning.jsonl",
+      "metadata": "metadata/relationship_permission_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "embodied_animal_understanding": {
+      "cases": 100,
+      "title": "Embodied animal understanding",
+      "description": "species-specific state of dogs, cats, birds, fish, horses, rodents etc.; probable next action, stress/fear/feeding behavior, threat level, predator/prey relation, health concern vs normal behavior.",
+      "requests": "requests/embodied_animal_understanding.jsonl",
+      "responses": "responses/embodied_animal_understanding.jsonl",
+      "metadata": "metadata/embodied_animal_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "animal_affordance_constraint_reasoning": {
+      "cases": 100,
+      "title": "Animal affordance/constraint reasoning",
+      "description": "can this species climb/swim/fly/squeeze through/open/reach the described object? age/size/injury/environment alter feasible actions.",
+      "requests": "requests/animal_affordance_constraint_reasoning.jsonl",
+      "responses": "responses/animal_affordance_constraint_reasoning.jsonl",
+      "metadata": "metadata/animal_affordance_constraint_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "narrative_next_event_plausibility": {
+      "cases": 100,
+      "title": "Narrative next-event plausibility",
+      "description": "given story state, rank candidate next events by causal continuity rather than genre clich\u00e9; impossible teleportation, forgotten injuries, unresolved physical constraints.",
+      "requests": "requests/narrative_next_event_plausibility.jsonl",
+      "responses": "responses/narrative_next_event_plausibility.jsonl",
+      "metadata": "metadata/narrative_next_event_plausibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "character_goal_consistency": {
+      "cases": 100,
+      "title": "Character-goal consistency",
+      "description": "does proposed action advance the character\u2019s explicitly stated goal? knowingly sacrifices one objective for another? action conflicts with known incentives?",
+      "requests": "requests/character_goal_consistency.jsonl",
+      "responses": "responses/character_goal_consistency.jsonl",
+      "metadata": "metadata/character_goal_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "ocr_ngram_based_text_recognition": {
+      "cases": 100,
+      "title": "OCR/ngram-based text recognition",
+      "description": "full document text plus focused sentence; tokenize into words/numbers and n-grams; identify customer number, invoice number, date, amount, reference, company/person/address from candidate spans.",
+      "requests": "requests/ocr_ngram_based_text_recognition.jsonl",
+      "responses": "responses/ocr_ngram_based_text_recognition.jsonl",
+      "metadata": "metadata/ocr_ngram_based_text_recognition.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "noisy_ocr_reconstruction": {
+      "cases": 100,
+      "title": "Noisy-OCR reconstruction",
+      "description": "`I/1/l`, `O/0`, broken whitespace, hyphenation, duplicated characters; rank candidate reconstruction using surrounding textual constraints.",
+      "requests": "requests/noisy_ocr_reconstruction.jsonl",
+      "responses": "responses/noisy_ocr_reconstruction.jsonl",
+      "metadata": "metadata/noisy_ocr_reconstruction.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "document_field_association": {
+      "cases": 100,
+      "title": "Document-field association",
+      "description": "multiple dates, IDs, addresses and amounts occur; determine which belongs to invoice, customer, supplier, delivery, payment or order rather than merely extracting nearest value.",
+      "requests": "requests/document_field_association.jsonl",
+      "responses": "responses/document_field_association.jsonl",
+      "metadata": "metadata/document_field_association.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "document_type_classification": {
+      "cases": 100,
+      "title": "Document-type classification",
+      "description": "invoice, quote, reminder, order confirmation, cancellation, contract, bank statement, medical report, support ticket, shipping notice, application, receipt.",
+      "requests": "requests/document_type_classification.jsonl",
+      "responses": "responses/document_type_classification.jsonl",
+      "metadata": "metadata/document_type_classification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "document_workflow_state": {
+      "cases": 100,
+      "title": "Document-workflow state",
+      "description": "quote\u2192order\u2192delivery\u2192invoice\u2192payment\u2192reminder; given documents/events, decide current state and which transitions have/have not happened.",
+      "requests": "requests/document_workflow_state.jsonl",
+      "responses": "responses/document_workflow_state.jsonl",
+      "metadata": "metadata/document_workflow_state.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "table_reasoning_from_linearized_text": {
+      "cases": 100,
+      "title": "Table reasoning from linearized text",
+      "description": "rows/columns represented textually; lookup, compare, aggregate, identify max/min, join related rows, respect headers/units and missing cells.",
+      "requests": "requests/table_reasoning_from_linearized_text.jsonl",
+      "responses": "responses/table_reasoning_from_linearized_text.jsonl",
+      "metadata": "metadata/table_reasoning_from_linearized_text.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "spreadsheet_formula_semantics_from_text": {
+      "cases": 100,
+      "title": "Spreadsheet-formula semantics from text",
+      "description": "formula plus cell values/ranges serialized textually; decide result/error/dependency; identify relative-reference mistakes without requiring spreadsheet modality.",
+      "requests": "requests/spreadsheet_formula_semantics_from_text.jsonl",
+      "responses": "responses/spreadsheet_formula_semantics_from_text.jsonl",
+      "metadata": "metadata/spreadsheet_formula_semantics_from_text.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "form_completeness": {
+      "cases": 100,
+      "title": "Form completeness",
+      "description": "required/conditional fields based on provided rules; missing signature, inconsistent checkbox/value, field supplied in wrong section, conditional field unnecessarily demanded.",
+      "requests": "requests/form_completeness.jsonl",
+      "responses": "responses/form_completeness.jsonl",
+      "metadata": "metadata/form_completeness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "contract_clause_consistency": {
+      "cases": 100,
+      "title": "Contract/clause consistency",
+      "description": "given explicit contract clauses, decide whether proposed action/deadline/payment condition follows, conflicts, is unspecified or requires another clause; no free-form legal advice required.",
+      "requests": "requests/contract_clause_consistency.jsonl",
+      "responses": "responses/contract_clause_consistency.jsonl",
+      "metadata": "metadata/contract_clause_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "requirement_traceability": {
+      "cases": 100,
+      "title": "Requirement traceability",
+      "description": "requirements \u2192 design \u2192 implementation \u2192 tests; determine which requirement has no implementation/test, which test maps to no requirement, which artifact contradicts another.",
+      "requests": "requests/requirement_traceability.jsonl",
+      "responses": "responses/requirement_traceability.jsonl",
+      "metadata": "metadata/requirement_traceability.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "business_process_conformance": {
+      "cases": 100,
+      "title": "Business-process conformance",
+      "description": "defined workflow plus observed event sequence; legal transition, skipped approval, wrong role, duplicate action, expired prerequisite, valid exception path.",
+      "requests": "requests/business_process_conformance.jsonl",
+      "responses": "responses/business_process_conformance.jsonl",
+      "metadata": "metadata/business_process_conformance.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "email_thread_state_understanding": {
+      "cases": 100,
+      "title": "Email-thread state understanding",
+      "description": "who owes whom a response? latest agreed date/price/action? question already answered? quoted older text vs newest message; attachment mentioned but absent.",
+      "requests": "requests/email_thread_state_understanding.jsonl",
+      "responses": "responses/email_thread_state_understanding.jsonl",
+      "metadata": "metadata/email_thread_state_understanding.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "action_item_extraction_verification": {
+      "cases": 100,
+      "title": "Action-item extraction/verification",
+      "description": "candidate action item actually promised/requested? correct owner/deadline? distinguish suggestion from commitment and condition from action.",
+      "requests": "requests/action_item_extraction_verification.jsonl",
+      "responses": "responses/action_item_extraction_verification.jsonl",
+      "metadata": "metadata/action_item_extraction_verification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "product_catalog_matching": {
+      "cases": 100,
+      "title": "Product/catalog matching",
+      "description": "natural-language request vs structured product descriptions serialized as text; rank correct SKU/model while respecting size/version/compatibility constraints.",
+      "requests": "requests/product_catalog_matching.jsonl",
+      "responses": "responses/product_catalog_matching.jsonl",
+      "metadata": "metadata/product_catalog_matching.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "compatibility_matching": {
+      "cases": 100,
+      "title": "Compatibility matching",
+      "description": "charger/device, software/plugin/runtime, replacement part/machine, datatype/API; distinguish physically similar from actually compatible.",
+      "requests": "requests/compatibility_matching.jsonl",
+      "responses": "responses/compatibility_matching.jsonl",
+      "metadata": "metadata/compatibility_matching.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "taxonomy_category_assignment": {
+      "cases": 100,
+      "title": "Taxonomy/category assignment",
+      "description": "assign products/documents/issues/scientific concepts to hierarchical labels; nearest category vs overly general/overly specific class.",
+      "requests": "requests/taxonomy_category_assignment.jsonl",
+      "responses": "responses/taxonomy_category_assignment.jsonl",
+      "metadata": "metadata/taxonomy_category_assignment.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "multi_label_topic_classification": {
+      "cases": 100,
+      "title": "Multi-label topic classification",
+      "description": "text may genuinely belong to multiple domains; select all supported labels without spraying generic labels; include hierarchical and overlapping domains.",
+      "requests": "requests/multi_label_topic_classification.jsonl",
+      "responses": "responses/multi_label_topic_classification.jsonl",
+      "metadata": "metadata/multi_label_topic_classification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "domain_identification": {
+      "cases": 100,
+      "title": "Domain identification",
+      "description": "biology, chemistry, finance, networking, compiler engineering, law, linguistics, medicine, music, statistics etc.; score domain mixture rather than forcing one class.",
+      "requests": "requests/domain_identification.jsonl",
+      "responses": "responses/domain_identification.jsonl",
+      "metadata": "metadata/domain_identification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "expertise_level_estimation_of_text": {
+      "cases": 100,
+      "title": "Expertise-level estimation of text",
+      "description": "introductory, practitioner, specialist/research-level based on concepts assumed and reasoning depth\u2014not vocabulary complexity alone.",
+      "requests": "requests/expertise_level_estimation_of_text.jsonl",
+      "responses": "responses/expertise_level_estimation_of_text.jsonl",
+      "metadata": "metadata/expertise_level_estimation_of_text.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "explanation_necessity_judgement": {
+      "cases": 100,
+      "title": "Explanation-necessity judgement",
+      "description": "is answer self-evident from supplied context, or does decision materially benefit from justification? distinguish safety/ambiguity/high-impact decisions from simple lookups.",
+      "requests": "requests/explanation_necessity_judgement.jsonl",
+      "responses": "responses/explanation_necessity_judgement.jsonl",
+      "metadata": "metadata/explanation_necessity_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "explanation_quality_judgement": {
+      "cases": 100,
+      "title": "Explanation-quality judgement",
+      "description": "given decision and rationale, does rationale actually support decision, merely restate it, introduce unrelated facts, reverse causality or use invalid evidence?",
+      "requests": "requests/explanation_quality_judgement.jsonl",
+      "responses": "responses/explanation_quality_judgement.jsonl",
+      "metadata": "metadata/explanation_quality_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "rationale_to_answer_consistency": {
+      "cases": 100,
+      "title": "Rationale-to-answer consistency",
+      "description": "model selects A but its explanation logically supports B; numeric reasoning disagrees with final label; cited evidence contradicts final answer.",
+      "requests": "requests/rationale_to_answer_consistency.jsonl",
+      "responses": "responses/rationale_to_answer_consistency.jsonl",
+      "metadata": "metadata/rationale_to_answer_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "constraint_satisfaction_judgement": {
+      "cases": 100,
+      "title": "Constraint-satisfaction judgement",
+      "description": "candidate plan/output must obey many textual constraints: budget, size, dependency, date, allowed technologies, exclusions; identify exactly which constraints are violated.",
+      "requests": "requests/constraint_satisfaction_judgement.jsonl",
+      "responses": "responses/constraint_satisfaction_judgement.jsonl",
+      "metadata": "metadata/constraint_satisfaction_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "soft_vs_hard_constraint_discrimination": {
+      "cases": 100,
+      "title": "Soft-vs-hard constraint discrimination",
+      "description": "\u201cmust\u201d, \u201cprefer\u201d, \u201cideally\u201d, \u201cunless\u201d, \u201cat most\u201d, \u201caround\u201d; rank options without treating preferences as requirements or vice versa.",
+      "requests": "requests/soft_vs_hard_constraint_discrimination.jsonl",
+      "responses": "responses/soft_vs_hard_constraint_discrimination.jsonl",
+      "metadata": "metadata/soft_vs_hard_constraint_discrimination.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "preference_learning_from_explicit_examples": {
+      "cases": 100,
+      "title": "Preference learning from explicit examples",
+      "description": "several accepted/rejected choices plus reasons; infer which candidate better matches demonstrated preference while distinguishing stable preference from incidental features.",
+      "requests": "requests/preference_learning_from_explicit_examples.jsonl",
+      "responses": "responses/preference_learning_from_explicit_examples.jsonl",
+      "metadata": "metadata/preference_learning_from_explicit_examples.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "multi_criteria_scoring_consistency": {
+      "cases": 100,
+      "title": "Multi-criteria scoring consistency",
+      "description": "given explicit scoring rubric, does stated total/category follow component scores? candidate may manipulate weighting, normalize incorrectly or ignore veto criteria.",
+      "requests": "requests/multi_criteria_scoring_consistency.jsonl",
+      "responses": "responses/multi_criteria_scoring_consistency.jsonl",
+      "metadata": "metadata/multi_criteria_scoring_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "rubric_based_quality_assessment": {
+      "cases": 100,
+      "title": "Rubric-based quality assessment",
+      "description": "article, support response, code review, product description, explanation; supplied rubric defines factuality/completeness/style/etc.; score dimensions separately rather than generic \u201cgood/bad.\u201d",
+      "requests": "requests/rubric_based_quality_assessment.jsonl",
+      "responses": "responses/rubric_based_quality_assessment.jsonl",
+      "metadata": "metadata/rubric_based_quality_assessment.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "comparative_judgement_transitivity": {
+      "cases": 100,
+      "title": "Comparative judgement transitivity",
+      "description": "A preferred to B, B to C under same criterion; detect inconsistent candidate ranking unless supplied context legitimately changes criterion.",
+      "requests": "requests/comparative_judgement_transitivity.jsonl",
+      "responses": "responses/comparative_judgement_transitivity.jsonl",
+      "metadata": "metadata/comparative_judgement_transitivity.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "pairwise_preference_prediction": {
+      "cases": 100,
+      "title": "Pairwise preference prediction",
+      "description": "two candidate outputs against explicit task/rubric; choose A/B/tie/insufficient evidence; useful primitive for reward/reranker training.",
+      "requests": "requests/pairwise_preference_prediction.jsonl",
+      "responses": "responses/pairwise_preference_prediction.jsonl",
+      "metadata": "metadata/pairwise_preference_prediction.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "set_coverage_diversity_judgement": {
+      "cases": 100,
+      "title": "Set coverage / diversity judgement",
+      "description": "does selected set cover required topics/categories rather than containing five near-duplicates? rank candidate subsets by relevance plus non-redundancy.",
+      "requests": "requests/set_coverage_diversity_judgement.jsonl",
+      "responses": "responses/set_coverage_diversity_judgement.jsonl",
+      "metadata": "metadata/set_coverage_diversity_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "redundancy_detection": {
+      "cases": 100,
+      "title": "Redundancy detection",
+      "description": "sentences, requirements, tests, retrieved documents, recommendations convey same semantic content despite different wording; exact vs partial redundancy.",
+      "requests": "requests/redundancy_detection.jsonl",
+      "responses": "responses/redundancy_detection.jsonl",
+      "metadata": "metadata/redundancy_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "information_density_judgement": {
+      "cases": 100,
+      "title": "Information-density judgement",
+      "description": "candidate contains useful distinct information vs verbosity/repetition; important for deciding compression/summarization without treating all length as bad.",
+      "requests": "requests/information_density_judgement.jsonl",
+      "responses": "responses/information_density_judgement.jsonl",
+      "metadata": "metadata/information_density_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "data_quality_validation": {
+      "cases": 100,
+      "title": "Data-quality validation",
+      "description": "impossible ages/dates/ranges, inconsistent identifiers, duplicate IDs, unexpected missingness, categorical values outside domain, conflicting fields.",
+      "requests": "requests/data_quality_validation.jsonl",
+      "responses": "responses/data_quality_validation.jsonl",
+      "metadata": "metadata/data_quality_validation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "synthetic_data_plausibility": {
+      "cases": 100,
+      "title": "Synthetic-data plausibility",
+      "description": "does generated record obey supplied distributions, dependencies and business rules? identify impossible combinations and suspicious template repetition.",
+      "requests": "requests/synthetic_data_plausibility.jsonl",
+      "responses": "responses/synthetic_data_plausibility.jsonl",
+      "metadata": "metadata/synthetic_data_plausibility.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "class_label_leakage_detection": {
+      "cases": 100,
+      "title": "Class-label leakage detection",
+      "description": "training example contains target label or deterministic proxy in input; filename/category/template directly reveals gold decision.",
+      "requests": "requests/class_label_leakage_detection.jsonl",
+      "responses": "responses/class_label_leakage_detection.jsonl",
+      "metadata": "metadata/class_label_leakage_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "dataset_example_quality": {
+      "cases": 100,
+      "title": "Dataset-example quality",
+      "description": "ambiguous gold label, multiple correct answers, unsupported rationale, malformed state, trivial lexical shortcut, answer leaked in prompt, wrong difficulty.",
+      "requests": "requests/dataset_example_quality.jsonl",
+      "responses": "responses/dataset_example_quality.jsonl",
+      "metadata": "metadata/dataset_example_quality.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "benchmark_contamination_clues": {
+      "cases": 100,
+      "title": "Benchmark-contamination clues",
+      "description": "candidate task reproduces a supplied known example nearly verbatim vs legitimately same concept; n-gram/semantic overlap classifications from provided corpora.",
+      "requests": "requests/benchmark_contamination_clues.jsonl",
+      "responses": "responses/benchmark_contamination_clues.jsonl",
+      "metadata": "metadata/benchmark_contamination_clues.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "adversarial_example_detection": {
+      "cases": 100,
+      "title": "Adversarial-example detection",
+      "description": "irrelevant distractors, conflicting metadata, misleading lexical overlap, injected false premise; determine which evidence is actually decision-relevant.",
+      "requests": "requests/adversarial_example_detection.jsonl",
+      "responses": "responses/adversarial_example_detection.jsonl",
+      "metadata": "metadata/adversarial_example_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "spurious_correlation_resistance": {
+      "cases": 100,
+      "title": "Spurious-correlation resistance",
+      "description": "training-style pattern says one label but causal/semantic evidence says another; names, formatting, length, position or irrelevant demographic-like attributes deliberately correlate with wrong answer.",
+      "requests": "requests/spurious_correlation_resistance.jsonl",
+      "responses": "responses/spurious_correlation_resistance.jsonl",
+      "metadata": "metadata/spurious_correlation_resistance.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "invariant_detection": {
+      "cases": 100,
+      "title": "Invariant detection",
+      "description": "given examples/transitions/code/data, decide which property remains invariant; proposed operation preserves or breaks it.",
+      "requests": "requests/invariant_detection.jsonl",
+      "responses": "responses/invariant_detection.jsonl",
+      "metadata": "metadata/invariant_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "boundary_condition_judgement": {
+      "cases": 100,
+      "title": "Boundary-condition judgement",
+      "description": "value exactly at min/max, zero, empty set, one-element collection, overflow threshold, inclusive/exclusive dates; determine which branch/rule applies.",
+      "requests": "requests/boundary_condition_judgement.jsonl",
+      "responses": "responses/boundary_condition_judgement.jsonl",
+      "metadata": "metadata/boundary_condition_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "failure_mode_classification": {
+      "cases": 100,
+      "title": "Failure-mode classification",
+      "description": "timeout, validation failure, authorization failure, dependency outage, resource exhaustion, logic bug, malformed input, user cancellation; infer from textual observations.",
+      "requests": "requests/failure_mode_classification.jsonl",
+      "responses": "responses/failure_mode_classification.jsonl",
+      "metadata": "metadata/failure_mode_classification.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "recoverability_judgement": {
+      "cases": 100,
+      "title": "Recoverability judgement",
+      "description": "retry, rollback, restart, compensate, request user input, permanent failure; classify based on supplied failure semantics.",
+      "requests": "requests/recoverability_judgement.jsonl",
+      "responses": "responses/recoverability_judgement.jsonl",
+      "metadata": "metadata/recoverability_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "reversibility_destructiveness": {
+      "cases": 100,
+      "title": "Reversibility/destructiveness",
+      "description": "actions/code/commands/business operations: reversible, compensatable, partially reversible, destructive; estimate blast radius from explicitly supplied resources.",
+      "requests": "requests/reversibility_destructiveness.jsonl",
+      "responses": "responses/reversibility_destructiveness.jsonl",
+      "metadata": "metadata/reversibility_destructiveness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "operational_urgency": {
+      "cases": 100,
+      "title": "Operational urgency",
+      "description": "incident evidence \u2192 immediate intervention vs observe vs scheduled repair; based on explicit SLA/resource/error-rate thresholds rather than generic alarmism.",
+      "requests": "requests/operational_urgency.jsonl",
+      "responses": "responses/operational_urgency.jsonl",
+      "metadata": "metadata/operational_urgency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "change_risk_judgement": {
+      "cases": 100,
+      "title": "Change-risk judgement",
+      "description": "small local refactor vs schema migration vs auth-system rewrite; score probable blast radius using dependency/state/test evidence, independent of code length.",
+      "requests": "requests/change_risk_judgement.jsonl",
+      "responses": "responses/change_risk_judgement.jsonl",
+      "metadata": "metadata/change_risk_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "regression_likelihood_judgement": {
+      "cases": 100,
+      "title": "Regression-likelihood judgement",
+      "description": "changed module has many dependents, public contract change, no tests, state migration, or isolated internal refactor; rank patches by regression risk from provided evidence.",
+      "requests": "requests/regression_likelihood_judgement.jsonl",
+      "responses": "responses/regression_likelihood_judgement.jsonl",
+      "metadata": "metadata/regression_likelihood_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "human_vs_machine_task_suitability": {
+      "cases": 100,
+      "title": "Human-vs-machine task suitability",
+      "description": "given workflow requirements, classify deterministic automation, LLM-compatible judgment, requires external measurement, requires human authority, or hybrid verification.",
+      "requests": "requests/human_vs_machine_task_suitability.jsonl",
+      "responses": "responses/human_vs_machine_task_suitability.jsonl",
+      "metadata": "metadata/human_vs_machine_task_suitability.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "live_data_requirement": {
+      "cases": 100,
+      "title": "Live-data requirement",
+      "description": "can decision be made completely from supplied text/state, or does correctness require current database/network/sensor/time-dependent information?",
+      "requests": "requests/live_data_requirement.jsonl",
+      "responses": "responses/live_data_requirement.jsonl",
+      "metadata": "metadata/live_data_requirement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "information_acquisition_value": {
+      "cases": 100,
+      "title": "Information-acquisition value",
+      "description": "when state is insufficient, rank possible next questions/measurements by expected ability to disambiguate hypotheses rather than merely asking for more data.",
+      "requests": "requests/information_acquisition_value.jsonl",
+      "responses": "responses/information_acquisition_value.jsonl",
+      "metadata": "metadata/information_acquisition_value.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "stopping_decision_sufficiency": {
+      "cases": 100,
+      "title": "Stopping/decision sufficiency",
+      "description": "enough evidence already exists; gathering more data is unlikely to alter action vs decision should be deferred because critical uncertainty remains.",
+      "requests": "requests/stopping_decision_sufficiency.jsonl",
+      "responses": "responses/stopping_decision_sufficiency.jsonl",
+      "metadata": "metadata/stopping_decision_sufficiency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "confidence_vs_evidence_consistency": {
+      "cases": 100,
+      "title": "Confidence-vs-evidence consistency",
+      "description": "answer may be correct but confidence unjustifiably high/low; score whether confidence follows amount/quality/consistency of supplied evidence.",
+      "requests": "requests/confidence_vs_evidence_consistency.jsonl",
+      "responses": "responses/confidence_vs_evidence_consistency.jsonl",
+      "metadata": "metadata/confidence_vs_evidence_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "self_consistency_across_outputs": {
+      "cases": 100,
+      "title": "Self-consistency across outputs",
+      "description": "category says \u201csafe\u201d, score says 0.92 dangerous, rationale says destructive; detect contradictions among multiple typed outputs.",
+      "requests": "requests/self_consistency_across_outputs.jsonl",
+      "responses": "responses/self_consistency_across_outputs.jsonl",
+      "metadata": "metadata/self_consistency_across_outputs.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "granularity_selection": {
+      "cases": 100,
+      "title": "Granularity selection",
+      "description": "question supports exact value, interval, category, ranking or only unknown; choose the strongest answer type justified by evidence rather than inventing precision.",
+      "requests": "requests/granularity_selection.jsonl",
+      "responses": "responses/granularity_selection.jsonl",
+      "metadata": "metadata/granularity_selection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "abstraction_level_matching": {
+      "cases": 100,
+      "title": "Abstraction-level matching",
+      "description": "question asks architecture-level issue but answer gives syntax detail; asks exact API but response gives generic concept; classify too abstract/appropriate/too specific.",
+      "requests": "requests/abstraction_level_matching.jsonl",
+      "responses": "responses/abstraction_level_matching.jsonl",
+      "metadata": "metadata/abstraction_level_matching.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "analogy_validity": {
+      "cases": 100,
+      "title": "Analogy validity",
+      "description": "two systems share relevant structure vs superficial similarity; determine which properties transfer and where analogy breaks.",
+      "requests": "requests/analogy_validity.jsonl",
+      "responses": "responses/analogy_validity.jsonl",
+      "metadata": "metadata/analogy_validity.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "category_error_detection": {
+      "cases": 100,
+      "title": "Category-error detection",
+      "description": "treating latency as throughput, probability as confidence, class as instance, map as territory, correlation as cause, implementation as specification, price as value.",
+      "requests": "requests/category_error_detection.jsonl",
+      "responses": "responses/category_error_detection.jsonl",
+      "metadata": "metadata/category_error_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "cognitive_bias_illogic_detection": {
+      "cases": 100,
+      "title": "Cognitive-bias/illogic detection",
+      "description": "base-rate neglect, sunk cost, conjunction fallacy, framing, survivorship bias, anchoring, denominator neglect, availability bias; identify the reasoning error without assuming every surprising choice is biased.",
+      "requests": "requests/cognitive_bias_illogic_detection.jsonl",
+      "responses": "responses/cognitive_bias_illogic_detection.jsonl",
+      "metadata": "metadata/cognitive_bias_illogic_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "contradiction_resolution": {
+      "cases": 100,
+      "title": "Contradiction-resolution",
+      "description": "multiple claims disagree; determine whether genuinely contradictory, about different time periods/entities/scopes, or reconcilable through qualifiers.",
+      "requests": "requests/contradiction_resolution.jsonl",
+      "responses": "responses/contradiction_resolution.jsonl",
+      "metadata": "metadata/contradiction_resolution.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "scope_reasoning": {
+      "cases": 100,
+      "title": "Scope reasoning",
+      "description": "\u201call users\u201d vs \u201cpaid users\u201d; \u201cEurope\u201d vs \u201cEU\u201d; \u201cmay\u201d vs \u201cwill\u201d; \u201cunder load\u201d vs universally; detect candidate conclusions that silently broaden scope.",
+      "requests": "requests/scope_reasoning.jsonl",
+      "responses": "responses/scope_reasoning.jsonl",
+      "metadata": "metadata/scope_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "quantifier_reasoning_in_natural_text": {
+      "cases": 100,
+      "title": "Quantifier reasoning in natural text",
+      "description": "`all`, `none`, `some`, `at least one`, `exactly one`, `most`, `not every`; identify when paraphrase changes logical force without turning this into purely formal-logic tasks.",
+      "requests": "requests/quantifier_reasoning_in_natural_text.jsonl",
+      "responses": "responses/quantifier_reasoning_in_natural_text.jsonl",
+      "metadata": "metadata/quantifier_reasoning_in_natural_text.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "negation_polarity_tracking": {
+      "cases": 100,
+      "title": "Negation/polarity tracking",
+      "description": "nested negation, \u201cnot uncommon\u201d, \u201cfails unless\u201d, \u201ccannot exclude\u201d, \u201conly if\u201d; determine actual proposition and catch polarity-flipped summaries/translations.",
+      "requests": "requests/negation_polarity_tracking.jsonl",
+      "responses": "responses/negation_polarity_tracking.jsonl",
+      "metadata": "metadata/negation_polarity_tracking.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "reference_coreference_resolution": {
+      "cases": 100,
+      "title": "Reference/coreference resolution",
+      "description": "which \u201cit\u201d, \u201cthey\u201d, \u201cformer\u201d, \u201clatter\u201d, \u201cthis version\u201d, \u201cthat company\u201d refers to; long technical/business documents with plausible distractors.",
+      "requests": "requests/reference_coreference_resolution.jsonl",
+      "responses": "responses/reference_coreference_resolution.jsonl",
+      "metadata": "metadata/reference_coreference_resolution.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "comparative_language_reasoning": {
+      "cases": 100,
+      "title": "Comparative-language reasoning",
+      "description": "\u201cA is 20% faster than B\u201d, \u201cB takes 20% longer\u201d, \u201cno worse than\u201d, \u201csecond highest\u201d; decide candidate ordering and detect non-equivalent paraphrases.",
+      "requests": "requests/comparative_language_reasoning.jsonl",
+      "responses": "responses/comparative_language_reasoning.jsonl",
+      "metadata": "metadata/comparative_language_reasoning.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "definition_adherence": {
+      "cases": 100,
+      "title": "Definition adherence",
+      "description": "state explicitly defines a domain-specific term; later decision must use that local definition even if common usage differs.",
+      "requests": "requests/definition_adherence.jsonl",
+      "responses": "responses/definition_adherence.jsonl",
+      "metadata": "metadata/definition_adherence.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "local_rule_over_world_knowledge_judgement": {
+      "cases": 100,
+      "title": "Local-rule-over-world-knowledge judgement",
+      "description": "synthetic world says red tokens are valid only on Tuesdays; model must follow supplied world state rather than pretrained associations.",
+      "requests": "requests/local_rule_over_world_knowledge_judgement.jsonl",
+      "responses": "responses/local_rule_over_world_knowledge_judgement.jsonl",
+      "metadata": "metadata/local_rule_over_world_knowledge_judgement.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "world_model_consistency": {
+      "cases": 100,
+      "title": "World-model consistency",
+      "description": "large textual state establishes entities/properties/rules; candidate event must respect all previous state, not just immediately preceding sentence.",
+      "requests": "requests/world_model_consistency.jsonl",
+      "responses": "responses/world_model_consistency.jsonl",
+      "metadata": "metadata/world_model_consistency.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "long_context_distractor_resistance": {
+      "cases": 100,
+      "title": "Long-context distractor resistance",
+      "description": "relevant fact appears far from query among semantically similar but irrelevant material; identify correct evidence without positional bias.",
+      "requests": "requests/long_context_distractor_resistance.jsonl",
+      "responses": "responses/long_context_distractor_resistance.jsonl",
+      "metadata": "metadata/long_context_distractor_resistance.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "needle_set_retrieval": {
+      "cases": 100,
+      "title": "Needle-set retrieval",
+      "description": "multiple separate facts across long state jointly determine answer; one fact alone suggests wrong answer; useful for testing distributed evidence integration.",
+      "requests": "requests/needle_set_retrieval.jsonl",
+      "responses": "responses/needle_set_retrieval.jsonl",
+      "metadata": "metadata/needle_set_retrieval.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "cross_domain_synthesis": {
+      "cases": 100,
+      "title": "Cross-domain synthesis",
+      "description": "decision requires combining e.g. unit conversion + API constraint + budget, or geography + invoice metadata + chronology; individual subtasks easy, composition determines gold.",
+      "requests": "requests/cross_domain_synthesis.jsonl",
+      "responses": "responses/cross_domain_synthesis.jsonl",
+      "metadata": "metadata/cross_domain_synthesis.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "minimal_sufficient_explanation_selection": {
+      "cases": 100,
+      "title": "Minimal-sufficient-explanation selection",
+      "description": "several explanations are true but some include unnecessary unsupported assumptions; select the explanation requiring the fewest additional assumptions while covering evidence.",
+      "requests": "requests/minimal_sufficient_explanation_selection.jsonl",
+      "responses": "responses/minimal_sufficient_explanation_selection.jsonl",
+      "metadata": "metadata/minimal_sufficient_explanation_selection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "competing_hypothesis_discrimination": {
+      "cases": 100,
+      "title": "Competing-hypothesis discrimination",
+      "description": "multiple plausible explanations; identify observations that favor one, observations shared by all, and what new evidence would separate them.",
+      "requests": "requests/competing_hypothesis_discrimination.jsonl",
+      "responses": "responses/competing_hypothesis_discrimination.jsonl",
+      "metadata": "metadata/competing_hypothesis_discrimination.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "mechanism_vs_pattern_distinction": {
+      "cases": 100,
+      "title": "Mechanism-vs-pattern distinction",
+      "description": "data exhibits correlation/pattern, but proposed explanation claims a mechanism not established; score evidential support for mechanism separately from predictive usefulness.",
+      "requests": "requests/mechanism_vs_pattern_distinction.jsonl",
+      "responses": "responses/mechanism_vs_pattern_distinction.jsonl",
+      "metadata": "metadata/mechanism_vs_pattern_distinction.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "decision_robustness": {
+      "cases": 100,
+      "title": "Decision robustness",
+      "description": "small plausible changes to uncertain inputs should or should not change chosen action; classify robust vs knife-edge decisions.",
+      "requests": "requests/decision_robustness.jsonl",
+      "responses": "responses/decision_robustness.jsonl",
+      "metadata": "metadata/decision_robustness.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "sensitivity_analysis": {
+      "cases": 100,
+      "title": "Sensitivity analysis",
+      "description": "which parameter matters most to decision? e.g. cloud cost dominated by GPU hours rather than storage; ranking should change only when a threshold is crossed.",
+      "requests": "requests/sensitivity_analysis.jsonl",
+      "responses": "responses/sensitivity_analysis.jsonl",
+      "metadata": "metadata/sensitivity_analysis.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "dominated_information_detection": {
+      "cases": 100,
+      "title": "Dominated-information detection",
+      "description": "new evidence is redundant because stronger evidence already implies it; useful for deciding whether an additional test/query has information value.",
+      "requests": "requests/dominated_information_detection.jsonl",
+      "responses": "responses/dominated_information_detection.jsonl",
+      "metadata": "metadata/dominated_information_detection.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "consistency_under_paraphrase": {
+      "cases": 100,
+      "title": "Consistency under paraphrase",
+      "description": "same state/query expressed using alternate wording should yield same typed decision; detect lexical-position dependence.",
+      "requests": "requests/consistency_under_paraphrase.jsonl",
+      "responses": "responses/consistency_under_paraphrase.jsonl",
+      "metadata": "metadata/consistency_under_paraphrase.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "consistency_under_irrelevant_context_insertion": {
+      "cases": 100,
+      "title": "Consistency under irrelevant-context insertion",
+      "description": "add true but decision-irrelevant facts; answer should remain unchanged.",
+      "requests": "requests/consistency_under_irrelevant_context_insertion.jsonl",
+      "responses": "responses/consistency_under_irrelevant_context_insertion.jsonl",
+      "metadata": "metadata/consistency_under_irrelevant_context_insertion.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "consistency_under_option_permutation": {
+      "cases": 100,
+      "title": "Consistency under option permutation",
+      "description": "candidate options reordered or relabeled; output should follow semantics rather than positional preference.",
+      "requests": "requests/consistency_under_option_permutation.jsonl",
+      "responses": "responses/consistency_under_option_permutation.jsonl",
+      "metadata": "metadata/consistency_under_option_permutation.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "calibration_under_ambiguity": {
+      "cases": 100,
+      "title": "Calibration under ambiguity",
+      "description": "clean cases deserve high confidence, near-boundary or conflicting cases lower confidence; intentionally include cases where correct output is tie/null rather than forced class.",
+      "requests": "requests/calibration_under_ambiguity.jsonl",
+      "responses": "responses/calibration_under_ambiguity.jsonl",
+      "metadata": "metadata/calibration_under_ambiguity.jsonl",
+      "source": "v5-capability-spec"
+    },
+    "support_department": {
+      "cases": 100,
+      "requests": "requests/support_department.jsonl",
+      "responses": "responses/support_department.jsonl",
+      "metadata": "metadata/support_department.jsonl"
+    },
+    "email_intent": {
+      "cases": 100,
+      "requests": "requests/email_intent.jsonl",
+      "responses": "responses/email_intent.jsonl",
+      "metadata": "metadata/email_intent.jsonl"
+    },
+    "refund_eligible": {
+      "cases": 100,
+      "requests": "requests/refund_eligible.jsonl",
+      "responses": "responses/refund_eligible.jsonl",
+      "metadata": "metadata/refund_eligible.jsonl"
+    },
+    "urgency": {
+      "cases": 100,
+      "requests": "requests/urgency.jsonl",
+      "responses": "responses/urgency.jsonl",
+      "metadata": "metadata/urgency.jsonl"
+    },
+    "secret_leak": {
+      "cases": 100,
+      "requests": "requests/secret_leak.jsonl",
+      "responses": "responses/secret_leak.jsonl",
+      "metadata": "metadata/secret_leak.jsonl"
+    },
+    "frustration_level": {
+      "cases": 100,
+      "requests": "requests/frustration_level.jsonl",
+      "responses": "responses/frustration_level.jsonl",
+      "metadata": "metadata/frustration_level.jsonl"
+    },
+    "incident_severity": {
+      "cases": 100,
+      "requests": "requests/incident_severity.jsonl",
+      "responses": "responses/incident_severity.jsonl",
+      "metadata": "metadata/incident_severity.jsonl"
+    },
+    "review_sentiment": {
+      "cases": 100,
+      "requests": "requests/review_sentiment.jsonl",
+      "responses": "responses/review_sentiment.jsonl",
+      "metadata": "metadata/review_sentiment.jsonl"
+    },
+    "support_department_hard": {
+      "cases": 100,
+      "requests": "requests/support_department_hard.jsonl",
+      "responses": "responses/support_department_hard.jsonl",
+      "metadata": "metadata/support_department_hard.jsonl"
+    },
+    "email_intent_hard": {
+      "cases": 100,
+      "requests": "requests/email_intent_hard.jsonl",
+      "responses": "responses/email_intent_hard.jsonl",
+      "metadata": "metadata/email_intent_hard.jsonl"
+    },
+    "refund_eligible_hard": {
+      "cases": 100,
+      "requests": "requests/refund_eligible_hard.jsonl",
+      "responses": "responses/refund_eligible_hard.jsonl",
+      "metadata": "metadata/refund_eligible_hard.jsonl"
+    },
+    "urgency_hard": {
+      "cases": 100,
+      "requests": "requests/urgency_hard.jsonl",
+      "responses": "responses/urgency_hard.jsonl",
+      "metadata": "metadata/urgency_hard.jsonl"
+    },
+    "secret_leak_hard": {
+      "cases": 100,
+      "requests": "requests/secret_leak_hard.jsonl",
+      "responses": "responses/secret_leak_hard.jsonl",
+      "metadata": "metadata/secret_leak_hard.jsonl"
+    },
+    "frustration_level_hard": {
+      "cases": 100,
+      "requests": "requests/frustration_level_hard.jsonl",
+      "responses": "responses/frustration_level_hard.jsonl",
+      "metadata": "metadata/frustration_level_hard.jsonl"
+    },
+    "incident_severity_hard": {
+      "cases": 100,
+      "requests": "requests/incident_severity_hard.jsonl",
+      "responses": "responses/incident_severity_hard.jsonl",
+      "metadata": "metadata/incident_severity_hard.jsonl"
+    },
+    "review_sentiment_hard": {
+      "cases": 100,
+      "requests": "requests/review_sentiment_hard.jsonl",
+      "responses": "responses/review_sentiment_hard.jsonl",
+      "metadata": "metadata/review_sentiment_hard.jsonl"
+    },
+    "expense_category": {
+      "cases": 100,
+      "requests": "requests/expense_category.jsonl",
+      "responses": "responses/expense_category.jsonl",
+      "metadata": "metadata/expense_category.jsonl"
+    },
+    "oncall_route": {
+      "cases": 100,
+      "requests": "requests/oncall_route.jsonl",
+      "responses": "responses/oncall_route.jsonl",
+      "metadata": "metadata/oncall_route.jsonl"
+    },
+    "churn_risk": {
+      "cases": 100,
+      "requests": "requests/churn_risk.jsonl",
+      "responses": "responses/churn_risk.jsonl",
+      "metadata": "metadata/churn_risk.jsonl"
+    },
+    "lead_qualification": {
+      "cases": 100,
+      "requests": "requests/lead_qualification.jsonl",
+      "responses": "responses/lead_qualification.jsonl",
+      "metadata": "metadata/lead_qualification.jsonl"
+    },
+    "app_review_intent": {
+      "cases": 100,
+      "requests": "requests/app_review_intent.jsonl",
+      "responses": "responses/app_review_intent.jsonl",
+      "metadata": "metadata/app_review_intent.jsonl"
+    },
+    "content_moderation": {
+      "cases": 100,
+      "requests": "requests/content_moderation.jsonl",
+      "responses": "responses/content_moderation.jsonl",
+      "metadata": "metadata/content_moderation.jsonl"
+    },
+    "code_review_intent": {
+      "cases": 100,
+      "requests": "requests/code_review_intent.jsonl",
+      "responses": "responses/code_review_intent.jsonl",
+      "metadata": "metadata/code_review_intent.jsonl"
+    },
+    "commit_intent": {
+      "cases": 100,
+      "requests": "requests/commit_intent.jsonl",
+      "responses": "responses/commit_intent.jsonl",
+      "metadata": "metadata/commit_intent.jsonl"
+    },
+    "recipe_cuisine": {
+      "cases": 100,
+      "requests": "requests/recipe_cuisine.jsonl",
+      "responses": "responses/recipe_cuisine.jsonl",
+      "metadata": "metadata/recipe_cuisine.jsonl"
+    },
+    "question_duplicate": {
+      "cases": 100,
+      "requests": "requests/question_duplicate.jsonl",
+      "responses": "responses/question_duplicate.jsonl",
+      "metadata": "metadata/question_duplicate.jsonl"
+    },
+    "sql_injection_risk": {
+      "cases": 100,
+      "requests": "requests/sql_injection_risk.jsonl",
+      "responses": "responses/sql_injection_risk.jsonl",
+      "metadata": "metadata/sql_injection_risk.jsonl"
+    },
+    "travel_policy_violation": {
+      "cases": 100,
+      "requests": "requests/travel_policy_violation.jsonl",
+      "responses": "responses/travel_policy_violation.jsonl",
+      "metadata": "metadata/travel_policy_violation.jsonl"
+    },
+    "contains_pii": {
+      "cases": 100,
+      "requests": "requests/contains_pii.jsonl",
+      "responses": "responses/contains_pii.jsonl",
+      "metadata": "metadata/contains_pii.jsonl"
+    },
+    "contains_spoiler": {
+      "cases": 100,
+      "requests": "requests/contains_spoiler.jsonl",
+      "responses": "responses/contains_spoiler.jsonl",
+      "metadata": "metadata/contains_spoiler.jsonl"
+    },
+    "formality_level": {
+      "cases": 100,
+      "requests": "requests/formality_level.jsonl",
+      "responses": "responses/formality_level.jsonl",
+      "metadata": "metadata/formality_level.jsonl"
+    },
+    "phishing_email": {
+      "cases": 100,
+      "requests": "requests/phishing_email.jsonl",
+      "responses": "responses/phishing_email.jsonl",
+      "metadata": "metadata/phishing_email.jsonl"
+    },
+    "meeting_conflict": {
+      "cases": 100,
+      "requests": "requests/meeting_conflict.jsonl",
+      "responses": "responses/meeting_conflict.jsonl",
+      "metadata": "metadata/meeting_conflict.jsonl"
+    },
+    "hazmat_shipping": {
+      "cases": 100,
+      "requests": "requests/hazmat_shipping.jsonl",
+      "responses": "responses/hazmat_shipping.jsonl",
+      "metadata": "metadata/hazmat_shipping.jsonl"
+    },
+    "dietary_vegan": {
+      "cases": 100,
+      "requests": "requests/dietary_vegan.jsonl",
+      "responses": "responses/dietary_vegan.jsonl",
+      "metadata": "metadata/dietary_vegan.jsonl"
+    },
+    "news_topic": {
+      "cases": 100,
+      "requests": "requests/news_topic.jsonl",
+      "responses": "responses/news_topic.jsonl",
+      "metadata": "metadata/news_topic.jsonl"
+    },
+    "document_type": {
+      "cases": 100,
+      "requests": "requests/document_type.jsonl",
+      "responses": "responses/document_type.jsonl",
+      "metadata": "metadata/document_type.jsonl"
+    },
+    "reading_level": {
+      "cases": 100,
+      "requests": "requests/reading_level.jsonl",
+      "responses": "responses/reading_level.jsonl",
+      "metadata": "metadata/reading_level.jsonl"
+    },
+    "insurance_claim_priority": {
+      "cases": 100,
+      "requests": "requests/insurance_claim_priority.jsonl",
+      "responses": "responses/insurance_claim_priority.jsonl",
+      "metadata": "metadata/insurance_claim_priority.jsonl"
+    },
+    "symptom_triage": {
+      "cases": 100,
+      "requests": "requests/symptom_triage.jsonl",
+      "responses": "responses/symptom_triage.jsonl",
+      "metadata": "metadata/symptom_triage.jsonl"
+    },
+    "delivery_exception": {
+      "cases": 100,
+      "requests": "requests/delivery_exception.jsonl",
+      "responses": "responses/delivery_exception.jsonl",
+      "metadata": "metadata/delivery_exception.jsonl"
+    },
+    "city_service_request": {
+      "cases": 100,
+      "requests": "requests/city_service_request.jsonl",
+      "responses": "responses/city_service_request.jsonl",
+      "metadata": "metadata/city_service_request.jsonl"
+    },
+    "ad_policy_violation": {
+      "cases": 100,
+      "requests": "requests/ad_policy_violation.jsonl",
+      "responses": "responses/ad_policy_violation.jsonl",
+      "metadata": "metadata/ad_policy_violation.jsonl"
+    },
+    "fair_housing_violation": {
+      "cases": 100,
+      "requests": "requests/fair_housing_violation.jsonl",
+      "responses": "responses/fair_housing_violation.jsonl",
+      "metadata": "metadata/fair_housing_violation.jsonl"
+    },
+    "contract_clause_type": {
+      "cases": 100,
+      "requests": "requests/contract_clause_type.jsonl",
+      "responses": "responses/contract_clause_type.jsonl",
+      "metadata": "metadata/contract_clause_type.jsonl"
+    },
+    "voice_assistant_intent": {
+      "cases": 100,
+      "requests": "requests/voice_assistant_intent.jsonl",
+      "responses": "responses/voice_assistant_intent.jsonl",
+      "metadata": "metadata/voice_assistant_intent.jsonl"
+    },
+    "grammar_issue": {
+      "cases": 100,
+      "requests": "requests/grammar_issue.jsonl",
+      "responses": "responses/grammar_issue.jsonl",
+      "metadata": "metadata/grammar_issue.jsonl"
+    },
+    "action_item_assignment": {
+      "cases": 100,
+      "requests": "requests/action_item_assignment.jsonl",
+      "responses": "responses/action_item_assignment.jsonl",
+      "metadata": "metadata/action_item_assignment.jsonl"
+    },
+    "suspicious_transaction": {
+      "cases": 100,
+      "requests": "requests/suspicious_transaction.jsonl",
+      "responses": "responses/suspicious_transaction.jsonl",
+      "metadata": "metadata/suspicious_transaction.jsonl"
+    },
+    "return_reason": {
+      "cases": 100,
+      "requests": "requests/return_reason.jsonl",
+      "responses": "responses/return_reason.jsonl",
+      "metadata": "metadata/return_reason.jsonl"
+    },
+    "allergen_present": {
+      "cases": 100,
+      "requests": "requests/allergen_present.jsonl",
+      "responses": "responses/allergen_present.jsonl",
+      "metadata": "metadata/allergen_present.jsonl"
+    },
+    "home_service_routing": {
+      "cases": 100,
+      "requests": "requests/home_service_routing.jsonl",
+      "responses": "responses/home_service_routing.jsonl",
+      "metadata": "metadata/home_service_routing.jsonl"
+    },
+    "gaming_report_type": {
+      "cases": 100,
+      "requests": "requests/gaming_report_type.jsonl",
+      "responses": "responses/gaming_report_type.jsonl",
+      "metadata": "metadata/gaming_report_type.jsonl"
+    },
+    "warranty_claim_eligible": {
+      "cases": 100,
+      "requests": "requests/warranty_claim_eligible.jsonl",
+      "responses": "responses/warranty_claim_eligible.jsonl",
+      "metadata": "metadata/warranty_claim_eligible.jsonl"
+    },
+    "weather_alert_severity": {
+      "cases": 100,
+      "requests": "requests/weather_alert_severity.jsonl",
+      "responses": "responses/weather_alert_severity.jsonl",
+      "metadata": "metadata/weather_alert_severity.jsonl"
+    },
+    "content_type": {
+      "cases": 100,
+      "requests": "requests/content_type.jsonl",
+      "responses": "responses/content_type.jsonl",
+      "metadata": "metadata/content_type.jsonl"
+    },
+    "veterinary_triage": {
+      "cases": 100,
+      "requests": "requests/veterinary_triage.jsonl",
+      "responses": "responses/veterinary_triage.jsonl",
+      "metadata": "metadata/veterinary_triage.jsonl"
+    },
+    "gpqa_diamond": {
+      "cases": 198,
+      "requests": "requests/gpqa_diamond.jsonl",
+      "responses": "responses/gpqa_diamond.jsonl",
+      "metadata": "metadata/gpqa_diamond.jsonl"
+    }
+  },
+  "format": "Each line in requests/<capability>.jsonl is a literal SystemOneRequest. Matching line in responses/<capability>.jsonl is a literal SystemOneResponse. Metadata is separate and line-aligned.",
+  "golden_response_policy": "Ideal deterministic response: one-hot probabilities for choice/score; noul exactly 0 or 1; confidence=1 for choice/score; usage=0/0; model=gold-reference.",
+  "cases_per_capability": 100,
+  "total_cases": 27598,
+  "extension_note": "Preserves all v3 JSONL request/golden/metadata bytes unchanged and adds 207 suites from the V5 capability specification, 100 cases each.",
+  "existing_v3_cases": 6700,
+  "new_v5_suites": 207,
+  "new_v5_cases": 20700,
+  "total_capabilities": 275
+}

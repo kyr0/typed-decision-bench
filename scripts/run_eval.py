@@ -25,9 +25,10 @@ Outputs:
     Reusing a run name RESUMES that run: only cases without a successful record
     in the existing log are (re)sent, new records are appended, and the stats/
     cases reports are refreshed — so old results are never silently discarded.
-  per-capability files (unless --responses none): responses/<capability>.jsonl,
-  line-aligned with the request files so scoring tools keep working; failed
-  cases become {"error": ...} placeholder lines at their original position.
+  per-capability files (only with an explicit --responses DIR, never by
+  default): <DIR>/<capability>.jsonl, line-aligned with the request files;
+  failed cases become {"error": ...} placeholder lines. The golden responses/
+  dir is the scoring answer key — writing there is refused outright.
   stats/cases (always): each finished run scores its own log into
   output/<run>_stats.jsonl + output/<run>_cases.jsonl (scripts/score.py);
   scoring failures only warn — the log is kept and `make score` re-derives them.
@@ -367,7 +368,9 @@ def resolve_log_path(args, model):
 def main():
     ap = argparse.ArgumentParser(description='Run benchmark capabilities against System One.')
     ap.add_argument('--benchmark', default='.', help='Benchmark root directory')
-    ap.add_argument('--responses', default='responses', help="Directory for <capability>.jsonl response files; 'none' disables them")
+    ap.add_argument('--responses', default='none', help="Directory for per-capability <capability>.jsonl response files "
+                                                        "(default: none — the run log already embeds every response). "
+                                                        "MUST NOT be the golden responses/ dir; that is refused.")
     ap.add_argument('--capabilities', default=None, help='Comma-separated capability slugs to run (default: all)')
     ap.add_argument('--n', type=int, default=None, help='Limit to the first N cases per capability')
     ap.add_argument('--url', default=None, help='Defaults to $TYPESAFE_BASE_URL' + ENDPOINT_PATH)
@@ -394,6 +397,15 @@ def main():
     manifest_caps = json.loads((root / 'manifest.json').read_text())['capabilities']
     caps = selected_capabilities(args.capabilities, manifest_caps)
 
+    # GOLD GUARD: responses/ is the scoring answer key (manifest 'responses'
+    # paths). Eval output must never land there — an accidental default
+    # silently replaced the whole benchmark's gold once; never again.
+    if args.responses.lower() != 'none':
+        gold_root = (root / next(iter(manifest_caps.values()))['responses']).parent
+        if Path(args.responses).resolve() == gold_root.resolve():
+            raise SystemExit(f'refusing --responses {args.responses}: it is the golden responses dir '
+                             f'({gold_root}), the scoring answer key. Use another directory or --responses none.')
+
     # gated capability files (gpqa_diamond) exist only as password-protected
     # <name>.jsonl.zip at rest: extract the ones this run needs, then remove (and
     # re-encrypt, if a run rewrote them) the plaintext copies when the process
@@ -412,7 +424,7 @@ def main():
     write_responses = args.responses.lower() != 'none'
     out_dir = Path(args.responses)
     if write_responses:
-        out_dir.mkdir(parents=True, exist_ok=True)
+        out_dir.mkdir(parents=True, exist_ok=True)  # safe: the gold guard above already rejected responses/
 
     log_path, run_name = resolve_log_path(args, model)
     resume_path = None

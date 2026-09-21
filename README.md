@@ -14,7 +14,7 @@ A held-out synthetic benchmark for all System One-compatible models and API infe
 | Path | Contents |
 |---|---|
 | [`requests/`](requests/) | one `<capability>.jsonl` per suite — literal request payloads (model placeholder inside) |
-| [`responses/`](responses/) | one `<capability>.jsonl` per suite — model responses, line-aligned with the requests |
+| [`responses/`](responses/) | one `<capability>.jsonl` per suite — **golden reference responses: the scoring answer key** (line-aligned with requests; read-only — the runner refuses to write here) |
 | [`metadata/`](metadata/) | gold labels + per-case provenance |
 | [`manifest.json`](manifest.json) | capability → file paths (the runner's source of truth for suite selection) |
 | [`openapi/`](openapi/) | SystemOne OpenAPI spec, schema-checked by `make validate` |
@@ -62,7 +62,7 @@ Without `TYPESAFE_BASE_URL` the hosted endpoint `https://api.typesafe.ai/v1/syst
 
 ### `scripts/run_eval.py` — benchmark runner
 
-`uv run scripts/run_eval.py [options]` (the Makefile adds `--benchmark . --responses responses`).
+`uv run scripts/run_eval.py [options]` (the Makefile adds `--benchmark .`).
 
 | Flag | Default | Description |
 |---|---|---|
@@ -76,7 +76,7 @@ Without `TYPESAFE_BASE_URL` the hosted endpoint `https://api.typesafe.ai/v1/syst
 | `--retries N` | `3` | attempts per request before recording an error |
 | `--parallel RPS` | `18` | target requests per second (workers = `min(512, max(8, rps × 5))`) |
 | `--quota-buster MS` | `750` | cool-down after every ~25 (±5, re-rolled) requests, jittered ±10 % (`0` disables) |
-| `--responses DIR` | `responses` | per-capability response files; `none` skips them (predictions stay embedded in the log, scoring still works) |
+| `--responses DIR` | `none` | opt-in per-capability response files; pointing this at the golden `responses/` dir is **refused** (answer key!) — the run log already embeds every response, so scoring never needs them |
 | `--output DIR` | `output` | directory for the combined run log |
 | `--log PATH` | — | explicit combined-log path; **overwrites** and skips resume detection |
 | `--name NAME` | `<model>_<timestamp>` | stable log name `output/<name>.jsonl`; reusing an existing name **resumes** that run |
@@ -165,7 +165,7 @@ Three deliberate layers keep a sustained benchmark run from tripping endpoint qu
 
 The GPQA Diamond files are stored encrypted at rest — each of `requests/gpqa_diamond.jsonl`, `responses/gpqa_diamond.jsonl` and `metadata/gpqa_diamond.jsonl` exists only as a password-protected `<name>.zip` sibling (`gpqa_diamond.jsonl.zip`), never as plaintext on disk. The zip password is a public constant in [`scripts/gpqa_zip.py`](scripts/gpqa_zip.py) (overridable via `GPQA_ZIP_PASSWORD`): the lock keeps plaintext out of checkouts and context windows, it is not a secrecy boundary.
 
-Every consumer decrypts transparently: `scripts/run_eval.py` (eval/e2e), `scripts/validate.py`, `scripts/score.py` and `scripts/sync-metadata.py` extract the files they need at startup and remove the plaintext copies when the process ends — files a run rewrote (e.g. `responses/gpqa_diamond.jsonl` after an eval) are re-encrypted into the zip first, so nothing is lost. The archives use classic PKZIP ZipCrypto (readable by the stdlib and `unzip -P` without third-party dependencies).
+Every consumer decrypts transparently: `scripts/run_eval.py` (eval/e2e), `scripts/validate.py`, `scripts/score.py` and `scripts/sync-metadata.py` extract the files they need at startup and remove the plaintext copies when the process ends — files a run rewrote are re-encrypted into the zip first, so nothing is lost. The archives use classic PKZIP ZipCrypto (readable by the stdlib and `unzip -P` without third-party dependencies).
 
 ```bash
 make gpqa-status   # show locked/unlocked state

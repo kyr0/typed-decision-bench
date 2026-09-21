@@ -161,6 +161,26 @@ def test_resume_end_to_end(tmp_path: Path) -> None:
     srv.shutdown()
 
 
+def test_refuses_writing_gold_responses(tmp_path: Path) -> None:
+    """/ The gold guard: --responses pointing at the benchmark's golden responses
+    dir must exit non-zero before anything is sent — an accidental default here
+    once silently replaced the whole benchmark's answer key."""
+    root_dir = Path(__file__).resolve().parents[1]
+    root = tmp_path
+    (root / 'requests').mkdir()
+    (root / 'responses').mkdir()
+    (root / 'manifest.json').write_text(json.dumps({'capabilities': {
+        'fake_cap': {'requests': 'requests/fake_cap.jsonl',
+                     'responses': 'responses/fake_cap.jsonl'}}}))
+    (root / 'requests' / 'fake_cap.jsonl').write_text('{"q": "why"}\n')
+    p = subprocess.run([sys.executable, str(root_dir / 'scripts' / 'run_eval.py'),
+                        '--benchmark', str(root), '--url', 'http://127.0.0.1:1',
+                        '--model', 'stub', '--responses', str(root / 'responses'),
+                        '--dry-run'], capture_output=True, text=True, cwd=root_dir)
+    assert p.returncode != 0
+    assert 'refusing' in (p.stderr + p.stdout).lower()
+
+
 def test_quota_buster() -> None:
     """/ BurstGate must arm randomized cool-downs (25±5 requests, wait ±10%) and
     be fully disabled at 0 ms."""

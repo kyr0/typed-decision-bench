@@ -10,8 +10,10 @@ validate:
 	uv run scripts/validate.py > validation_status.json
 
 # Runs the benchmark, e.g. make eval ARGS="--capabilities gpqa_diamond --n 2"
+# (per-capability response files stay off by default — the run log embeds them;
+# the golden responses/ dir is never written to)
 eval:
-	uv run scripts/run_eval.py --benchmark . --responses responses $(ARGS)
+	uv run scripts/run_eval.py --benchmark . $(ARGS)
 
 # One case per capability (all 275) against the endpoint configured via .env;
 # parallel at the runner default of 18 req/s (override via ARGS, e.g. ARGS="--parallel 10")

@@ -11,12 +11,12 @@ validate:
 
 # Runs the benchmark, e.g. make eval ARGS="--capabilities gpqa_diamond --n 2"
 eval:
-	uv run run_eval.py --benchmark . --responses responses $(ARGS)
+	uv run scripts/run_eval.py --benchmark . --responses responses $(ARGS)
 
 # One case per capability (all 275) against the endpoint configured via .env;
-# parallel at the runner default of 20 req/s (override via ARGS, e.g. ARGS="--parallel 10")
+# parallel at the runner default of 18 req/s (override via ARGS, e.g. ARGS="--parallel 10")
 e2e:
-	uv run run_eval.py --benchmark . --responses none --n 1 --timeout 120 --log output/e2e.jsonl $(ARGS)
+	uv run scripts/run_eval.py --benchmark . --responses none --n 1 --timeout 120 --log output/e2e.jsonl $(ARGS)
 
 # Backfill: score every output/*.jsonl run log that has no <run>_stats.jsonl/
 # _cases.jsonl pair yet (eval/e2e runs score themselves automatically)
@@ -35,8 +35,8 @@ metrics:
 compare:
 	uv run scripts/metrics.py --benchmark . --compare $(ARGS)
 
-# Unit tests for the evalcompare library in src/ (flat layout; conftest.py maps
-# it to the `evalcompare` package)
+# Pytest suite in tests/: evalcompare library (src/evalcompare/), the scorer,
+# the runner (naming/resume/rate limiting, stub endpoint) and gpqa zip lifecycle
 test:
 	uv run --with pytest --with pandas --with numpy --with plotly pytest tests -q
 

@@ -1,3 +1,13 @@
+"""/ The metric registry: one source of truth for names, directions and formatting.
+
+``METRICS`` keys are exactly the column names ``scripts/score.py`` writes into
+``output/<run>_stats.jsonl``, so a metric name means the same thing in scoring,
+export, comparison and reporting. ``direction`` encodes which way is better;
+``performance_sign`` turns any metric into "higher = better" so deltas and
+spreads can be compared across metrics. ``format_kind`` drives rendering in
+tables and plotly axes. ``metric_spec()`` resolves unknown names gracefully so
+custom score columns still plot (neutral direction, plain floats).
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -9,6 +19,7 @@ FormatKind = Literal["probability", "float", "count", "milliseconds"]
 
 @dataclass(frozen=True)
 class MetricSpec:
+    """/ Descriptor for one metric; ``name`` doubles as the stats-JSONL column key."""
     name: str
     label: str
     direction: Direction
@@ -46,6 +57,9 @@ METRICS: dict[str, MetricSpec] = {
 
 
 def metric_spec(name: str, direction: Direction | None = None) -> MetricSpec:
+    """/ Registry lookup with two fallbacks: an explicit direction override wins over
+    the registered one, and unknown names become neutral/float specs instead of
+    errors so ad-hoc metric columns still work in the analysis pipeline."""
     if name in METRICS:
         spec = METRICS[name]
         if direction is None or direction == spec.direction:
@@ -55,6 +69,8 @@ def metric_spec(name: str, direction: Direction | None = None) -> MetricSpec:
 
 
 def fmt_value(value: float | int | None, spec: MetricSpec) -> str:
+    """/ Renders one value per the spec's format_kind; NaN/None become an em dash
+    so tables never show raw nan."""
     if value is None:
         return "—"
     try:
@@ -72,6 +88,7 @@ def fmt_value(value: float | int | None, spec: MetricSpec) -> str:
 
 
 def axis_tickformat(spec: MetricSpec) -> str | None:
+    """/ plotly tickformat for axes showing this metric (None = plotly default)."""
     if spec.format_kind == "probability":
         return ".0%"
     if spec.format_kind == "milliseconds":

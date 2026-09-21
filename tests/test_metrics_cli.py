@@ -12,6 +12,7 @@ METRICS_CLI = Path(__file__).resolve().parents[1] / "scripts" / "metrics.py"
 
 
 def _write_stats(path: Path, run: str, values: dict[str, float]) -> None:
+    """/ Fixture writer: one single-run stats JSONL (capability rows + micro line)."""
     lines = [json.dumps({"run": run, "capability": cap, "n": 10,
                          "accuracy": v, "soft_accuracy": v, "nll": 1.0 - v})
              for cap, v in values.items()]

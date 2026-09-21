@@ -1,3 +1,13 @@
+"""/ Cross-run comparison built on loaded EvalData.
+
+The core idea: pivot every metric into a capability x run matrix, then derive
+per-run summaries, per-capability deltas vs a baseline and a model-spread table.
+Summary aggregates (macro/weighted/median/p10) use only the capabilities ALL
+runs share, so a model that skipped suites cannot "win" by avoiding hard ones;
+the full union still appears in the matrices (NaN where a run has no data).
+Deltas and spread are performance-aligned: multiplied by the metric's sign so
+positive always means better, regardless of metric direction.
+"""
 from __future__ import annotations
 
 import json
@@ -7,12 +17,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .io import EvalData
+from .loader import EvalData
 from .metrics import MetricSpec
 
 
 @dataclass(frozen=True)
 class Comparison:
+    """/ Everything report.py and write_tables() need from one comparison run:
+    the source data, the chosen metric/baseline, the common vs union capability
+    sets, the capability x run matrices, and the derived summary/delta/spread
+    tables (all performance-aligned)."""
     data: EvalData
     metric: MetricSpec
     baseline: str
@@ -26,6 +40,8 @@ class Comparison:
 
 
 def _pivot(data: EvalData, field: str) -> pd.DataFrame:
+    """/ capability x run matrix of one field (coerced to numeric); empty frame with
+    the run columns when the field is absent, so callers can stay unconditional."""
     if field not in data.capabilities.columns:
         return pd.DataFrame(index=[], columns=list(data.runs), dtype=float)
     frame = data.capabilities[["capability", "run", field]].copy()
@@ -34,6 +50,7 @@ def _pivot(data: EvalData, field: str) -> pd.DataFrame:
 
 
 def _weighted_mean(values: pd.Series, weights: pd.Series) -> float:
+    """/ n-weighted mean over paired non-NaN entries (weights <= 0 ignored); NaN when nothing pairs."""
     mask = values.notna() & weights.notna() & (weights > 0)
     if not mask.any():
         return float("nan")
@@ -41,6 +58,14 @@ def _weighted_mean(values: pd.Series, weights: pd.Series) -> float:
 
 
 def build_comparison(data: EvalData, metric: MetricSpec, baseline: str | None = None) -> Comparison:
+    """/ Pivots + summarizes; baseline defaults to the first run (load order).
+
+    Raises when the metric column is missing from the input or the baseline is
+    not one of the loaded runs. Summary stats and deltas are computed on the
+    shared-capability set only (see module docstring); spread keeps NaN rows so
+    partially covered capabilities still show how far apart the covering models
+    are.
+    """
     if metric.name not in data.capabilities.columns:
         raise ValueError(f"metric {metric.name!r} is not present in the input")
     baseline = baseline or data.runs[0]
@@ -125,6 +150,9 @@ def build_comparison(data: EvalData, metric: MetricSpec, baseline: str | None = 
 
 
 def write_tables(c: Comparison, out_dir: Path) -> None:
+    """/ Machine-readable companion of the HTML report: raw rows, model summary, the
+    capability x run matrices, per-baseline deltas and spread as CSVs plus a
+    summary.json (metric metadata + summary records, NaN -> null)."""
     out_dir.mkdir(parents=True, exist_ok=True)
     c.data.rows.to_csv(out_dir / "all_rows.csv", index=False)
     c.summary.reset_index().to_csv(out_dir / "model_summary.csv", index=False)
@@ -146,4 +174,6 @@ def write_tables(c: Comparison, out_dir: Path) -> None:
 
 
 def safe_name(value: str) -> str:
+    """/ Filesystem-safe form of a run name for output file names (baseline names
+    come from user data and may contain anything)."""
     return "".join(ch if ch.isalnum() or ch in "-_." else "_" for ch in value).strip("_") or "run"

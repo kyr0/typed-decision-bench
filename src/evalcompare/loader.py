@@ -1,3 +1,12 @@
+"""/ Input gate of the evalcompare library: loads stats JSONL files into DataFrames.
+
+Each input file must carry exactly one ``run`` (model) name and one row per
+capability; rows need at least ``run``, ``capability`` and ``n`` (``REQUIRED``).
+Duplicate ``(run, capability)`` pairs and negative ``n`` are rejected so the
+downstream capability x run pivots are unambiguous. Rows whose capability is one
+of ``DEFAULT_AGGREGATES`` (e.g. the scorer's ``micro`` line) are split out into
+``EvalData.aggregates`` so per-capability analysis never mixes them in.
+"""
 from __future__ import annotations
 
 import json
@@ -13,6 +22,8 @@ DEFAULT_AGGREGATES = frozenset({"micro", "macro", "overall", "summary"})
 
 @dataclass(frozen=True)
 class EvalData:
+    """/ Immutable load result: every row, per-capability vs aggregate rows split,
+    run order matching the input file order, and the resolved source paths."""
     rows: pd.DataFrame
     capabilities: pd.DataFrame
     aggregates: pd.DataFrame
@@ -21,6 +32,8 @@ class EvalData:
 
 
 def _read_file(path: Path) -> list[dict]:
+    """/ Parses one JSONL stats file into dicts tagged with ``_source_file``/``_line``
+    for precise error messages; every line must be an object with the REQUIRED fields."""
     rows: list[dict] = []
     with path.open("r", encoding="utf-8") as fh:
         for line_no, raw in enumerate(fh, 1):
@@ -50,6 +63,13 @@ def load_eval_files(
     *,
     aggregate_names: Iterable[str] = DEFAULT_AGGREGATES,
 ) -> EvalData:
+    """/ Loads one or more single-run stats files into an EvalData.
+
+    Hard guarantees (each raises): >= 1 file, one run name per file, run names
+    unique across files, no duplicate (run, capability) rows, n >= 0. File order
+    defines run order, which matters: comparison code puts the baseline first
+    for a sensible default ordering.
+    """
     source_files = tuple(Path(p).expanduser().resolve() for p in paths)
     if len(source_files) < 1:
         raise ValueError("at least one JSONL file is required")
@@ -101,6 +121,7 @@ def load_eval_files(
 
 
 def numeric_metrics(df: pd.DataFrame) -> list[str]:
+    """/ Columns with at least one parseable numeric value (identity/metadata columns excluded)."""
     ignored = {"run", "capability", "_source_file", "_line"}
     out: list[str] = []
     for col in df.columns:

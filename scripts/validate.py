@@ -3,6 +3,18 @@
 # requires-python = ">=3.11"
 # dependencies = ["jsonschema>=4"]
 # ///
+"""/ Two-layer validator for the whole benchmark.
+
+Layer 1 is structural: every request, golden response and metadata line must
+satisfy the SystemOne OpenAPI schemas (openapi/typesafe-systemone-openapi-
+v0.2.0.json). Layer 2 is semantic — schema-valid payloads can still be wrong
+(answers not matching question IDs, probabilities not summing to 1, a score
+that is not the probability-weighted expectation, a score legend differing
+from the request rubric). The status document is printed as JSON to stdout;
+`make validate` redirects it to validation_status.json. The most recent e2e run
+log (output/e2e.jsonl) is response-schema-checked too, counting — not
+validating — transport failures and aborted cases.
+"""
 import argparse, atexit, json, math, sys
 from pathlib import Path
 from jsonschema import Draft202012Validator
@@ -10,6 +22,7 @@ from jsonschema import Draft202012Validator
 from gpqa_zip import cleanup_unlocked, unlock_paths
 
 def load_jsonl(path):
+    """/ Parse a JSONL file into list[dict], skipping blank lines."""
     with open(path, encoding='utf-8') as f:
         return [json.loads(x) for x in f if x.strip()]
 
@@ -27,6 +40,8 @@ def validators(spec):
 def finite01(x): return isinstance(x,(int,float)) and math.isfinite(x) and 0 <= x <= 1
 
 def semantic_pair(req,resp):
+    """/ Semantic checks for one (request, response) pair that JSON Schema cannot
+    express; raises AssertionError with the question ID and the violated rule."""
     assert set(resp['answers']) == set(req['questions']), 'answer/question IDs differ'
     for qid,q in req['questions'].items():
         a=resp['answers'][qid]
@@ -72,6 +87,9 @@ def validate_e2e(root, sv):
     return out
 
 def main():
+    """/ Validates every manifest capability (requests + gold responses aligned with
+    metadata, semantic pairs included) plus the latest e2e log; prints the status
+    document to stdout and exits non-zero on any violation."""
     ap=argparse.ArgumentParser()
     ap.add_argument('--benchmark',default='.')
     args=ap.parse_args(); root=Path(args.benchmark)

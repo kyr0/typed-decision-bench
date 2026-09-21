@@ -3,7 +3,7 @@
 
 At rest, each protected file exists only as <name>.jsonl.zip next to its
 original path — never as plaintext on disk or in git. Any tool that needs the
-jsonl (run_eval.py, scripts/validate.py, scripts/score.py,
+jsonl (scripts/run_eval.py, scripts/validate.py, scripts/score.py,
 scripts/sync-metadata.py) calls unlock_paths() at start and registers
 cleanup_unlocked() with atexit, so the plaintext exists exactly for the
 lifetime of the process and is removed (changed copies are re-encrypted
@@ -207,6 +207,9 @@ def default_paths(root: str = '.') -> list:
 
 
 def main() -> None:
+    """/ CLI: `lock` / `unlock` / `status`, optionally with repeatable --file paths
+    (default: the PROTECTED_SLUGS x KINDS trio). Status reports locked / unlocked /
+    plaintext / missing per file without changing anything."""
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest='cmd', required=True)
     for cmd in ('lock', 'unlock', 'status'):

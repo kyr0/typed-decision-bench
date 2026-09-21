@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+"""/ Scorer: joins predictions against the golden responses and emits two artifacts.
+
+    output/<run>_stats.jsonl — one flat self-describing line per capability plus
+    'micro' (accuracy, calibration, transport errors, latency) so lines from
+    different models concatenate for comparison. output/<run>_cases.jsonl — one
+    line per case with correctness + per-case calibration/latency for error
+    analysis.
+
+Two prediction sources: a responses/ directory (line-aligned with the gold
+files, single-run mode) or the combined run log itself, which embeds every
+successful response and supports --all-logs backfill. Every request_id maps to
+(capability, line); the LAST record per case wins so resumed runs recover
+failures instead of double-counting them. Calibration (nll/brier/soft_accuracy)
+uses the FULL gold distribution, not the argmax one-hot.
+"""
 import argparse,atexit,json,math,re,sys
 from pathlib import Path
 
@@ -8,6 +23,7 @@ CASE_ID_PREFIX='typed-decisions-bench-v1'
 EPS=1e-12
 
 def rows(p):
+    """/ Parse a JSONL file into list[dict], skipping blank lines."""
     with open(p,encoding='utf-8') as f: return [json.loads(x) for x in f if x.strip()]
 
 def all_logs(root):
@@ -191,6 +207,8 @@ def score_log(root,man,log_path):
     return out,cases_path
 
 def main():
+    """/ CLI entry: single-run mode (responses dir + newest/explicit log) or --all-logs
+    backfill of every unscored run log; prints the stats lines to stdout."""
     ap=argparse.ArgumentParser(description='Score responses against gold; writes output/<run>_stats.jsonl '
                                            '(per-capability accuracy/errors/latency/calibration) and '
                                            'output/<run>_cases.jsonl (per-case records).')

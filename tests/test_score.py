@@ -1,29 +1,36 @@
-#!/usr/bin/env python3
-"""E2E self-check for scripts/score.py: per-case records (correctness, calibration
-against the full gold distribution, latency) plus per-capability stats JSONL.
+"""/ E2E tests for scripts/score.py, driven through the CLI as a subprocess —
+exactly the way `make score` invokes it.
 
-Run: uv run scripts/test_score.py (or python3 scripts/test_score.py)
+Covers single-run mode (--responses dir joined with the newest run log) and
+--all-logs backfill: per-case records (case IDs, calibration against the full
+gold distribution, joined latency), per-capability + micro stats lines, the
+last-record-wins resume rule, auto log-pick skipping the scorer's own outputs,
+and idempotence. Run via `make test`.
 """
 import json
 import math
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
-SCORE = Path(__file__).resolve().parent / 'score.py'
+SCORE = Path(__file__).resolve().parents[1] / 'scripts' / 'score.py'
 
 
 def noul(v):
+    """/ Fixture payload: one noul answer with probability v."""
     return {'answers': {'q1': {'type': 'noul', 'noul': v}}}
 
 
 def score3(probs):
+    """/ Fixture payload: one score answer over three rubric levels."""
     return {'answers': {'q1': {'type': 'score', 'probabilities': probs}}}
 
 
-with tempfile.TemporaryDirectory() as d:
-    root = Path(d)
+def test_single_run_scoring(tmp_path: Path) -> None:
+    """/ Single-run mode: predictions dir + newest log -> _cases/_stats with exact
+    calibration math (nll/brier/soft_accuracy vs the full gold distribution),
+    transport errors excluded from latency, stdout mirroring the stats file."""
+    root = tmp_path
     (root / 'responses').mkdir()
     (root / 'preds').mkdir()
     (root / 'output').mkdir()
@@ -99,10 +106,13 @@ with tempfile.TemporaryDirectory() as d:
     assert json.loads((root / 'custom.jsonl').read_text().splitlines()[0])['capability'] == 'fake_cap'
     assert (root / 'custom_cases.jsonl').exists()
 
-# --all-logs: every unscored output/*.jsonl gets a _stats/_cases pair scored from
-# the responses embedded in the log itself; already-scored runs are skipped
-with tempfile.TemporaryDirectory() as d:
-    root = Path(d)
+
+def test_all_logs_backfill(tmp_path: Path) -> None:
+    """/ --all-logs: every unscored output/*.jsonl gets a _stats/_cases pair scored
+    from the responses embedded in the log; already-scored runs are skipped,
+    recovered retries win over their failed tries, and golden-only capabilities
+    (log covers none of their cases) become n=0 null-metric lines, not crashes."""
+    root = tmp_path
     (root / 'responses').mkdir()
     (root / 'output').mkdir()
     # ghost_cap has golden data but the log covers none of it: its stat line
@@ -155,5 +165,3 @@ with tempfile.TemporaryDirectory() as d:
     # single-run mode still requires --responses
     assert subprocess.run([sys.executable, str(SCORE), '--benchmark', str(root)],
                           capture_output=True).returncode != 0
-
-print('score.py stats + cases reports ok')

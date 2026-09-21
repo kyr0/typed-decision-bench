@@ -1,3 +1,5 @@
+![typed-decision-bench logo](logo.png)
+
 # typed-decision-bench
 
 A held-out synthetic benchmark for all System One-compatible models and API inference systems, exercising `POST /v1/systemone` (OpenAPI spec in [`openapi/`](openapi/), hosted "Jev" reference at `https://api.typesafe.ai`).
@@ -16,9 +18,9 @@ A held-out synthetic benchmark for all System One-compatible models and API infe
 | [`metadata/`](metadata/) | gold labels + per-case provenance |
 | [`manifest.json`](manifest.json) | capability → file paths (the runner's source of truth for suite selection) |
 | [`openapi/`](openapi/) | SystemOne OpenAPI spec, schema-checked by `make validate` |
-| [`run_eval.py`](run_eval.py) | the benchmark runner (full CLI reference below) |
-| [`scripts/`](scripts/) | `validate.py`, `score.py`, `metrics.py`, `sync-metadata.py`, `gpqa_zip.py` |
-| [`src/`](src/) | the `evalcompare` metric/comparison library (flat modules; unit-tested via `make test`) |
+| [`scripts/`](scripts/) | [`run_eval.py`](scripts/run_eval.py) (benchmark runner — full CLI reference below), plus `validate.py`, `score.py`, `metrics.py`, `sync-metadata.py`, `gpqa_zip.py` |
+| [`src/evalcompare/`](src/evalcompare/) | the `evalcompare` library package — `loader.py` (stats JSONL → DataFrames), `metrics.py`, `analysis.py`, `report.py` |
+| [`tests/`](tests/) | pytest suite: evalcompare library, scorer CLI, runner (naming/resume/rate limiting vs a stub endpoint), gpqa zip lifecycle — run via `make test` |
 | `output/` | run logs + generated reports (created on first run) |
 
 ## Quick start
@@ -46,21 +48,21 @@ Without `TYPESAFE_BASE_URL` the hosted endpoint `https://api.typesafe.ai/v1/syst
 
 | Target | What it does |
 |---|---|
-| `make eval` | run all suites (`ARGS` forwarded to `run_eval.py`, e.g. `ARGS="--capabilities gpqa_diamond --n 2"`); after the run: score → metrics → comparison |
+| `make eval` | run all suites (`ARGS` forwarded to `scripts/run_eval.py`, e.g. `ARGS="--capabilities gpqa_diamond --n 2"`); after the run: score → metrics → comparison |
 | `make e2e` | 1 case × all 275 suites, `--responses none --timeout 120 --log output/e2e.jsonl` (endpoint smoke test) |
 | `make score` | backfill: score every `output/*.jsonl` log that has no `_stats.jsonl` yet (`scripts/score.py --all-logs`) |
 | `make metrics` | project every `output/<run>_stats.jsonl` → `output/<run>/metrics.{csv,json}` |
 | `make compare` | per-capability comparison of all scored runs, e.g. `ARGS="--baseline three [--metric accuracy]"` → `output/comparison/` |
 | `make validate` | schema-check all benchmark data + the latest e2e log → `validation_status.json` |
 | `make sync-metadata` | reconcile `capability_index.json`, `suite_hashes.json`, `manifest.json`, `stats.json`, `golden_selftest.json`, `preservation_receipt.json`, `quality_report.json` with disk (`--fix` applies) |
-| `make test` | unit tests for the `evalcompare` library in [`src/`](src/) |
+| `make test` | pytest suite in [`tests/`](tests/): evalcompare library, scorer, runner, gpqa zip |
 | `make gpqa-status` / `gpqa-lock` / `gpqa-unlock` | inspect / encrypt / decrypt the gated GPQA files |
 
 ## CLI reference
 
-### `run_eval.py` — benchmark runner
+### `scripts/run_eval.py` — benchmark runner
 
-`uv run run_eval.py [options]` (the Makefile adds `--benchmark . --responses responses`).
+`uv run scripts/run_eval.py [options]` (the Makefile adds `--benchmark . --responses responses`).
 
 | Flag | Default | Description |
 |---|---|---|
@@ -163,14 +165,15 @@ Three deliberate layers keep a sustained benchmark run from tripping endpoint qu
 
 The GPQA Diamond files are stored encrypted at rest — each of `requests/gpqa_diamond.jsonl`, `responses/gpqa_diamond.jsonl` and `metadata/gpqa_diamond.jsonl` exists only as a password-protected `<name>.zip` sibling (`gpqa_diamond.jsonl.zip`), never as plaintext on disk. The zip password is a public constant in [`scripts/gpqa_zip.py`](scripts/gpqa_zip.py) (overridable via `GPQA_ZIP_PASSWORD`): the lock keeps plaintext out of checkouts and context windows, it is not a secrecy boundary.
 
-Every consumer decrypts transparently: `run_eval.py` (eval/e2e), `scripts/validate.py`, `scripts/score.py` and `scripts/sync-metadata.py` extract the files they need at startup and remove the plaintext copies when the process ends — files a run rewrote (e.g. `responses/gpqa_diamond.jsonl` after an eval) are re-encrypted into the zip first, so nothing is lost. The archives use classic PKZIP ZipCrypto (readable by the stdlib and `unzip -P` without third-party dependencies).
+Every consumer decrypts transparently: `scripts/run_eval.py` (eval/e2e), `scripts/validate.py`, `scripts/score.py` and `scripts/sync-metadata.py` extract the files they need at startup and remove the plaintext copies when the process ends — files a run rewrote (e.g. `responses/gpqa_diamond.jsonl` after an eval) are re-encrypted into the zip first, so nothing is lost. The archives use classic PKZIP ZipCrypto (readable by the stdlib and `unzip -P` without third-party dependencies).
 
 ```bash
 make gpqa-status   # show locked/unlocked state
 make gpqa-lock     # encrypt *.jsonl -> *.jsonl.zip, remove plaintext
 make gpqa-unlock   # decrypt for manual maintenance (remember to lock again)
-uv run scripts/test_gpqa_zip.py   # self-checks: interop + lifecycle
 ```
+
+The zip interop + lifecycle self-checks are part of `make test` (`tests/test_gpqa_zip.py`).
 
 ## Generation & status
 

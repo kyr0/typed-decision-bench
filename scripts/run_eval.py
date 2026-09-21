@@ -35,9 +35,9 @@ Outputs:
   and, once >=2 runs are scored, the per-capability comparison in
   output/comparison/ regenerates against --baseline (default: oldest scored run).
 
-Reliability: per-request --timeout (default 5s) and --retries (default 3); a
+Reliability: per-request --timeout (default 10s) and --retries (default 3); a
 circuit breaker aborts the run when the first requests ALL fail, instead of
-hammering an unresponsive endpoint; --quota-buster (default 500 ms) pauses all
+hammering an unresponsive endpoint; --quota-buster (default 750 ms) pauses all
 senders after every ~25 (±5) requests for the given wait (±10%) so sustained
 bursts don't trip quota limits (0 disables). The process exits 1 if any case failed.
 """
@@ -45,8 +45,10 @@ import argparse, atexit, datetime, json, os, random, re, signal, sys, threading,
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from scripts.gpqa_zip import cleanup_unlocked, unlock_paths
-from scripts.score import last_records, score_log
+# sibling imports: this file lives in scripts/ and is run standalone
+# (sys.path[0] = scripts/) or imported as top-level `run_eval` by its self-test
+from gpqa_zip import cleanup_unlocked, unlock_paths
+from score import last_records, score_log
 
 MODEL_PLACEHOLDER = 'REPLACED_BY_TYPESAFE_MODEL'
 ENDPOINT_PATH = '/v1/systemone'
@@ -59,7 +61,7 @@ SENDABLE_ERRORS = ('timeout_retries_exhausted', 'service_error')
 # for --quota-buster ms; both numbers jitter so the pattern isn't recognizable
 QUOTA_BURST = 25           # requests between cool-downs (± QUOTA_BURST_JITTER, re-rolled per cycle)
 QUOTA_BURST_JITTER = 5
-QUOTA_WAIT_JITTER = 0.1    # wait jitter as a fraction: ±10% (500 ms -> ±50 ms)
+QUOTA_WAIT_JITTER = 0.1    # wait jitter as a fraction: ±10% (750 ms -> ±75 ms)
 
 
 def load_dotenv(path=ENV_FILE):
@@ -203,7 +205,11 @@ def build_tasks(root, caps, manifest_caps, limit, model):
 
 
 def make_record(cap, line_no, url, obj=None, error_type=None, error=None, duration_ms=0.0):
-    """/ One combined-log line; the single place that defines the record schema."""
+    """/ One combined-log line; the single place that defines the record schema.
+
+    request_id is '<capability>-<line:03d>' — the key every downstream tool
+    (scoring, resume, e2e validation) uses to re-join a record with its case.
+    """
     return {
         'request_id': f'{cap}-{line_no:03d}',
         'response': obj,
@@ -283,8 +289,8 @@ def write_metrics_reports(root, log_path, baseline=None, metric='soft_accuracy')
     fabricated one). Post-step only: failures warn, `make metrics` and
     `make compare` re-derive everything."""
     try:
-        from scripts.metrics import compare_runs, export_run
-        from scripts.score import run_name
+        from metrics import compare_runs, export_run
+        from score import run_name
         out = root / 'output'
         name = run_name(log_path)
         stats = out / f'{name}_stats.jsonl'

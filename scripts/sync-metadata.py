@@ -40,11 +40,13 @@ CANONICAL_TYPES = ("choice", "noul", "score")
 
 
 def sha_entry(path: Path) -> dict:
+    """/ One suite_hashes.json entry: repo-relative path, sha256, byte size."""
     data = path.read_bytes()
     return {"path": path.relative_to(ROOT).as_posix(), "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)}
 
 
 def load(name: str):
+    """/ Reads one metadata JSON file from the repo root."""
     return json.loads((ROOT / name).read_text())
 
 
@@ -83,6 +85,7 @@ aggregates = {
 
 
 def type_counts(slug: str) -> Counter:
+    """/ Question-type histogram of one suite read from its metadata "type" fields."""
     counts = Counter()
     meta = ROOT / "metadata" / f"{slug}.jsonl"
     if meta.exists():
@@ -91,6 +94,8 @@ def type_counts(slug: str) -> Counter:
 
 
 def report(name: str, expected: dict, actual: dict) -> list[str]:
+    """/ Prints and returns the drifted keys ("actual -> expected") of one file;
+    an empty list means that file is in sync with disk."""
     drift = [f"{k}: {actual.get(k)!r} -> {expected[k]!r}" for k in expected if actual.get(k) != expected[k]]
     print(f"{name} drift ({len(drift)}): {drift or 'none'}")
     return drift
@@ -158,6 +163,9 @@ actual_sums = sums_path.read_text().splitlines() if sums_path.exists() else []
 sums_drift = "drift" if actual_sums != expected else "none"
 print(f"SHA256SUMS drift: {sums_drift} (expected {len(expected)} lines, have {len(actual_sums)})")
 
+# ---- fix mode: append missing entries and recompute everything derived from disk.
+# Order matters: index -> hashes -> manifest -> stats -> selftest -> preservation ->
+# SHA256SUMS -> quality_report (the last two read freshly rewritten files).
 if "--fix" in sys.argv:
     if missing_in_index:
         for slug in missing_in_index:

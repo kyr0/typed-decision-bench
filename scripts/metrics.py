@@ -17,19 +17,16 @@ evalcompare.analysis/report.
 import argparse
 import json
 import sys
-import types
 from pathlib import Path
 
-# make the flat src/ modules importable as the `evalcompare` package without
-# putting src/ itself on sys.path (its io.py must not shadow the stdlib io)
+# import the evalcompare package via the standard src layout: src/ on sys.path
+# exposes exactly one top-level name, the qualified `evalcompare` package
 SRC = Path(__file__).resolve().parents[1] / "src"
-if "evalcompare" not in sys.modules:
-    _pkg = types.ModuleType("evalcompare")
-    _pkg.__path__ = [str(SRC)]
-    sys.modules["evalcompare"] = _pkg
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
 from evalcompare.analysis import build_comparison, write_tables
-from evalcompare.io import load_eval_files
+from evalcompare.loader import load_eval_files
 from evalcompare.metrics import METRICS, metric_spec
 from evalcompare.report import build_report
 

@@ -1,3 +1,17 @@
+"""/ Self-contained HTML dashboard for a Comparison.
+
+build_report() embeds the plotly bundle once and lays out the sections readers
+actually need to judge a model suite: a numeric summary, a full capability
+heatmap, baseline deltas, the most discriminating capabilities (biggest model
+spread), per-run distributions, quality/latency trade-off, pairwise parity and
+a calibration overview, followed by an exact-value table with live filtering
+and links to the machine-readable CSVs written by analysis.write_tables().
+
+Every figure is data-driven: direction-aware sorting (hardest capabilities
+first), probability metrics get fixed 0..1 axes, and figures that cannot be
+drawn from the available data (single run, missing latency column) return None
+and are simply omitted from the report.
+"""
 from __future__ import annotations
 
 import html
@@ -15,6 +29,8 @@ from .metrics import MetricSpec, axis_tickformat, fmt_value
 
 
 def _base_layout(fig: go.Figure, *, height: int = 560, title: str | None = None) -> go.Figure:
+    """/ Shared visual language for all figures: white template, compact margins,
+    horizontal legend above the plot."""
     fig.update_layout(
         template="plotly_white",
         height=height,
@@ -28,6 +44,8 @@ def _base_layout(fig: go.Figure, *, height: int = 560, title: str | None = None)
 
 
 def _metric_axis(fig: go.Figure, spec: MetricSpec, *, axis: str = "y") -> None:
+    """/ Applies the metric's label + tick format to one axis; probability metrics
+    get a fixed 0..1 range so panels stay comparable."""
     kwargs: dict = {"title": spec.label}
     tickformat = axis_tickformat(spec)
     if tickformat:
@@ -41,6 +59,8 @@ def _metric_axis(fig: go.Figure, spec: MetricSpec, *, axis: str = "y") -> None:
 
 
 def summary_bar(c: Comparison) -> go.Figure:
+    """/ Horizontal macro-score bars, ranked best-first (direction-aware); hover
+    shows weighted macro, p10, coverage and example counts."""
     s = c.summary.reset_index().copy()
     ascending = c.metric.direction == "lower"
     if c.metric.direction != "neutral":
@@ -72,6 +92,8 @@ def summary_bar(c: Comparison) -> go.Figure:
 
 
 def _ordered_caps(c: Comparison) -> list[str]:
+    """/ Capabilities ordered by mean metric value with the hardest first, so weak
+    spots surface at the top of heatmaps and tables regardless of metric direction."""
     m = c.metric_matrix.copy()
     mean = m.mean(axis=1, skipna=True)
     # Put weakest/hardest capabilities first.
@@ -81,6 +103,8 @@ def _ordered_caps(c: Comparison) -> list[str]:
 
 
 def capability_heatmap(c: Comparison) -> go.Figure:
+    """/ Runs as columns, every capability as a row (hardest first); gaps render as
+    holes so missing coverage is visible rather than interpolated."""
     caps = _ordered_caps(c)
     m = c.metric_matrix.reindex(caps)
     n = c.n_matrix.reindex(caps)
@@ -117,6 +141,9 @@ def capability_heatmap(c: Comparison) -> go.Figure:
 
 
 def delta_heatmap(c: Comparison) -> go.Figure | None:
+    """/ Signed improvement over the baseline (symmetric color scale centred at 0,
+    probability deltas in percentage points), rows sorted by largest absolute gap.
+    None when the baseline is the only run."""
     if c.deltas.shape[1] == 0:
         return None
     d = c.deltas.copy()
@@ -150,6 +177,8 @@ def delta_heatmap(c: Comparison) -> go.Figure | None:
 
 
 def discriminating_capabilities(c: Comparison, top_n: int = 40) -> go.Figure | None:
+    """/ Per-model points on the capabilities with the largest model spread — where
+    the suite separates models most. None for a single run or no multi-model rows."""
     if len(c.data.runs) < 2:
         return None
     top = c.spread[c.spread["models_present"] >= 2].head(top_n)
@@ -177,6 +206,8 @@ def discriminating_capabilities(c: Comparison, top_n: int = 40) -> go.Figure | N
 
 
 def distribution_plot(c: Comparison) -> go.Figure:
+    """/ Box plot of each run's per-capability values on the shared set (mean line +
+    outliers), showing whether a macro average hides a heavy tail."""
     common = set(c.common_capabilities)
     fig = go.Figure()
     for run in c.data.runs:
@@ -201,6 +232,8 @@ def distribution_plot(c: Comparison) -> go.Figure:
 
 
 def latency_quality(c: Comparison) -> go.Figure | None:
+    """/ p50 latency (log axis) vs the primary metric, one point per capability per
+    run — the speed/quality trade-off view. None without a latency column."""
     if "latency_ms_p50" not in c.data.capabilities.columns:
         return None
     common = set(c.common_capabilities)
@@ -233,6 +266,8 @@ def latency_quality(c: Comparison) -> go.Figure | None:
 
 
 def pairwise_baseline(c: Comparison) -> go.Figure | None:
+    """/ Baseline value on x, model value on y (equal axes + parity diagonal): points
+    above the line beat the baseline on that capability. None with a single run."""
     if len(c.data.runs) < 2:
         return None
     common = list(c.common_capabilities)
@@ -282,6 +317,8 @@ def pairwise_baseline(c: Comparison) -> go.Figure | None:
 
 
 def calibration_summary(c: Comparison) -> go.Figure | None:
+    """/ Macro ECE (x) vs macro soft accuracy (y), labelled by run — the upper-left
+    corner is the target. None unless the inputs carry calibration columns."""
     if "macro_ece_15" not in c.summary.columns or "macro_soft_accuracy" not in c.summary.columns:
         return None
     s = c.summary.reset_index()
@@ -304,6 +341,8 @@ def calibration_summary(c: Comparison) -> go.Figure | None:
 
 
 def _fig_fragment(fig: go.Figure, *, scroll: bool = False, div_id: str) -> str:
+    """/ plotly div without the JS bundle (included once per report); optionally
+    wrapped in a scroll container for very tall charts."""
     frag = pio.to_html(
         fig,
         full_html=False,
@@ -317,6 +356,8 @@ def _fig_fragment(fig: go.Figure, *, scroll: bool = False, div_id: str) -> str:
 
 
 def _summary_table(c: Comparison) -> str:
+    """/ Numeric summary as an HTML table; the reported-micro columns only appear
+    when the stats files carried a micro aggregate."""
     show_micro = "reported_micro" in c.summary.columns and c.summary["reported_micro"].notna().any()
     cols = ["macro", "weighted", "median", "p10"]
     head = ["Model", "Macro", "Weighted", "Median", "p10"]
@@ -347,6 +388,8 @@ def _summary_table(c: Comparison) -> str:
 
 
 def _capability_table(c: Comparison) -> str:
+    """/ Exact per-capability values + n + deltas with a client-side filter box;
+    values are formatted per the metric spec (pp for probability deltas)."""
     caps = _ordered_caps(c)
     headers = ["Capability"] + list(c.data.runs)
     if c.deltas.shape[1]:
@@ -378,6 +421,8 @@ def _capability_table(c: Comparison) -> str:
 
 
 def _warnings(c: Comparison) -> list[str]:
+    """/ Honest caveats rendered at the top of the report: unequal coverage, small
+    per-capability n, saturated hard accuracy, direction-less metrics."""
     warnings: list[str] = []
     if len(c.common_capabilities) < len(c.union_capabilities):
         warnings.append(
@@ -400,6 +445,9 @@ def _warnings(c: Comparison) -> list[str]:
 
 
 def build_report(c: Comparison, out_dir: Path, *, title: str, top_n: int = 40) -> Path:
+    """/ Writes the single-file dashboard to out_dir/report.html (offline-capable:
+    the plotly bundle is inlined) and returns its path. Figures that return None
+    are skipped; None in the figures list never produces an empty section."""
     out_dir.mkdir(parents=True, exist_ok=True)
 
     figures: list[tuple[str, str, go.Figure | None, bool]] = [
@@ -515,6 +563,9 @@ search.addEventListener('input', () => {{
 
 
 def export_static_figures(c: Comparison, out_dir: Path, formats: Iterable[str], *, top_n: int = 40) -> list[Path]:
+    """/ Renders the same figures as static images (svg/png/pdf/webp/jpg) into
+    out_dir/figures/ — requires plotly's kaleido exporter; returns written paths.
+    Not part of the make pipeline; provided for embedding decks/papers."""
     formats = tuple(dict.fromkeys(f.lower() for f in formats if f))
     if not formats:
         return []

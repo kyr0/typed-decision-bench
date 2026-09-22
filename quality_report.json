@@ -8,7 +8,7 @@
   "global_duplicate_request_bodies": 0,
   "atomic_one_question_per_request": true,
   "existing_v3_jsonl_files_checked": 30,
-  "existing_v3_jsonl_files_byte_identical": 20,
+  "existing_v3_jsonl_files_byte_identical": 10,
   "new_v5_suites": 207,
   "new_v5_cases": 20700,
   "new_suite_min_distinct_gold_outcomes": 2,

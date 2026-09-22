@@ -6,20 +6,27 @@
 """/ Two-layer validator for the whole benchmark.
 
 Layer 1 is structural: every request, golden response and metadata line must
-satisfy the SystemOne OpenAPI schemas (openapi/typesafe-systemone-openapi-
-v0.2.0.json). Layer 2 is semantic — schema-valid payloads can still be wrong
-(answers not matching question IDs, probabilities not summing to 1, a score
-that is not the probability-weighted expectation, a score legend differing
-from the request rubric). The status document is printed as JSON to stdout;
-`make validate` redirects it to validation_status.json. The most recent e2e run
-log (output/e2e.jsonl) is response-schema-checked too, counting — not
-validating — transport failures and aborted cases.
+satisfy the SystemOne OpenAPI schemas, fetched from the canonical live spec
+(https://api.typesafe.ai/openapi.json — no local copy to drift out of sync;
+`--openapi` accepts a local path for offline runs). Layer 2 is semantic —
+schema-valid payloads can still be wrong (answers not matching question IDs,
+probabilities not summing to 1, a score that is not the probability-weighted
+expectation, a score legend differing from the request rubric). The status
+document is printed as JSON to stdout; `make validate` redirects it to
+validation_status.json. The most recent e2e run log (output/e2e.jsonl) is
+response-schema-checked too, counting — not validating — transport failures
+and aborted cases.
 """
-import argparse, atexit, json, math, sys
+import argparse, atexit, json, math, sys, urllib.request
 from pathlib import Path
 from jsonschema import Draft202012Validator
 
+# canonical wire contract lives with the API it describes; the http:// form 301s here
+OPENAPI_URL = 'https://api.typesafe.ai/openapi.json'
+OPENAPI_TIMEOUT_S = 15
+
 from gpqa_zip import cleanup_unlocked, unlock_paths
+from splits import VALID_SPLITS
 
 def load_jsonl(path):
     """/ Parse a JSONL file into list[dict], skipping blank lines."""
@@ -92,20 +99,34 @@ def main():
     document to stdout and exits non-zero on any violation."""
     ap=argparse.ArgumentParser()
     ap.add_argument('--benchmark',default='.')
+    ap.add_argument('--openapi',default=OPENAPI_URL,
+                    help='OpenAPI spec: URL (default: the live spec) or local file path (offline runs)')
     args=ap.parse_args(); root=Path(args.benchmark)
-    spec=json.loads((root/'openapi/typesafe-systemone-openapi-v0.2.0.json').read_text())
+    if args.openapi.startswith(('http://','https://')):
+        # urlopen follows the http->https redirect; fail loudly, never skip validation
+        with urllib.request.urlopen(args.openapi, timeout=OPENAPI_TIMEOUT_S) as r:
+            spec=json.load(r)
+    else:
+        spec=json.loads(Path(args.openapi).read_text(encoding='utf-8'))
     rv,sv=validators(spec)
     manifest=json.loads((root/'manifest.json').read_text())
     # gated files (gpqa_diamond) live as password-protected zips at rest; decrypt
     # for this run, remove/re-encrypt at exit (stderr logging keeps stdout JSON clean)
     atexit.register(cleanup_unlocked, unlock_paths(
-        [root/e[k] for e in manifest['capabilities'].values() for k in ('requests','responses')]))
+        [root/e[k] for e in manifest['capabilities'].values() for k in ('requests','responses','metadata') if e.get(k)]))
     total=0
+    split_totals={name:0 for name in VALID_SPLITS}
     all_request_hashes=set()
     for cap,e in manifest['capabilities'].items():
-        reqs=load_jsonl(root/e['requests']); golds=load_jsonl(root/e['responses'])
-        assert len(reqs)==len(golds)==e['cases'], f'{cap}: line count mismatch'
-        for i,(req,gold) in enumerate(zip(reqs,golds),1):
+        assert e.get('metadata'), f'{cap}: manifest metadata path is required'
+        reqs=load_jsonl(root/e['requests']); golds=load_jsonl(root/e['responses']); metas=load_jsonl(root/e['metadata'])
+        assert len(reqs)==len(golds)==len(metas)==e['cases'], f'{cap}: request/response/metadata line count mismatch'
+        cap_splits={name:0 for name in VALID_SPLITS}
+        for i,(req,gold,meta) in enumerate(zip(reqs,golds,metas),1):
+            assert isinstance(meta,dict), f'{cap}:{i} metadata row must be an object'
+            split=meta.get('split')
+            assert split in VALID_SPLITS, f'{cap}:{i} metadata split must be one of {VALID_SPLITS}, got {split!r}'
+            cap_splits[split]+=1; split_totals[split]+=1
             errs=list(rv.iter_errors(req)); assert not errs, f'{cap}:{i} request schema: {errs[0].message}' if errs else ''
             errs=list(sv.iter_errors(gold)); assert not errs, f'{cap}:{i} response schema: {errs[0].message}' if errs else ''
             semantic_pair(req,gold)
@@ -115,8 +136,10 @@ def main():
             assert hh not in all_request_hashes, f'{cap}:{i} duplicate request body'
             all_request_hashes.add(hh)
             total+=1
+        assert cap_splits['test']>0, f'{cap}: requires at least one split=test row'
+        assert cap_splits['calibrate']>0, f'{cap}: requires at least one split=calibrate row'
     e2e=validate_e2e(root, sv)
-    result={'ok':True,'cases':total,'capabilities':len(manifest['capabilities'])}
+    result={'ok':True,'cases':total,'capabilities':len(manifest['capabilities']),'splits':split_totals}
     if e2e is not None: result['e2e']=e2e
     print(json.dumps(result))
 if __name__=='__main__': main()

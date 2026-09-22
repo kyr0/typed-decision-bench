@@ -121,8 +121,10 @@ def test_all_logs_backfill(tmp_path: Path) -> None:
         'fake_cap': {'responses': 'responses/fake_cap.jsonl'},
         'ghost_cap': {'responses': 'responses/ghost_cap.jsonl'}}}))
     (root / 'responses' / 'ghost_cap.jsonl').write_text(json.dumps(noul(0.9)) + '\n')
+    # split-strict scoring joins errors via the metadata/gold line alignment, so the
+    # failed 3rd case needs its own (gold) row to be counted as a transport error
     (root / 'responses' / 'fake_cap.jsonl').write_text(
-        '\n'.join(json.dumps(x) for x in (noul(0.9), noul(0.1))) + '\n')
+        '\n'.join(json.dumps(x) for x in (noul(0.9), noul(0.1), noul(0.9))) + '\n')
     # run log: case 1 ok, case 2 first timed out then recovered on a resumed run
     # (last record per case wins), case 3 failed (no case, counts as error)
     log = [{'request_id': 'fake_cap-001', 'response': noul(0.9), 'error_type': None, 'error': None,

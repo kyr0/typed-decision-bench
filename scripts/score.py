@@ -17,8 +17,12 @@ uses the FULL gold distribution, not the argmax one-hot.
 import argparse,atexit,json,math,re,sys
 from pathlib import Path
 
-try: from .gpqa_zip import cleanup_unlocked, unlock_paths  # imported as scripts.score (run_eval hook)
-except ImportError: from gpqa_zip import cleanup_unlocked, unlock_paths  # run directly as scripts/score.py
+try:
+    from .gpqa_zip import cleanup_unlocked, unlock_paths  # imported as scripts.score (run_eval hook)
+    from .splits import capability_splits
+except ImportError:
+    from gpqa_zip import cleanup_unlocked, unlock_paths  # run directly as scripts/score.py
+    from splits import capability_splits
 CASE_ID_PREFIX='typed-decisions-bench-v1'
 EPS=1e-12
 
@@ -52,19 +56,32 @@ def last_records(log_path):
             if no.isdigit(): last[(cap,int(no))]=r
     return last
 
-def run_stats(log_path):
-    """/ Per-capability aggregates + per-line latency from a combined run log;
-    request_id is '<cap>-<line:03d>' and the LAST record per case wins, so a
-    recovered case no longer counts as an error. Only successful records
-    contribute durations — a failed request's time is not serving latency."""
+def run_stats(log_path, allowed_keys=None):
+    """/ Per-capability latency/errors from the LAST run-log record per case.
+
+    When allowed_keys is provided, calibrate/train transport events are excluded
+    from published test metrics just like their predictions are.
+    """
     stats={}
     for (cap,no),r in last_records(log_path).items():
+        if allowed_keys is not None and (cap,no) not in allowed_keys:
+            continue
         s=stats.setdefault(cap,{'errors':0,'durations':[],'per_line':{}})
         if r.get('error_type'): s['errors']+=1
         elif r.get('duration_ms'):
             s['durations'].append(float(r['duration_ms']))
             s['per_line'][no]=float(r['duration_ms'])
     return stats
+
+
+def split_keys(root, man, split='test'):
+    """Return source-line keys assigned to one persisted split."""
+    selected=set()
+    for cap,e in man['capabilities'].items():
+        n=len(rows(root/e['responses']))
+        splits=capability_splits(root,cap,e,strict=False,expected_cases=n)
+        selected.update((cap,i) for i,value in enumerate(splits,1) if value==split)
+    return selected
 
 def distributions(ga,pa):
     """/ (labels, y, p): gold distribution y and normalized prediction p over labels.
@@ -163,19 +180,20 @@ def log_predictions(log_path):
     return {k:r['response'] for k,r in last_records(log_path).items()
             if not r.get('error_type') and isinstance(r.get('response'),dict)}
 
-def build_report(name,root,man,preds,stats):
-    """/ (stat lines, case records) for one run: a flat line per manifest
-    capability plus 'micro'. Cases exist only where a usable prediction is
-    present — failed-request placeholders (error rows from the log or the
-    responses dir) are skipped, not crashed on, and still count as errors."""
+def build_report(name,root,man,preds,stats,selected_split='test'):
+    """/ Build published reports from exactly one persisted split (test by default)."""
     lines=[]; cases=[]
     for cap,e in man['capabilities'].items():
         s=stats.get(cap,{'errors':0,'durations':[],'per_line':{}})
         cap_cases=[]
-        for i,G in enumerate(rows(root/e['responses']),1):
+        gold_rows=rows(root/e['responses'])
+        splits=capability_splits(root,cap,e,strict=False,expected_cases=len(gold_rows))
+        for i,(G,split) in enumerate(zip(gold_rows,splits),1):
+            if split!=selected_split:
+                continue
             P=preds.get((cap,i))
             answers=P.get('answers') if isinstance(P,dict) else None
-            if not answers: continue  # error placeholder / failed request: no case, but counted as error
+            if not answers: continue  # error/skipped placeholder: no case; errors are counted from the log
             qid=next(iter(G['answers']))
             if qid not in answers: continue
             cap_cases.append(case_record(cap,i,G['answers'][qid],answers[qid],s['per_line'].get(i)))
@@ -196,10 +214,10 @@ def write_report(out,lines,cases):
     return cases_path
 
 def score_log(root,man,log_path):
-    """/ Scores one combined run log standalone (predictions from the log itself)
-    into output/<run>_stats.jsonl + output/<run>_cases.jsonl; returns (stats,cases) paths."""
+    """/ Scores split=test only from one combined run log."""
     name=run_name(log_path)
-    lines,cases=build_report(name,root,man,log_predictions(log_path),run_stats(log_path))
+    test_keys=split_keys(root,man,'test')
+    lines,cases=build_report(name,root,man,log_predictions(log_path),run_stats(log_path,test_keys),'test')
     out=root/'output'/f'{name}_stats.jsonl'
     cases_path=write_report(out,lines,cases)
     print(f'wrote {len(lines)-1} capabilities + micro -> {out}; {len(cases)} cases -> {cases_path} '
@@ -225,7 +243,7 @@ def main():
     # golden response files may be password-protected zips at rest (gpqa_diamond);
     # decrypt for this run, remove/re-encrypt at exit
     atexit.register(cleanup_unlocked, unlock_paths(
-        [root/e['responses'] for e in man['capabilities'].values()]))
+        [root/e[k] for e in man['capabilities'].values() for k in ('responses','metadata') if e.get(k)]))
     if a.all_logs:
         if a.log or a.out or a.responses: ap.error('--all-logs takes no --log/--out/--responses')
         logs=all_logs(root)
@@ -238,9 +256,10 @@ def main():
         return
     if not a.responses: ap.error('--responses is required without --all-logs')
     log_path=Path(a.log) if a.log else newest_log(root)
-    stats=run_stats(log_path) if log_path and log_path.exists() else {}
+    test_keys=split_keys(root,man,'test')
+    stats=run_stats(log_path,test_keys) if log_path and log_path.exists() else {}
     name=run_name(log_path) if log_path else 'score'
-    lines,cases=build_report(name,root,man,prediction_lookup(Path(a.responses),man,root),stats)
+    lines,cases=build_report(name,root,man,prediction_lookup(Path(a.responses),man,root),stats,'test')
     out=Path(a.out) if a.out else root/'output'/f'{name}_stats.jsonl'
     cases_path=write_report(out,lines,cases)
     print(f'wrote {len(lines)-1} capabilities + micro -> {out}; {len(cases)} cases -> {cases_path} '

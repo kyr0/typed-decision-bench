@@ -29,9 +29,12 @@ Outputs:
   default): <DIR>/<capability>.jsonl, line-aligned with the request files;
   failed cases become {"error": ...} placeholder lines. The golden responses/
   dir is the scoring answer key — writing there is refused outright.
-  stats/cases (always): each finished run scores its own log into
-  output/<run>_stats.jsonl + output/<run>_cases.jsonl (scripts/score.py);
+  stats/cases (always): each finished run scores ONLY metadata split=test
+  into output/<run>_stats.jsonl + output/<run>_cases.jsonl (scripts/score.py);
   scoring failures only warn — the log is kept and `make score` re-derives them.
+  calibration (default): fit a scalar temperature ONLY from metadata
+  split=calibrate and report raw vs calibrated metrics on held-out split=test;
+  writes output/<run>_calibration.json. split=train is ignored.
   metrics/comparison (always): the run's output/<run>/ metrics folder refreshes
   and, once >=2 runs are scored, the per-capability comparison in
   output/comparison/ regenerates against --baseline (default: oldest scored run).
@@ -50,6 +53,7 @@ from pathlib import Path
 # (sys.path[0] = scripts/) or imported as top-level `run_eval` by its self-test
 from gpqa_zip import cleanup_unlocked, unlock_paths
 from score import last_records, score_log
+from splits import DEFAULT_EVAL_SPLITS, capability_splits, parse_splits
 
 MODEL_PLACEHOLDER = 'REPLACED_BY_TYPESAFE_MODEL'
 ENDPOINT_PATH = '/v1/systemone'
@@ -63,6 +67,7 @@ SENDABLE_ERRORS = ('timeout_retries_exhausted', 'service_error')
 QUOTA_BURST = 25           # requests between cool-downs (± QUOTA_BURST_JITTER, re-rolled per cycle)
 QUOTA_BURST_JITTER = 5
 QUOTA_WAIT_JITTER = 0.1    # wait jitter as a fraction: ±10% (750 ms -> ±75 ms)
+PROGRESS_EVERY = 50        # print an ETA line after every N completed cases
 
 
 def load_dotenv(path=ENV_FILE):
@@ -179,28 +184,33 @@ def selected_capabilities(csv, manifest_caps):
     return picked
 
 
-def build_tasks(root, caps, manifest_caps, limit, model):
-    """/ Flattens the selected request files into (capability, line_no, body) tasks.
+def build_tasks(root, caps, manifest_caps, limit, model, selected_splits=DEFAULT_EVAL_SPLITS):
+    """/ Flattens selected persisted splits into (capability, source_line, body).
 
-    Substitutes the model placeholder here, once, so workers only POST. Also
-    returns per-capability case counts and the first body per capability
-    (for --dry-run preview).
+    `split` lives only in line-aligned metadata, never in the System One wire
+    payload. The default sends test+calibrate and excludes train. `--n` limits
+    the selected rows after split filtering while preserving original source
+    line numbers so scoring/calibration rejoin exactly.
     """
     tasks, counts, first_body = [], {}, {}
+    selected_splits = tuple(selected_splits)
     for cap in caps:
-        req_path = root / manifest_caps[cap]['requests']
+        entry = manifest_caps[cap]
+        req_path = root / entry['requests']
         lines = [l.strip() for l in req_path.read_text(encoding='utf-8').splitlines() if l.strip()]
+        splits = capability_splits(root, cap, entry, strict=False, expected_cases=len(lines))
+        counts[cap] = len(lines)  # total source rows; response materialization stays line-aligned
+        picked = [(i, body) for i, (body, split) in enumerate(zip(lines, splits), 1)
+                  if split in selected_splits]
         if limit is not None:
-            lines = lines[:limit]
-        counts[cap] = len(lines)
-        for line_no, body in enumerate(lines, 1):
+            picked = picked[:limit]
+        for line_no, body in picked:
             if MODEL_PLACEHOLDER in body:
                 if not model:
                     raise SystemExit(f'{cap}:{line_no}: {MODEL_PLACEHOLDER} present but no model configured '
                                      f'(set TYPESAFE_MODEL or pass --model)')
                 body = body.replace(MODEL_PLACEHOLDER, model)
-            if line_no == 1:
-                first_body[cap] = body
+            first_body.setdefault(cap, body)
             tasks.append((cap, line_no, body))
     return tasks, counts, first_body
 
@@ -238,6 +248,9 @@ def run_batch(tasks, url, headers, args, log_file):
     results = {}
     done = consecutive_errors = 0
     abort = threading.Event()
+    # ETA baseline: measured rate (not --parallel) since quota-buster + latency
+    # always deliver below the configured rps
+    run_started = time.monotonic()
 
     def work(task):
         cap, line_no, body = task
@@ -272,6 +285,12 @@ def run_batch(tasks, url, headers, args, log_file):
                 consecutive_errors = 0
             status = f'ERROR {record["error_type"]}' if record['error_type'] else 'ok'
             print(f'[{done}/{len(tasks)}] {cap}:{line_no} {status} ({record["duration_ms"]} ms)', flush=True)
+            if done % PROGRESS_EVERY == 0 and done < len(tasks):
+                elapsed = time.monotonic() - run_started
+                rate = done / max(elapsed, 1e-6)
+                m, s = divmod(int((len(tasks) - done) / rate) if rate > 0 else 0, 60)
+                print(f'    ETA {done / len(tasks) * 100:.1f}% | {m}m{s:02d}s left '
+                      f'({rate:.1f} completed req/s)', flush=True)
     return results
 
 
@@ -282,13 +301,15 @@ def log_successes(log_path):
     return {k: r for k, r in last_records(log_path).items() if not r.get('error_type')}
 
 
-def write_metrics_reports(root, log_path, baseline=None, metric='soft_accuracy'):
+def write_metrics_reports(root, log_path, baseline=None, metric='soft_accuracy', compare=True):
     """/ Metrics + comparison follow-ups after scoring: refreshes this run's
     output/<run>/metrics.{csv,json} and, once at least two runs are scored, the
     per-capability comparison in output/comparison/ against the explicit
     baseline (default: the oldest scored run — a stable reference, never a
-    fabricated one). Post-step only: failures warn, `make metrics` and
-    `make compare` re-derive everything."""
+    fabricated one). compare=False stops after the single-run metrics export
+    (`make eval-only` / `--no-compare`): useful when a baseline comparison is
+    not wanted or would be misleading. Post-step only: failures warn,
+    `make metrics` and `make compare` re-derive everything."""
     try:
         from metrics import compare_runs, export_run
         from score import run_name
@@ -298,6 +319,9 @@ def write_metrics_reports(root, log_path, baseline=None, metric='soft_accuracy')
         if stats.exists():
             export_run(stats, out / name)
             print(f'wrote metrics -> {out / name}/', file=sys.stderr)
+        if not compare:
+            print('skipped comparison (--no-compare)', file=sys.stderr)
+            return
         scored = sorted(out.glob('*_stats.jsonl'), key=lambda p: p.stat().st_mtime)
         base = baseline or (scored[0].stem[:-len('_stats')] if len(scored) >= 2 else None)
         if base:
@@ -325,6 +349,22 @@ def write_score_reports(root, log_path):
               f'run `make score` to retry once fixed', file=sys.stderr)
 
 
+def write_calibration_report(root, log_path, min_cases=100):
+    """Fit T from calibrate only; test is held out and never controls deployability."""
+    try:
+        from calibration import calibrate_log
+        out, artifact = calibrate_log(root, log_path, min_cases=min_cases)
+        print(f'wrote calibration -> {out} (T={artifact["temperature"]:.8g}, '
+              f'deployable={artifact["deployable"]}, status={artifact["status"]})',
+              file=sys.stderr)
+        if not artifact['deployable']:
+            print(f'WARNING: calibration artifact is not deployable ({artifact["status"]})',
+                  file=sys.stderr)
+    except Exception as e:  # post-step only: never lose a completed benchmark log
+        print(f'WARNING: post-run calibration failed ({type(e).__name__}: {e}); '
+              f'run `make calibrate` to retry once fixed', file=sys.stderr)
+
+
 def write_response_files(caps, counts, results, out_dir):
     """/ Materialises responses/<capability>.jsonl, line-aligned with the request files.
 
@@ -336,14 +376,17 @@ def write_response_files(caps, counts, results, out_dir):
         sent = cap_errors = 0
         with open(out, 'w', encoding='utf-8') as dst:
             for line_no in range(1, counts[cap] + 1):
-                record = results[(cap, line_no)]
-                if record['error_type']:
+                record = results.get((cap, line_no))
+                if record is None:
+                    dst.write(json.dumps({'skipped': True, 'capability': cap, 'line': line_no},
+                                         ensure_ascii=False, separators=(',', ':')) + '\n')
+                elif record['error_type']:
                     dst.write(json.dumps({'error': record['error'], 'capability': cap, 'line': line_no},
                                          ensure_ascii=False, separators=(',', ':')) + '\n')
                     cap_errors += 1
                 else:
                     dst.write(json.dumps(record['response'], ensure_ascii=False, separators=(',', ':')) + '\n')
-                    sent = line_no
+                    sent += 1
         print(f'wrote {sent} responses + {cap_errors} error(s) -> {out}', flush=True)
 
 
@@ -372,7 +415,10 @@ def main():
                                                         "(default: none — the run log already embeds every response). "
                                                         "MUST NOT be the golden responses/ dir; that is refused.")
     ap.add_argument('--capabilities', default=None, help='Comma-separated capability slugs to run (default: all)')
-    ap.add_argument('--n', type=int, default=None, help='Limit to the first N cases per capability')
+    ap.add_argument('--splits', default='test,calibrate',
+                    help='Comma-separated persisted metadata splits to send (default: test,calibrate; train is opt-in)')
+    ap.add_argument('--n', type=int, default=None,
+                    help='Limit to the first N selected cases per capability after split filtering')
     ap.add_argument('--url', default=None, help='Defaults to $TYPESAFE_BASE_URL' + ENDPOINT_PATH)
     ap.add_argument('--api-key', default=None)
     ap.add_argument('--model', default=None, help='Value substituted for ' + MODEL_PLACEHOLDER + '; defaults to $TYPESAFE_MODEL')
@@ -390,8 +436,21 @@ def main():
     ap.add_argument('--baseline', default=None, help='Baseline run for the post-run per-capability comparison; '
                                                      'default: oldest scored run (comparison only runs once >= 2 '
                                                      'runs are scored)')
+    ap.add_argument('--no-compare', action='store_true',
+                    help='Skip the post-run output/comparison/ report (log, stats and calibration still run)')
+    ap.add_argument('--no-calibration', action='store_true',
+                    help='Do not fit output/<run>_calibration.json after this run')
+    ap.add_argument('--calibration-min-cases', type=int, default=100,
+                    help='Minimum successful split=calibrate cases required for deployable T (default: 100)')
     ap.add_argument('--dry-run', action='store_true', help='Show the first request per capability and totals without sending.')
     args = ap.parse_args()
+
+    if args.calibration_min_cases < 1:
+        ap.error('--calibration-min-cases must be >= 1')
+    try:
+        selected_splits = parse_splits(args.splits)
+    except ValueError as exc:
+        ap.error(str(exc))
 
     root = Path(args.benchmark)
     manifest_caps = json.loads((root / 'manifest.json').read_text())['capabilities']
@@ -444,7 +503,7 @@ def main():
     headers = {'Content-Type': 'application/json'}
     if api_key: headers['Authorization'] = 'Bearer ' + api_key
 
-    tasks, counts, first_body = build_tasks(root, caps, manifest_caps, args.n, model)
+    tasks, counts, first_body = build_tasks(root, caps, manifest_caps, args.n, model, selected_splits)
     done = log_successes(resume_path) if resume_path else {}
     if resume_path:
         total = len(tasks)
@@ -454,7 +513,7 @@ def main():
 
     if args.dry_run:
         for cap in caps:
-            if counts[cap]:
+            if cap in first_body:
                 print(f'{cap}: {first_body[cap][:200]}')
         results = {}
     else:
@@ -464,13 +523,15 @@ def main():
         if write_responses:
             write_response_files(caps, counts, results, out_dir)
         write_score_reports(root, log_path)
-        write_metrics_reports(root, log_path, args.baseline)
+        if not args.no_calibration:
+            write_calibration_report(root, log_path, args.calibration_min_cases)
+        write_metrics_reports(root, log_path, args.baseline, compare=not args.no_compare)
 
     errors = sum(1 for r in results.values() if r['error_type'])
     mode = 'dry-run: would send' if args.dry_run else 'sent'
     log_note = '' if args.dry_run else f', log: {log_path}'
     print(f'{mode} {len(tasks)} cases across {len(caps)} capabilities to {url} '
-          f'(model={model or "as-is"}), errors: {errors}{log_note}')
+          f'(model={model or "as-is"}, splits={",".join(selected_splits)}), errors: {errors}{log_note}')
     if errors:
         raise SystemExit(1)
 

@@ -27,3 +27,5 @@ venv/
 .vscode/
 .idea/
 .DS_Store
+
+!.env.example

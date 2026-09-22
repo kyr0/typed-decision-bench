@@ -1,1 +1,1 @@
-{"ok": true, "cases": 27598, "capabilities": 275, "e2e": {"log": "output/e2e.jsonl", "records": 275, "responses_ok": 275, "failed": 0, "aborted": 0}}
+{"ok": true, "cases": 27598, "capabilities": 275, "splits": {"train": 0, "calibrate": 5520, "test": 22078}}

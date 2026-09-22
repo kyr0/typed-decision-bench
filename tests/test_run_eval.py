@@ -62,6 +62,28 @@ def test_score_reports(tmp_path: Path) -> None:
     run_eval.write_score_reports(root, root / 'output' / 'missing.jsonl')
 
 
+def test_metrics_reports_no_compare(tmp_path: Path) -> None:
+    """/ write_metrics_reports(compare=False) — backing --no-compare / `make eval-only` —
+    must still export the run's metrics folder but never create output/comparison/,
+    even when a baseline would otherwise be available (>= 2 scored runs)."""
+    root = tmp_path
+    out = root / 'output'
+    out.mkdir()
+    stats_line = {'run': 'r', 'capability': 'micro', 'n': 2, 'accuracy': 0.5, 'soft_accuracy': 0.5}
+    for name in ('r', 'base'):  # 2 scored runs: auto-baseline would pick 'base'
+        (out / f'{name}_stats.jsonl').write_text(
+            json.dumps({**stats_line, 'run': name}) + '\n', encoding='utf-8')
+    log = out / 'r.jsonl'
+    log.write_text('')
+
+    run_eval.write_metrics_reports(root, log, compare=False)
+    assert (out / 'r' / 'metrics.csv').exists()  # metrics export still happens
+    assert not (out / 'comparison').exists()  # comparison is the only thing skipped
+
+    run_eval.write_metrics_reports(root, log, compare=True)  # control: flag really gates it
+    assert (out / 'comparison').exists()
+
+
 def test_resume_set(tmp_path: Path) -> None:
     """/ log_successes must return only successful {(cap, line)} records with later
     records winning, so reusing a run name re-sends exactly the pending cases."""

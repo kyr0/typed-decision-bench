@@ -1,4 +1,11 @@
-.PHONY: sync-metadata validate eval e2e score metrics compare test gpqa-lock gpqa-unlock gpqa-status
+.PHONY: assign-splits sync-metadata validate eval eval-only bench e2e score calibrate metrics compare test gpqa-lock gpqa-unlock gpqa-status
+
+# ONE-TIME DATA MIGRATION: persist explicit metadata split membership, then
+# refresh every derived checksum/index and validate the resulting benchmark.
+assign-splits:
+	uv run scripts/assign_splits.py --benchmark . --fix
+	uv run scripts/sync-metadata.py --fix
+	uv run scripts/validate.py --benchmark . > validation_status.json
 
 # Syncs capability_index.json, suite_hashes.json, manifest.json, stats.json,
 # golden_selftest.json, preservation_receipt.json, quality_report.json with disk
@@ -15,15 +22,36 @@ validate:
 eval:
 	uv run scripts/run_eval.py --benchmark . $(ARGS)
 
+# Same run but the post-run output/comparison/ report is skipped (log, test-split
+# stats, metrics export and calibration artifacts are still produced); e.g. when
+# an auto-baseline comparison would be misleading or costs more than it tells you
+eval-only:
+	uv run scripts/run_eval.py --benchmark . --no-compare $(ARGS)
+
+# Real benchmark run against the endpoint configured in .env. The run name
+# defaults to <TYPESAFE_MODEL>[-N] (the name doubles as the resume key: re-run
+# the same target to (re)send only pending cases). N caps cases per suite;
+# omit it for all 27,598, e.g. `make bench N=20` -> bonsai-2-27b-20.
+-include .env
+N ?=
+NAME ?= $(if $(TYPESAFE_MODEL),$(TYPESAFE_MODEL),bench)$(if $(N),-$(N))
+bench:
+	uv run scripts/run_eval.py --benchmark . $(if $(N),--n $(N)) --name "$(NAME)" $(ARGS)
+
 # One case per capability (all 275) against the endpoint configured via .env;
 # parallel at the runner default of 18 req/s (override via ARGS, e.g. ARGS="--parallel 10")
 e2e:
-	uv run scripts/run_eval.py --benchmark . --responses none --n 1 --timeout 120 --log output/e2e.jsonl $(ARGS)
+	uv run scripts/run_eval.py --benchmark . --responses none --splits test --n 1 --timeout 120 --no-calibration --log output/e2e.jsonl $(ARGS)
 
 # Backfill: score every output/*.jsonl run log that has no <run>_stats.jsonl/
 # _cases.jsonl pair yet (eval/e2e runs score themselves automatically)
 score:
 	uv run scripts/score.py --benchmark . --all-logs
+
+# Fit a deployable scalar temperature from persisted split=calibrate cases in an
+# existing run. split=test is held out and reported only; split=train is ignored.
+calibrate:
+	uv run scripts/calibration.py --benchmark . $(ARGS)
 
 # Per-run metrics: every output/<run>_stats.jsonl -> output/<run>/metrics.csv +
 # metrics.json (single-run projection through the evalcompare metric registry;

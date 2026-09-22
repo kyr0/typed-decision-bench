@@ -2,14 +2,16 @@
 
 # 🧪 typed-decision-bench
 
+> The eval bench (and novel `calibration.json` standard) that fixes the **overconfident decisions** problem in **any** open System One reproduction model - without touching a single model weight.
+
 **TL;DR:**
 - 🎯 Evaluate **any** model and inference system that speaks the System One typed decisions API (`POST /v1/systemone`) — 275 capabilities, 27,598 held-out cases.
-- 🌡️ Calibrate **any** model and inference System One inference system! **Calibration** changes what the system claims, never what it chooses. Any  **_confidently_ wrong model** becomes an **_honestly_ wrong model** via the new [**qtype-affine calibration method**](#-calibration) with **no re-training and no weight changes required**: Just run the `calibrate` split to fit a `calibration.json` (I propose this as a standard, see below); a compliant engine loading it provably states confidences that match its observed accuracy (see [`Bonsai-Llama-Jev`](https://github.com/kyr0/Bonsai-Llama-Jev) where I implemented this novel method).
+- 🌡️ Calibrate **any** model and inference System One inference system! **Calibration** changes what the system claims, never what it chooses. Any  **_confidently_ wrong model** becomes an **_honestly_ wrong model** via the new [**Qtype-Stratified Temperature Scaling method**](#-calibration) with **no re-training and no weight changes required**: Just run the `calibrate` split to fit a `calibration.json` (I propose this as a standard, see below); a compliant engine loading it provably states confidences that match its observed accuracy (see [`Bonsai-Llama-Jev`](https://github.com/kyr0/Bonsai-Llama-Jev) where I implemented this novel method).
 
 ## ✨ What's inside
 
 - 📊 **275 suites / 27,598 cases** on an explicit `test`/`calibrate`/`train` split contract — details in [`CAPABILITIES.md`](CAPABILITIES.md) and [`METHODOLOGY.md`](METHODOLOGY.md)
-- 🌡️ **Calibration standard** ([`CALIBRATION.md`](CALIBRATION.md)): run the bench, ship the artifact, apply `temperatures.get(question_type, artifact.temperature)` in your inference engine at serve time — any compliant loader (see my [`Bonsai-Llama-Jev`](https://github.com/kyr0/Bonsai-Llama-Jev) reference implementation) upgrades an endpoint from "answers typed decisions" to "knows how much to trust each decision", without retraining or modifying the model weights
+- 🌡️ **Calibration standard** ([`CALIBRATION.md`](CALIBRATION.md)): run the bench, configure your inference engine to load the `calibration.json` produced by this bench. Internally, the inference engine must apply the temperature transform described below: `temperatures.get(question_type, artifact.temperature)` at serve time (that's extremely cheap!); and this fixes the **overconfident decisions** issues right away! It upgrades any model from "making typed decisions" to "making typed decisions and knowing how much to trust each decision". See my [`Bonsai-Llama-Jev`](https://github.com/kyr0/Bonsai-Llama-Jev) reference implementation. It's a just a few lines of code!
 - 📝 **Line-aligned** `requests/<suite>.jsonl` ↔ `responses/<suite>.jsonl`; each line is a literal `SystemOneRequest` / `SystemOneResponse` with one atomic question; no gold leaks
 - 🔤 **Question types:** __choice:__ 18,140 · __noul:__ 7,250 · __score:__ 2,208
 - 🚫 **Zero-install tooling:** every script is self-contained Python 3.11+ with PEP 723 inline dependencies, run via `uv run`
@@ -57,7 +59,7 @@ Set `TYPESAFE_BASE_URL` to use a local endpoint like `http://localhost:5380` in 
 | `make score` | backfill: score **split=test only** for every unscored run log |
 | `make calibrate` | fit temperature scaling from **split=calibrate only** — qtype-affine: one T per answer type (`choice`/`noul`/`score`) where ≥100 calibrate cases exist, global T otherwise; reports held-out **split=test** raw/calibrated metrics and nothing else (no `_stats`/`_cases`/metrics/comparison files). Requires an existing run log (`make eval` first; default: newest `output/*.jsonl`). Example with an explicit artifact location: `make calibrate ARGS="--log output/my-model-20 --out calibrations/my-model.json"` (default output: `<log dir>/<run>_calibration.json`) |
 | `make metrics` | project every `output/<run>_stats.jsonl` → `output/<run>/metrics.{csv,json}` |
-| `make compare` | per-capability comparison of all scored runs, e.g. `ARGS="--baseline three [--metric accuracy]"` → `output/comparison/` |
+| `make compare` | re-create `output/comparison/` for all scored runs; baseline defaults to `jev-1.13.0` (override: `BASELINE=<run>` or `ARGS="--baseline <run> [--metric accuracy]"`) |
 | `make validate` | schema-check all benchmark data + the latest e2e log → `validation_status.json` |
 | `make sync-metadata` | reconcile `capability_index.json`, `suite_hashes.json`, `manifest.json`, `stats.json`, `golden_selftest.json`, `preservation_receipt.json`, `quality_report.json` with disk (`--fix` applies) |
 | `make test` | pytest suite in [`tests/`](tests/): evalcompare library, scorer, runner, gpqa zip |
@@ -86,7 +88,7 @@ Set `TYPESAFE_BASE_URL` to use a local endpoint like `http://localhost:5380` in 
 | `--responses DIR` | `none` | opt-in per-capability response files; pointing this at the golden `responses/` dir is **refused** (answer key!) — the run log already embeds every response, so scoring never needs them |
 | `--output DIR` | `output` | directory for the combined run log |
 | `--log PATH` | — | explicit combined-log path; **overwrites** and skips resume detection |
-| `--baseline RUN` | oldest scored run | baseline for the automatic post-run comparison (needs ≥ 2 scored runs) |
+| `--baseline RUN` | `jev-1.13.0` if scored, else oldest scored run | baseline for the automatic post-run comparison (needs ≥ 2 scored runs) |
 | `--dry-run` | — | print the first request body per capability + totals, send nothing |
 
 Exit status is non-zero if any case failed. A run **aborts early** when its first 10 requests all fail (circuit breaker) — queued cases are recorded as `aborted` instead of hammering a dead endpoint.
@@ -226,6 +228,7 @@ Cases are synthetic and parameterized, not IID production samples — prefer pai
 | [`responses/`](responses/) | one `<capability>.jsonl` per suite — **golden reference responses: the scoring answer key** (line-aligned with requests; read-only — the runner refuses to write here) |
 | [`metadata/`](metadata/) | gold labels + per-case provenance + explicit `split: train|calibrate|test` (line-aligned) |
 | [`manifest.json`](manifest.json) | capability → file paths (the runner's source of truth for suite selection) |
+| [`models.json`](models.json) | per-run model registry (model name, VRAM @ 8k KV, license, max context, image support, pareto flag, kyr0-project flag, inference repo) — deployment columns and `kyr0/` org branding in the comparison report |
 | *(no local dir)* | the SystemOne OpenAPI spec is **not vendored** — `make validate` fetches the canonical live spec from <https://api.typesafe.ai/openapi.json> (offline: `--openapi path/to/spec.json`) |
 | [`scripts/`](scripts/) | [`run_eval.py`](scripts/run_eval.py) (benchmark runner — full CLI reference below), plus `validate.py`, `score.py`, `calibration.py`, `metrics.py`, `sync-metadata.py`, `assign_splits.py`, `gpqa_zip.py` |
 | [`src/evalcompare/`](src/evalcompare/) | the `evalcompare` library package — `loader.py` (stats JSONL → DataFrames), `metrics.py`, `analysis.py`, `report.py` |
@@ -234,7 +237,7 @@ Cases are synthetic and parameterized, not IID production samples — prefer pai
 
 ## 📎 Citation
 
-If you use this benchmark, its split contract, or the qtype-affine calibration standard (`calibration.json`), please like this repository and cite it in your work. The preferred citation format is BibTeX:
+If you use this benchmark, its split contract, or the Qtype-Stratified Temperature Scaling standard (`calibration.json`), please like this repository and cite it in your work. The preferred citation format is BibTeX:
 
 ```bibtex
 @software{homberg_typed_decision_bench,

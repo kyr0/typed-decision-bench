@@ -37,7 +37,8 @@ Outputs:
   writes output/<run>_calibration.json. split=train is ignored.
   metrics/comparison (always): the run's output/<run>/ metrics folder refreshes
   and, once >=2 runs are scored, the per-capability comparison in
-  output/comparison/ regenerates against --baseline (default: oldest scored run).
+  output/comparison/ regenerates against --baseline (default: jev-1.13.0 if scored,
+  else the oldest scored run).
 
 Reliability: per-request --timeout (default 10s) and --retries (default 3); a
 circuit breaker aborts the run when the first requests ALL fail, instead of
@@ -68,6 +69,7 @@ QUOTA_BURST = 25           # requests between cool-downs (± QUOTA_BURST_JITTER,
 QUOTA_BURST_JITTER = 5
 QUOTA_WAIT_JITTER = 0.1    # wait jitter as a fraction: ±10% (750 ms -> ±75 ms)
 PROGRESS_EVERY = 50        # print an ETA line after every N completed cases
+DEFAULT_BASELINE = 'jev-1.13.0'  # hosted reference run; auto-baseline when scored
 
 
 def load_dotenv(path=ENV_FILE):
@@ -305,10 +307,11 @@ def write_metrics_reports(root, log_path, baseline=None, metric='soft_accuracy',
     """/ Metrics + comparison follow-ups after scoring: refreshes this run's
     output/<run>/metrics.{csv,json} and, once at least two runs are scored, the
     per-capability comparison in output/comparison/ against the explicit
-    baseline (default: the oldest scored run — a stable reference, never a
-    fabricated one). compare=False stops after the single-run metrics export
-    (`make eval-only` / `--no-compare`): useful when a baseline comparison is
-    not wanted or would be misleading. Post-step only: failures warn,
+    baseline (default: `jev-1.13.0` when it is scored — the hosted reference —
+    else the oldest scored run; never a fabricated one). compare=False stops
+    after the single-run metrics export (`make eval-only` / `--no-compare`):
+    useful when a baseline comparison is not wanted or would be misleading.
+    Post-step only: failures warn,
     `make metrics` and `make compare` re-derive everything."""
     try:
         from metrics import compare_runs, export_run
@@ -323,7 +326,11 @@ def write_metrics_reports(root, log_path, baseline=None, metric='soft_accuracy',
             print('skipped comparison (--no-compare)', file=sys.stderr)
             return
         scored = sorted(out.glob('*_stats.jsonl'), key=lambda p: p.stat().st_mtime)
-        base = baseline or (scored[0].stem[:-len('_stats')] if len(scored) >= 2 else None)
+        names = [p.stem[:-len('_stats')] for p in scored]
+        # jev is the reference deployment; if it is among the scored runs it wins
+        # the auto-baseline role, otherwise the oldest scored run stays stable
+        ref = DEFAULT_BASELINE if DEFAULT_BASELINE in names else (names[0] if names else None)
+        base = baseline or (ref if len(scored) >= 2 else None)
         if base:
             compare_runs(root, base, metric, out / 'comparison')
         else:
@@ -434,7 +441,7 @@ def main():
     ap.add_argument('--output', default='output', help='Directory for the combined run log')
     ap.add_argument('--log', default=None, help='Explicit combined-log path; overwrites and skips the run-name collision check')
     ap.add_argument('--baseline', default=None, help='Baseline run for the post-run per-capability comparison; '
-                                                     'default: oldest scored run (comparison only runs once >= 2 '
+                                                     'default: jev-1.13.0 when scored, else oldest scored run (comparison only runs once >= 2 '
                                                      'runs are scored)')
     ap.add_argument('--no-compare', action='store_true',
                     help='Skip the post-run output/comparison/ report (log, stats and calibration still run)')

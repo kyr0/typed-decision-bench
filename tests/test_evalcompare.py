@@ -97,6 +97,57 @@ def test_lower_is_better_delta_is_performance_aligned(tmp_path: Path) -> None:
     assert c.deltas.loc["x", "B"] == pytest.approx(0.1)
 
 
+def test_model_requirements_columns(tmp_path: Path) -> None:
+    """/ models.json at the report's project root adds VRAM/License/Context columns,
+    the inference-config link and kyr0/ org branding (relabelled labels + prefix
+    link); unregistered runs show dashes and a missing registry adds no columns at
+    all (degradation path)."""
+    a = tmp_path / "a.jsonl"
+    b = tmp_path / "b.jsonl"
+    _write(a, "A", {"x": 0.7, "y": 0.8})
+    _write(b, "B", {"x": 0.9, "y": 0.85})
+    (tmp_path / "models.json").write_text(json.dumps({"runs": {
+        "A": {"model_name": "A", "vram_gb": None, "vram_note": "hosted API",
+              "license": "proprietary", "commercial_usable": True,
+              "max_context_window": 65536, "is_kyr0_project": False},
+        "B": {"model_name": "B", "vram_gb": 9.03, "vram_note": "9242 MB @ Q4",
+              "license": "Apache-2.0", "commercial_usable": True,
+              "max_context_window": 1048576, "image_support": True,
+              "weights": "open", "paretoOptimal": True, "is_kyr0_project": True,
+              "inference_repo": "https://example.com/engine"},
+    }}), encoding="utf-8")
+    c = build_comparison(load_eval_files([a, b]), metric_spec("soft_accuracy"), baseline="A")
+    # out_dir must mimic the real layout <root>/output/comparison so the registry
+    # lookup (out_dir.parent.parent) resolves to tmp_path
+    text = build_report(c, tmp_path / "output" / "comparison", title="t").read_text(encoding="utf-8")
+    for needle in ("VRAM (8k KV)", "License", "Max. Context", "9.0 GB", "1M",
+                   "proprietary", "https://example.com/engine", "inference setup",
+                   "Image support", "✓", "Open Weights", '<tr class="pareto">',
+                   # kyr0 run is relabelled everywhere, prefix links to the org
+                   "kyr0/B", 'href="https://github.com/kyr0"'):
+        assert needle in text
+    # hosted row: null VRAM renders as an em dash, not "None"
+    assert "None GB" not in text
+    # raw run name survives only inside the kyr0/ label, never as a bare row label
+    assert ">kyr0/B<" in text
+
+
+def test_latency_chart_hardware_note(tmp_path: Path) -> None:
+    """/ Both latency sections state the shared benchmark hardware (single NVIDIA
+    H200 NVL), so cross-run latency comparisons are honest about comparability."""
+    a = tmp_path / "a.jsonl"
+    b = tmp_path / "b.jsonl"
+    _write(a, "A", {"x": 0.7, "y": 0.8})
+    _write(b, "B", {"x": 0.9, "y": 0.85})
+    c = build_comparison(load_eval_files([a, b]), metric_spec("soft_accuracy"), baseline="A")
+    text = build_report(c, tmp_path / "output" / "comparison", title="t").read_text(encoding="utf-8")
+    for section in ("summary-latency", "latency"):
+        # scope to the section element itself: the plotly div between heading and
+        # caption is far larger than any fixed window
+        seg = text.split(f'id="{section}"')[1].split("</section>")[0]
+        assert "NVIDIA H200 NVL" in seg, f"hardware note missing under {section}"
+
+
 def test_duplicate_capability_rejected(tmp_path: Path) -> None:
     """/ Repeated (run, capability) rows would make the pivot ambiguous — loader refuses."""
     p = tmp_path / "dup.jsonl"

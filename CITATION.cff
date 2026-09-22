@@ -3,7 +3,7 @@ message: >-
   If you use this benchmark, its split contract, or the calibration standard
   defined in CALIBRATION.md, please cite the repository as below.
 title: >-
-  typed-decision-bench: A held-out benchmark and qtype-affine calibration
+  typed-decision-bench: A held-out benchmark and Qtype-Stratified Temperature Scaling
   standard for System One typed decisions
 type: software
 authors:

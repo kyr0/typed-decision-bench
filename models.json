@@ -1,0 +1,94 @@
+{
+  "_comment": "Static deployment/model registry keyed by run name (matches output/<run>_stats.jsonl). vram_gb = weights + KV cache at 8k context as measured (quant noted in vram_note); null = hosted API, no local VRAM. weights=open means downloadable model weights. max_context_window in tokens, incl. RoPE scaling options. paretoOptimal marks the open-weight model on the quality/cost frontier (highest macro accuracy while dominating openjev+spark on VRAM and latency). is_kyr0_project models render as kyr0/<run> in the report, linked to https://github.com/kyr0. Consumed by the comparison report (report.html -> Summary table + chart labels).",
+  "runs": {
+    "jev-1.13.0": {
+      "model_name": "jev-1.13.0",
+      "vram_gb": null,
+      "vram_note": "hosted API — no local deployment",
+      "license": "proprietary",
+      "commercial_usable": true,
+      "max_context_window": 65536,
+      "image_support": false,
+      "paretoOptimal": false,
+      "is_kyr0_project": false
+    },
+    "bonsai-2-27b-calibrated": {
+      "model_name": "Bonsai 2 27B",
+      "vram_gb": 9.03,
+      "vram_note": "9242 MB @ Q2_64",
+      "license": "Apache-2.0",
+      "weights": "open",
+      "commercial_usable": true,
+      "max_context_window": 1048576,
+      "image_support": true,
+      "paretoOptimal": true,
+      "is_kyr0_project": true,
+      "inference_repo": "https://github.com/kyr0/Bonsai-Llama-Jev"
+    },
+    "bonsai-2-27b-calibration-init": {
+      "model_name": "Bonsai 2 27B",
+      "vram_gb": 9.03,
+      "vram_note": "9242 MB @ Q2_64",
+      "license": "Apache-2.0",
+      "weights": "open",
+      "commercial_usable": true,
+      "max_context_window": 1048576,
+      "image_support": true,
+      "paretoOptimal": false,
+      "is_kyr0_project": true,
+      "inference_repo": "https://github.com/kyr0/Bonsai-Llama-Jev"
+    },
+    "openjev-qwen3.5-4b": {
+      "model_name": "fastjev Qwen3.5-4B",
+      "vram_gb": 12.56,
+      "vram_note": "12866 MB @ BF16",
+      "license": "Apache-2.0",
+      "weights": "open",
+      "commercial_usable": true,
+      "max_context_window": 1048576,
+      "image_support": false,
+      "paretoOptimal": false,
+      "is_kyr0_project": false,
+      "inference_repo": "https://github.com/kyr0/fastjev"
+    },
+    "spark-X2.5": {
+      "model_name": "Winzling-Spark-X2.5-4B",
+      "vram_gb": 9.58,
+      "vram_note": "9813 MB @ BF16",
+      "license": "Apache-2.0",
+      "weights": "open",
+      "commercial_usable": true,
+      "max_context_window": 1048576,
+      "image_support": false,
+      "paretoOptimal": false,
+      "is_kyr0_project": true
+    },
+    "von-1.1": {
+      "model_name": "Von 1.1",
+      "vram_gb": 3.8,
+      "vram_note": "3888 MB @ FP32",
+      "license": "Apache-2.0",
+      "weights": "open",
+      "commercial_usable": true,
+      "max_context_window": 8192,
+      "image_support": false,
+      "paretoOptimal": false,
+      "is_kyr0_project": false,
+      "inference_repo": "https://github.com/kyr0/von"
+    },
+    "laya": {
+      "model_name": "Laya",
+      "vram_gb": 1.39,
+      "vram_note": "1426 MB @ FP32",
+      "license": "Apache-2.0",
+      "weights": "open",
+      "commercial_usable": true,
+      "max_context_window": 8192,
+      "context_note": "8k with RoPE scaling; English-only variant 0.5k",
+      "image_support": false,
+      "paretoOptimal": false,
+      "is_kyr0_project": false,
+      "inference_repo": "https://github.com/kyr0/laya.cpp"
+    }
+  }
+}

@@ -76,7 +76,7 @@ def compare_runs(root: Path, baseline: str, metric: str, out_dir: Path) -> None:
     data = load_eval_files([by_run[baseline], *others])  # baseline first => sensible default ordering
     c = build_comparison(data, metric_spec(metric), baseline=baseline)
     write_tables(c, out_dir)
-    build_report(c, out_dir, title=f"Per-capability comparison vs {baseline}")
+    build_report(c, out_dir, title="typed-decision-bench Results")
     print(f"wrote comparison of {len(data.runs)} runs (baseline {baseline!r}, metric {metric!r}) "
           f"-> {out_dir}/", file=sys.stderr)
 

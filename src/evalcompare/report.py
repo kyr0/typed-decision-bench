@@ -15,6 +15,9 @@ and are simply omitted from the report.
 from __future__ import annotations
 
 import html
+import json
+from dataclasses import replace
+from datetime import date
 from pathlib import Path
 from typing import Iterable
 
@@ -58,6 +61,16 @@ def _metric_axis(fig: go.Figure, spec: MetricSpec, *, axis: str = "y") -> None:
         fig.update_xaxes(**kwargs)
 
 
+def _run_order(c: Comparison) -> list[str]:
+    """/ Runs ranked best-first by macro score (direction-aware; neutral metrics
+    keep the input order) — the single ordering used by heatmap/delta/distribution
+    columns so every panel tells the same story left-to-right."""
+    s = c.summary
+    if c.metric.direction == "neutral":
+        return list(c.data.runs)
+    return s.sort_values("macro", ascending=c.metric.direction == "lower").index.tolist()
+
+
 def summary_bar(c: Comparison) -> go.Figure:
     """/ Horizontal macro-score bars, ranked best-first (direction-aware); hover
     shows weighted macro, p10, coverage and example counts."""
@@ -65,29 +78,57 @@ def summary_bar(c: Comparison) -> go.Figure:
     ascending = c.metric.direction == "lower"
     if c.metric.direction != "neutral":
         s = s.sort_values("macro", ascending=ascending)
-    custom = np.column_stack([
-        s["weighted"].to_numpy(),
-        s["p10"].to_numpy(),
-        s["coverage"].to_numpy(),
-        s["examples"].to_numpy(),
-        s["min_n"].to_numpy(),
-    ])
-    fig = go.Figure(
-        go.Bar(
-            x=s["macro"],
-            y=s["run"],
+    fig = go.Figure()
+    # one trace per run so kyr0 runs can carry a literal org link in their hover
+    for _, r in s.iterrows():
+        custom = np.array([[r["weighted"], r["p10"], r["coverage"], r["examples"], r["min_n"]]])
+        fig.add_trace(go.Bar(
+            x=[r["macro"]],
+            y=[r["run"]],
             orientation="h",
+            showlegend=False,
+            marker_color="#636efa",  # keep the single-series look despite per-run traces
             customdata=custom,
             hovertemplate=(
-                "<b>%{y}</b><br>Macro: %{x:.4f}<br>Weighted: %{customdata[0]:.4f}"
+                "<b>" + _kyr0_anchor(str(r["run"])) + "</b><br>Macro: %{x:.4f}<br>Weighted: %{customdata[0]:.4f}"
                 "<br>p10: %{customdata[1]:.4f}<br>Coverage: %{customdata[2]:.1%}"
                 "<br>Examples on shared set: %{customdata[3]:,.0f}<br>Min n/capability: %{customdata[4]:,.0f}<extra></extra>"
             ),
-        )
-    )
+        ))
     _base_layout(fig, height=max(330, 75 + 52 * len(s)), title=f"Shared-capability macro — {c.metric.label}")
+    fig.update_layout(barmode="overlay")  # one bar per row: no side-by-side offsets
     _metric_axis(fig, c.metric, axis="x")
     fig.update_yaxes(title=None, autorange="reversed")
+    return fig
+
+
+def summary_latency(c: Comparison) -> go.Figure | None:
+    """/ Macro p50/p95 latency per run as grouped horizontal bars, rows in the same
+    best-first order as the macro summary — reads directly under it. None unless
+    the stats carry the latency columns."""
+    if "macro_latency_ms_p50" not in c.summary.columns:
+        return None
+    s = c.summary.loc[_run_order(c)]
+    has_p95 = "macro_latency_ms_p95" in c.summary.columns and c.summary["macro_latency_ms_p95"].notna().any()
+    fig = go.Figure()
+    # per-run traces: legend shows p50/p95 once (first run), hovers carry the org link
+    for i, (run, row) in enumerate(s.iterrows()):
+        fig.add_trace(go.Bar(
+            x=[row["macro_latency_ms_p50"]], y=[run], name="p50", orientation="h",
+            showlegend=(i == 0), marker_color="#636efa",
+            hovertemplate="<b>" + _kyr0_anchor(run) + "</b><br>Macro p50 latency: %{x:,.0f} ms<extra></extra>",
+        ))
+        if has_p95:
+            fig.add_trace(go.Bar(
+                x=[row["macro_latency_ms_p95"]], y=[run], name="p95", orientation="h",
+                showlegend=(i == 0), marker_color="#00cc96",
+                hovertemplate="<b>" + _kyr0_anchor(run) + "</b><br>Macro p95 latency: %{x:,.0f} ms<extra></extra>",
+            ))
+    _base_layout(fig, height=max(330, 75 + 52 * len(s)),
+                 title="Shared-capability macro latency — mean over capabilities (ms)")
+    fig.update_xaxes(title="ms")
+    fig.update_yaxes(title=None, autorange="reversed")
+    fig.update_layout(barmode="group")
     return fig
 
 
@@ -103,14 +144,16 @@ def _ordered_caps(c: Comparison) -> list[str]:
 
 
 def capability_heatmap(c: Comparison) -> go.Figure:
-    """/ Runs as columns, every capability as a row (hardest first); gaps render as
-    holes so missing coverage is visible rather than interpolated."""
+    """/ Runs as columns (best macro first), every capability as a row (hardest
+    first); gaps render as holes so missing coverage is visible rather than
+    interpolated."""
+    runs = _run_order(c)
     caps = _ordered_caps(c)
-    m = c.metric_matrix.reindex(caps)
-    n = c.n_matrix.reindex(caps)
-    custom = np.empty((len(caps), len(c.data.runs), 2), dtype=object)
+    m = c.metric_matrix.reindex(caps)[runs]
+    n = c.n_matrix.reindex(caps)[runs]
+    custom = np.empty((len(caps), len(runs), 2), dtype=object)
     for i, cap in enumerate(caps):
-        for j, run in enumerate(c.data.runs):
+        for j, run in enumerate(runs):
             custom[i, j, 0] = cap
             custom[i, j, 1] = n.loc[cap, run] if cap in n.index and run in n.columns else np.nan
 
@@ -119,7 +162,7 @@ def capability_heatmap(c: Comparison) -> go.Figure:
     fig = go.Figure(
         go.Heatmap(
             z=m.to_numpy(dtype=float),
-            x=list(c.data.runs),
+            x=runs,
             y=caps,
             customdata=custom,
             zmin=zmin,
@@ -142,13 +185,14 @@ def capability_heatmap(c: Comparison) -> go.Figure:
 
 def delta_heatmap(c: Comparison) -> go.Figure | None:
     """/ Signed improvement over the baseline (symmetric color scale centred at 0,
-    probability deltas in percentage points), rows sorted by largest absolute gap.
-    None when the baseline is the only run."""
+    probability deltas in percentage points), rows sorted by largest absolute gap,
+    columns best-macro-first. None when the baseline is the only run."""
     if c.deltas.shape[1] == 0:
         return None
     d = c.deltas.copy()
     order = d.abs().max(axis=1, skipna=True).sort_values(ascending=False).index.tolist()
-    d = d.reindex(order)
+    col_order = [r for r in _run_order(c) if r in d.columns]  # deltas exclude the baseline column
+    d = d.reindex(order)[col_order]  # columns follow the overall ranking
     scale = 100.0 if c.metric.format_kind == "probability" else 1.0
     z = d.to_numpy(dtype=float) * scale
     suffix = " pp" if c.metric.format_kind == "probability" else ""
@@ -195,7 +239,7 @@ def discriminating_capabilities(c: Comparison, top_n: int = 40) -> go.Figure | N
                 mode="markers",
                 name=run,
                 customdata=np.column_stack([c.n_matrix.reindex(m.index)[run].to_numpy()]),
-                hovertemplate="<b>%{y}</b><br>" + html.escape(run) + ": %{x:.4f}<br>n: %{customdata[0]}<extra></extra>",
+                hovertemplate="<b>%{y}</b><br>" + _kyr0_anchor(run) + ": %{x:.4f}<br>n: %{customdata[0]}<extra></extra>",
             )
         )
     # no in-chart title: the report section heading already names this figure
@@ -207,10 +251,11 @@ def discriminating_capabilities(c: Comparison, top_n: int = 40) -> go.Figure | N
 
 def distribution_plot(c: Comparison) -> go.Figure:
     """/ Box plot of each run's per-capability values on the shared set (mean line +
-    outliers), showing whether a macro average hides a heavy tail."""
+    outliers), categories ordered best-macro-first, showing whether a macro
+    average hides a heavy tail."""
     common = set(c.common_capabilities)
     fig = go.Figure()
-    for run in c.data.runs:
+    for run in _run_order(c):
         r = c.data.capabilities[
             (c.data.capabilities["run"] == run) & c.data.capabilities["capability"].isin(common)
         ]
@@ -222,12 +267,12 @@ def distribution_plot(c: Comparison) -> go.Figure:
                 boxmean=True,
                 boxpoints="outliers",
                 customdata=r["capability"],
-                hovertemplate="%{customdata}<br>" + c.metric.label + ": %{y:.4f}<extra>" + html.escape(run) + "</extra>",
+                hovertemplate="%{customdata}<br>" + c.metric.label + ": %{y:.4f}<extra>" + _kyr0_anchor(run) + "</extra>",
             )
         )
     _base_layout(fig, height=520, title=f"Capability distribution — {c.metric.label}")
     _metric_axis(fig, c.metric, axis="y")
-    fig.update_xaxes(title=None)
+    fig.update_xaxes(title=None, categoryorder="array", categoryarray=_run_order(c))
     return fig
 
 
@@ -253,7 +298,7 @@ def latency_quality(c: Comparison) -> go.Figure | None:
                 name=run,
                 customdata=np.column_stack([r["capability"], n]),
                 hovertemplate=(
-                    "<b>%{customdata[0]}</b><br>Model: " + html.escape(run) +
+                    "<b>%{customdata[0]}</b><br>Model: " + _kyr0_anchor(run) +
                     "<br>p50 latency: %{x:.1f} ms<br>" + c.metric.label + ": %{y:.4f}<br>n: %{customdata[1]}<extra></extra>"
                 ),
                 marker=dict(opacity=0.68, size=7),
@@ -355,35 +400,183 @@ def _fig_fragment(fig: go.Figure, *, scroll: bool = False, div_id: str) -> str:
     return frag
 
 
-def _summary_table(c: Comparison) -> str:
-    """/ Numeric summary as an HTML table; the reported-micro columns only appear
-    when the stats files carried a micro aggregate."""
-    show_micro = "reported_micro" in c.summary.columns and c.summary["reported_micro"].notna().any()
-    cols = ["macro", "weighted", "median", "p10"]
-    head = ["Model", "Macro", "Weighted", "Median", "p10"]
-    if show_micro:
-        cols += ["reported_micro", "reported_micro_n"]
-        head += ["Reported micro", "Micro n"]
-    cols += ["coverage", "examples", "min_n"]
-    head += ["Coverage", "Shared examples", "Min n"]
+# short metric names for the summary table headers ("accuracy" -> "Macro Acc.");
+# metrics without an entry fall back to their registry label
+_SHORT_METRIC = {"accuracy": "Acc.", "soft_accuracy": "Soft Acc."}
+
+
+def _model_registry(root: Path) -> dict:
+    """/ Deployment registry keyed by run name from models.json (project root);
+    {} when absent/unreadable so the report degrades to no extra columns instead
+    of failing. Keys: model_name, vram_gb (null = hosted), vram_note, license,
+    commercial_usable, max_context_window, image_support, is_kyr0_project."""
+    try:
+        data = json.loads((root / "models.json").read_text(encoding="utf-8"))
+        return data.get("runs", {}) if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+KYR0_PREFIX = "kyr0/"
+KYR0_URL = "https://github.com/kyr0"
+
+
+def _kyr0_labels(c: Comparison, reqs: dict) -> Comparison:
+    """/ Presentational relabel: runs whose registry entry sets is_kyr0_project get
+    the 'kyr0/' org prefix everywhere labels are read (chart axes, legends, hovers,
+    tables), so branding needs no per-figure changes. Backed by dataclasses.replace
+    on the frozen Comparison/EvalData; underlying CSVs and files keep raw names."""
+    ren = {r: KYR0_PREFIX + r for r in c.data.runs if reqs.get(r, {}).get("is_kyr0_project")}
+    if not ren:
+        return c
+    data = replace(
+        c.data,
+        rows=c.data.rows.replace({"run": ren}),
+        capabilities=c.data.capabilities.replace({"run": ren}),
+        aggregates=c.data.aggregates.replace({"run": ren}),
+        runs=tuple(ren.get(r, r) for r in c.data.runs),
+    )
+    return replace(
+        c,
+        data=data,
+        metric_matrix=c.metric_matrix.rename(columns=ren),
+        n_matrix=c.n_matrix.rename(columns=ren),
+        summary=c.summary.rename(index=ren),
+        deltas=c.deltas.rename(columns=ren),
+        baseline=ren.get(c.baseline, c.baseline),
+    )
+
+
+def _registry_entry(reqs: dict, run: str) -> dict | None:
+    """/ Registry lookup tolerant of the presentation-only kyr0/ label prefix."""
+    return reqs.get(run) or reqs.get(run.removeprefix(KYR0_PREFIX))
+
+
+def _kyr0_anchor(run: str) -> str:
+    """/ Hover/label HTML for a run: kyr0-org runs link to the org profile. Plotly
+    hovertemplates render only literal HTML (substituted values are escaped), so
+    the anchor must be built where the run name is statically known."""
+    label = html.escape(run)
+    return f'<a href="{KYR0_URL}">{label}</a>' if run.startswith(KYR0_PREFIX) else label
+
+
+def _summary_table(c: Comparison, reqs: dict | None = None) -> str:
+    """/ Summary as an HTML table: macro with its baseline-gap subline, macro
+    latency, then deployment columns from models.json when provided;
+    rows sorted best-first by macro (direction-aware, so "lower is better"
+    metrics rank ascending). The caption below the table explains the macro
+    definition and the gap subline. (Weighted/median/p10/reported-micro
+    aggregates stay in model_summary.csv, not the table.)"""
+    short = _SHORT_METRIC.get(c.metric.name, c.metric.label)
+    cols = ["macro"]
+    head = ["Model", f"Macro {short}"]
+    # macro latency columns when the stats carry them (skip for --no-calibration-era
+    # stats without timing so the table never shows an empty latency block)
+    lat_cols = [(a, lbl) for a, lbl in (("macro_latency_ms_p50", "p50 Latency (ms)"),
+                                        ("macro_latency_ms_p95", "p95 Latency (ms)"))
+                if a in c.summary.columns and c.summary[a].notna().any()]
+    if lat_cols:
+        cols += [a for a, _ in lat_cols]
+        head += [lbl for _, lbl in lat_cols]
+    # coverage / decisions / min-n stay in model_summary.csv; the cards above the
+    # table (Capabilities, Decisions) and the warnings carry the same signal
+    reqs = reqs or {}
+    # deployment columns whenever at least one scored run is registered (labels may
+    # carry the presentation-only kyr0/ prefix -> _registry_entry strips it)
+    show_deploy = any(_registry_entry(reqs, run) for run in c.summary.index)
+    if show_deploy:
+        head += ["VRAM (8k KV)", "License", "Max. Context", "Image support"]
+    # best-first by macro; neutral metrics (e.g. confidence) have no better side,
+    # sort descending for a stable deterministic order
+    s = c.summary
+    ascending = c.metric.direction == "lower"
+    s = s.sort_values("macro", ascending=ascending, na_position="last")
+    ctx_footnotes = []  # context_note texts collected for the * footnote below the table
     rows = []
-    for run, r in c.summary.iterrows():
-        cells = [html.escape(str(run))]
-        for col in cols:
+    # macro of the baseline: every other row shows its performance-aligned gap vs it
+    base_macro = (c.summary.loc[c.baseline, "macro"]
+                  if c.baseline in c.summary.index else None)
+    for run, r in s.iterrows():
+        m = _registry_entry(reqs, str(run)) or {}
+        repo = m.get("inference_repo")
+        # run name: the kyr0/ org prefix links to the org profile; plus a link to
+        # the inference engine the run was measured under
+        name = html.escape(str(run))
+        if str(run).startswith(KYR0_PREFIX):
+            name = (f'<a href="{KYR0_URL}" target="_blank" rel="noopener">{KYR0_PREFIX}</a>'
+                    + html.escape(str(run)[len(KYR0_PREFIX):]))
+        if repo:
+            name += (f' <span class="n"><a href="{html.escape(str(repo), quote=True)}"'
+                     ' target="_blank" rel="noopener">inference setup</a></span>')
+        cells = [name]
+        for col in cols:  # accuracy block, then latency aggregates
             v = r[col]
-            if col in {"macro", "weighted", "median", "p10", "reported_micro"}:
-                cells.append(fmt_value(v, c.metric))
-            elif col == "coverage":
-                cells.append("—" if pd.isna(v) else f"{float(v) * 100:.1f}%")
+            if col == "macro":
+                macro = fmt_value(v, c.metric)
+                # gap vs the baseline: red when behind, green when ahead; none on
+                # the baseline row itself (gap 0 by definition)
+                if (run != c.baseline and base_macro is not None
+                        and pd.notna(base_macro) and pd.notna(v)):
+                    gap = (float(v) - float(base_macro)) * c.metric.performance_sign
+                    if c.metric.format_kind == "probability":
+                        gap_txt = f"{gap * 100:+.1f} pp"
+                    else:
+                        gap_txt = f"{gap:+,.3f}"
+                    macro += f'<br><span class="{"pos" if gap > 0 else "neg"}">{gap_txt}</span>'
+                cells.append(macro)
+            else:  # latency aggregates
+                cells.append("—" if pd.isna(v) else f"{float(v):,.1f}")
+        if show_deploy:  # deployment columns present for this report
+            if m:  # registry entry already resolved above (prefix-tolerant)
+                vram = ("—" if m.get("vram_gb") is None
+                        else f'{float(m["vram_gb"]):.1f} GB'
+                             + (f' <span class="n">{html.escape(str(m["vram_note"]))}</span>'
+                                if m.get("vram_note") else ""))
+                ctx = m.get("max_context_window")
+                # dynamic unit: 8192 -> 8k, 65536 -> 64k, 1048576 -> 1M
+                if isinstance(ctx, (int, float)):
+                    k = ctx / 1024
+                    ctx_txt = (f"{k / 1024:g}M" if k >= 1024 else f"{k:g}k")
+                else:
+                    ctx_txt = "—"
+                if m.get("context_note"):
+                    # asterisk on the value; the explanation joins the caption footnote
+                    ctx_txt += "*"
+                    note = str(m["context_note"])
+                    if note not in ctx_footnotes:
+                        ctx_footnotes.append(note)
+                img = "✓" if m.get("image_support") else "—"
+                if m.get("image_support") and repo:
+                    # grey link line: which engine image support was measured under
+                    owner_repo = str(repo).rstrip("/").split("//", 1)[-1].split("/", 1)[-1]
+                    img += (f'<br><span class="n"><a href="{html.escape(str(repo), quote=True)}"'
+                            f' target="_blank" rel="noopener">With {html.escape(owner_repo)}</a></span>')
+                lic = html.escape(str(m.get("license", "—")))
+                # grey subtitle line: open-weighted models state it explicitly
+                if str(m.get("weights", "")).lower() == "open":
+                    lic += ' <span class="n">Open Weights</span>'
+                cells += [vram, lic, ctx_txt, img]
             else:
-                cells.append("—" if pd.isna(v) else f"{int(v):,}")
-        rows.append("<tr>" + "".join(f"<td>{x}</td>" for x in cells) + "</tr>")
+                cells += ["—", "—", "—", "—"]
+        # light-green highlight for the pareto-optimal model row
+        open_tag = '<tr class="pareto">' if (show_deploy and m and m.get("paretoOptimal")) else "<tr>"
+        rows.append(open_tag + "".join(f"<td>{x}</td>" for x in cells) + "</tr>")
+    caption = (
+        f'<p class="caption"><b>Macro {short}</b> = unweighted mean over the shared capabilities '
+        '(each capability counts equally regardless of suite size; the n-weighted mean, median and '
+        'p10 weakest-decile floor stay in model_summary.csv). '
+        'Rows are sorted best-first on Macro; the subline is the gap in '
+        'percentage points vs the baseline (red = behind, green = ahead).'
+        + (' <b>Max. Context *</b>: ' + '; '.join(html.escape(n) for n in ctx_footnotes) + '.'
+           if ctx_footnotes else '')
+        + '</p>'
+    )
     return (
         '<div class="table-wrap"><table class="summary"><thead><tr>'
         + "".join(f"<th>{html.escape(h)}</th>" for h in head)
         + "</tr></thead><tbody>"
         + "".join(rows)
-        + "</tbody></table></div>"
+        + "</tbody></table></div>" + caption
     )
 
 
@@ -450,8 +643,25 @@ def build_report(c: Comparison, out_dir: Path, *, title: str, top_n: int = 40) -
     are skipped; None in the figures list never produces an empty section."""
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # models.json lives at the project root: out_dir is <root>/output/comparison,
+    # so the root is two levels up; missing file -> no registry effects at all
+    reqs = _model_registry(out_dir.parent.parent)
+    # kyr0/ branding: relabel runs once so every figure and table inherits it
+    c = _kyr0_labels(c, reqs)
+
+    # calibrate-split case counts come from the v2 artifacts that sit next to the
+    # stats files (out_dir/../<run>_calibration.json); absent artifacts -> no card
+    cal_n = 0
+    for art in sorted((out_dir.parent).glob('*_calibration.json')):
+        try:
+            n = json.loads(art.read_text(encoding='utf-8')).get('split', {}).get('calibration_n')
+            cal_n = max(cal_n, int(n)) if n is not None else cal_n
+        except (OSError, ValueError, TypeError):
+            continue  # an unreadable artifact must not sink the report
+
     figures: list[tuple[str, str, go.Figure | None, bool]] = [
         ("summary", "Model summary", summary_bar(c), False),
+        ("summary-latency", "Model summary — latency", summary_latency(c), False),
         ("heatmap", "All capabilities", capability_heatmap(c), True),
         ("delta", "Baseline deltas", delta_heatmap(c), True),
         ("discriminators", f"Most discriminating capabilities (top {top_n} by model spread)",
@@ -464,12 +674,26 @@ def build_report(c: Comparison, out_dir: Path, *, title: str, top_n: int = 40) -
 
     cards = [
         ("Models", str(len(c.data.runs))),
-        ("Shared capabilities", f"{len(c.common_capabilities):,}"),
-        ("Union capabilities", f"{len(c.union_capabilities):,}"),
+        # the headline number is the SHARED set (what the comparison scores on);
+        # union/coverage detail lives in the summary table's Coverage column
+        ("Capabilities", f"{len(c.common_capabilities):,}"),
+        # one scored case == one typed decision; max over runs = decisions the
+        # best-covered run was tested on (per-run totals: "Shared examples" column)
+        ("Decisions", f"{int(c.summary['examples'].max()):,}" if len(c.summary) else "0"),
+        *([("Calibrations", f"{cal_n:,}")] if cal_n else []),  # cases the T's were fitted on
         ("Primary metric", c.metric.label),
         ("Baseline", c.baseline),
     ]
     warning_html = "".join(f'<div class="warning">{html.escape(w)}</div>' for w in _warnings(c))
+
+    # honest caveats per figure, rendered as captions below the chart
+    section_notes = {
+        "summary-latency": ("All models ran on a single NVIDIA H200 NVL GPU, so latencies are "
+                            "directly comparable across runs; client-side load settings "
+                            "(--parallel, --quota-buster) apply per run as configured."),
+        "latency": ("All models ran on a single NVIDIA H200 NVL GPU; one point per capability "
+                    "per run — per-capability point estimates are noisy at small n."),
+    }
 
     sections = []
     for key, heading, fig, scroll in figures:
@@ -478,6 +702,7 @@ def build_report(c: Comparison, out_dir: Path, *, title: str, top_n: int = 40) -
         sections.append(
             f'<section id="{key}"><h2>{html.escape(heading)}</h2>'
             + _fig_fragment(fig, scroll=scroll, div_id=f"fig-{key}")
+            + (f'<p class="caption">{section_notes[key]}</p>' if key in section_notes else "")
             + "</section>"
         )
 
@@ -516,6 +741,11 @@ th:first-child, td:first-child {{ text-align:left; position:sticky; left:0; back
 th {{ position:sticky; top:0; background:#fafbfc; z-index:2; font-weight:650; }}
 th:first-child {{ z-index:3; background:#fafbfc; }}
 .n {{ display:block; color:var(--muted); font-size:10px; margin-top:2px; }}
+.neg {{ color:#c0392b; font-size:10px; font-weight:600; }}
+.pos {{ color:#1e7d32; font-size:10px; font-weight:600; }}
+table.summary tr.pareto td {{ background:#e8f6ec; }}
+table.summary tr.pareto td:first-child {{ background:#e8f6ec; }}
+.caption {{ color:var(--muted); font-size:12px; line-height:1.5; margin:8px 2px 0; }}
 .search {{ width:min(520px,100%); padding:10px 12px; border:1px solid var(--line); border-radius:9px; margin:4px 0 10px; font:inherit; }}
 .capability-table {{ max-height:720px; }}
 .downloads a {{ display:inline-block; margin:4px 10px 4px 0; color:#2456a6; text-decoration:none; }}
@@ -529,12 +759,12 @@ footer {{ color:var(--muted); font-size:12px; padding:12px 2px; }}
 <main>
 <header>
 <h1>{html.escape(title)}</h1>
-<p class="subtitle">Per-capability comparison · primary metric: {html.escape(c.metric.label)} · positive baseline deltas mean improvement.</p>
+<p class="subtitle">Last updated: {date.today().isoformat()}</p>
 <nav class="nav"><a href="#table-summary">Summary</a><a href="#heatmap">Capabilities</a><a href="#delta">Deltas</a><a href="#discriminators">Discriminators</a><a href="#latency">Latency</a><a href="#details">Exact values</a></nav>
 <div class="cards">{''.join(f'<div class="card"><div class="k">{html.escape(k)}</div><div class="v">{html.escape(v)}</div></div>' for k,v in cards)}</div>
 {warning_html}
 </header>
-<section id="table-summary"><h2>Numeric summary</h2>{_summary_table(c)}</section>
+<section id="table-summary"><h2>Summary</h2>{_summary_table(c, reqs)}</section>
 {''.join(sections)}
 <section id="details"><h2>Capability values</h2>{_capability_table(c)}</section>
 <section class="downloads"><h2>Machine-readable outputs</h2>
@@ -545,7 +775,7 @@ footer {{ color:var(--muted); font-size:12px; padding:12px 2px; }}
 <a href="all_rows.csv">all_rows.csv</a>
 <a href="summary.json">summary.json</a>
 </section>
-<footer>Generated by evalcompare. Shared-set summaries prevent models with missing capabilities from benefiting from coverage differences.</footer>
+<footer>Generated by typed-decision-bench. Agentically engineered by <a href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener">Aron Homberg (kyr0)</a>. Shared-set summaries prevent models with missing capabilities from benefiting from coverage differences.</footer>
 </main>
 <script>
 const search = document.getElementById('cap-search');

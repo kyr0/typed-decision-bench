@@ -35,6 +35,9 @@ eval-only:
 -include .env
 N ?=
 NAME ?= $(if $(TYPESAFE_MODEL),$(TYPESAFE_MODEL),bench)$(if $(N),-$(N))
+# reference run for `make compare` (override: make compare BASELINE=<run>);
+# jev is the hosted reference deployment, so it doubles as the default baseline
+BASELINE ?=jev-1.13.0
 bench:
 	uv run scripts/run_eval.py --benchmark . $(if $(N),--n $(N)) --name "$(NAME)" $(ARGS)
 
@@ -59,11 +62,16 @@ calibrate:
 metrics:
 	uv run scripts/metrics.py --benchmark .
 
-# Per-capability comparison of all scored runs vs an explicit baseline, e.g.
-# make compare ARGS="--baseline three"   (optional: --metric accuracy);
-# writes output/comparison/ (matrix/deltas/spread CSVs + report.html)
+# Per-capability comparison of ALL scored runs into output/comparison/
+# (matrix/deltas/spread CSVs + report.html). Default baseline is jev-1.13.0;
+# override with BASELINE=<run> (or pass --baseline inside ARGS), metric with
+# ARGS="--metric accuracy".
 compare:
+ifeq ($(findstring --baseline,$(ARGS)),)
+	uv run scripts/metrics.py --benchmark . --compare --baseline $(BASELINE) $(ARGS)
+else
 	uv run scripts/metrics.py --benchmark . --compare $(ARGS)
+endif
 
 # Pytest suite in tests/: evalcompare library (src/evalcompare/), the scorer,
 # the runner (naming/resume/rate limiting, stub endpoint) and gpqa zip lifecycle

@@ -431,7 +431,7 @@ def main():
     ap.add_argument('--model', default=None, help='Value substituted for ' + MODEL_PLACEHOLDER + '; defaults to $TYPESAFE_MODEL')
     ap.add_argument('--timeout', type=float, default=10.0, help='Per-request timeout in seconds')
     ap.add_argument('--retries', type=int, default=3, help='Retries per request before noting an error')
-    ap.add_argument('--parallel', type=float, default=18.0, help='Target requests per second (rate limit for parallel execution)')
+    ap.add_argument('--parallel', type=float, default=4.0, help='Target requests per second (rate limit for parallel execution)')
     ap.add_argument('--quota-buster', type=float, default=750.0, metavar='MS',
                     help='Cool-down in ms after every ~25 (±5, re-rolled) requests, jittered ±10%% '
                          '(default: 750, i.e. ±75 ms); 0 disables')

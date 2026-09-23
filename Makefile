@@ -1,4 +1,39 @@
-.PHONY: assign-splits sync-metadata validate eval eval-only bench e2e score calibrate metrics compare test gpqa-lock gpqa-unlock gpqa-status
+# every target below shells out to `uv`; the installer puts it in ~/.local/bin
+# (or ~/.cargo/bin on older installs), so make sure non-login shells find it
+export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
+
+.PHONY: setup assign-splits sync-metadata validate eval eval-only bench e2e score calibrate metrics compare test gpqa-lock gpqa-unlock gpqa-status
+
+# One-command bootstrap for a fresh clone: verify the toolchain (installs uv
+# when missing), create .env from the template, create output/, pre-warm every
+# dependency cache the targets below need (PEP 723 envs + the pytest suite),
+# check the gated GPQA archives, validate all benchmark data and print a dry-run
+# send plan. Idempotent — re-run it any time something feels broken.
+setup:
+	@set -e; \
+	echo '[1/6] toolchain…'; \
+	if ! command -v uv >/dev/null 2>&1; then \
+		echo '  uv not found — installing from https://astral.sh/uv/install.sh'; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+		command -v uv >/dev/null 2>&1 || { echo '  error: uv not on PATH after install (installer puts it in ~/.local/bin) — open a new shell or extend PATH, then re-run make setup'; exit 1; }; \
+	fi; \
+	echo "  $$(uv --version)"; \
+	echo '[2/6] configuration…'; \
+	if [ ! -f .env ]; then cp .env.example .env; echo '  created .env from .env.example — now edit it (TYPESAFE_MODEL / TYPESAFE_API_KEY / TYPESAFE_BASE_URL)'; else echo '  .env already exists (CLI flag > process env > .env)'; fi; \
+	mkdir -p output; \
+	echo '[3/6] dependency caches (PEP 723 scripts + pytest suite)…'; \
+	uv run scripts/run_eval.py --help >/dev/null; \
+	uv run scripts/validate.py --help >/dev/null; \
+	uv run --with pytest --with pandas --with numpy --with plotly pytest --version >/dev/null; \
+	echo '  warmed'; \
+	echo '[4/6] gated GPQA archives…'; \
+	uv run scripts/gpqa_zip.py status; \
+	echo '[5/6] benchmark validation (needs network: fetches the live OpenAPI spec)…'; \
+	uv run scripts/validate.py > validation_status.json; \
+	echo '  PASS (document written to validation_status.json)'; \
+	echo '[6/6] send plan (dry-run, nothing sent)…'; \
+	uv run scripts/run_eval.py --benchmark . --dry-run --n 1 >/dev/null; \
+	echo 'setup complete — smoke run next: make eval ARGS="--n 2 --capabilities gpqa_diamond,contains_pii"'
 
 # ONE-TIME DATA MIGRATION: persist explicit metadata split membership, then
 # refresh every derived checksum/index and validate the resulting benchmark.
@@ -42,7 +77,7 @@ bench:
 	uv run scripts/run_eval.py --benchmark . $(if $(N),--n $(N)) --name "$(NAME)" $(ARGS)
 
 # One case per capability (all 275) against the endpoint configured via .env;
-# parallel at the runner default of 18 req/s (override via ARGS, e.g. ARGS="--parallel 10")
+# parallel at the runner default of 4 req/s (override via ARGS, e.g. ARGS="--parallel 10")
 e2e:
 	uv run scripts/run_eval.py --benchmark . --responses none --splits test --n 1 --timeout 120 --no-calibration --log output/e2e.jsonl $(ARGS)
 

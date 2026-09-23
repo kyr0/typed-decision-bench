@@ -48,20 +48,27 @@ I needed a benchmark that would evaluated my approaches _honestly_ and broadly. 
 | **[jev-phishing-bench](https://github.com/anisselbd/jev-phishing-bench)**     | [PhishNChips v5.2](https://huggingface.co/datasets/AreLit/PhishNChips)                                                                                                                                                                                                                                                                                              |                                               **2,000 emails** | **Deep domain-specific accuracy/calibration study with statistical controls**                                                           |
 
 
-
 ## 🚀 Quick start
 
-**Step 1 — configure:**
+**Step 1 — setup:**
 
 ```bash
-cp .env.example .env        # set TYPESAFE_MODEL / TYPESAFE_API_KEY / TYPESAFE_BASE_URL
+make setup                  # one command: verifies uv (installs it if missing), creates .env
+                            # from the template, warms every dependency cache, checks the
+                            # gated GPQA archives, validates all data and prints a dry-run
+                            # send plan
 ```
 
-**Step 2 — smoke run** (2 cases, before you burn an hour):
+Then open the generated `.env` and set your endpoint: `TYPESAFE_MODEL` / `TYPESAFE_API_KEY` / `TYPESAFE_BASE_URL` (or keep copying manually via `cp .env.example .env`).
+
+**Step 2 — smoke run** (2 cases, named):
 
 ```bash
-make eval ARGS="--n 2 --capabilities gpqa_diamond,contains_pii"
+make eval ARGS="--n 2 --name Bonsai-Llama-Jev-n2"
 ```
+
+![in_bench.png](in_bench.png)
+
 
 **Step 3 — the full benchmark** (run → score → metrics → comparison, all automatic):
 
@@ -360,6 +367,7 @@ For every capability, 80 decisions are to be taken by the typed decision model. 
 
 | Target | What it does |
 |---|---|
+| `make setup` | one-command bootstrap for a fresh clone: verify/install `uv`, create `.env` from the template, create `output/`, pre-warm all PEP 723 + pytest dependency caches, check gated GPQA archives, validate the benchmark, print a dry-run send plan (idempotent) |
 | `make eval` | run all suites (`ARGS` forwarded to `scripts/run_eval.py`, e.g. `ARGS="--capabilities gpqa_diamond --n 2"`); after the run: score → metrics → comparison |
 | `make eval-only` | same run, **no** `output/comparison/` report (`--no-compare`; stats/metrics/calibration still written) |
 | `make e2e` | 1 case × all 275 suites, `--responses none --timeout 120 --log output/e2e.jsonl` (endpoint smoke test) |
@@ -388,7 +396,7 @@ For every capability, 80 decisions are to be taken by the typed decision model. 
 | `--model NAME` | `$TYPESAFE_MODEL` | value substituted for `REPLACED_BY_TYPESAFE_MODEL` |
 | `--timeout SEC` | `10` | per-request timeout (`make e2e` raises it to `120`) |
 | `--retries N` | `3` | attempts per request before recording an error |
-| `--parallel RPS` | `18` | target requests per second (workers = `min(512, max(8, rps × 5))`) |
+| `--parallel RPS` | `4` | target requests per second (workers = `min(512, max(8, rps × 5))`) |
 | `--quota-buster MS` | `750` | cool-down after every ~25 (±5, re-rolled) requests, jittered ±10 % (`0` disables) |
 | `--responses DIR` | `none` | opt-in per-capability response files; pointing this at the golden `responses/` dir is **refused** (answer key!) — the run log already embeds every response, so scoring never needs them |
 | `--output DIR` | `output` | directory for the combined run log |

@@ -242,8 +242,7 @@ If you use this benchmark, its split contract, or the Qtype-Stratified Temperatu
 ```bibtex
 @software{homberg_typed_decision_bench,
   author = {Homberg, Aron},
-  title  = {typed-decision-bench: A held-out benchmark and qtype-affine
-            calibration standard for System One typed decisions},
+  title  = {typed-decision-bench: A Held-Out Benchmark And Qtype-Stratified Temperature Scaling Method For Language Models Turned Into Typed Decision Engines},
   year   = {2026},
   version = {5},
   url    = {https://github.com/kyr0/typed-decision-bench},

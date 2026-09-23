@@ -1,0 +1,3006 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<title>A Held-Out Benchmark And Qtype-Stratified Temperature Scaling Method For Language Models Turned Into Typed Decision Engines</title>
+	</head>
+<body>
+<h1 id="a-held-out-benchmark-and-qtype-stratified-temperature-scaling-method-for-language-models-turned-into-typed-decision-engines">A Held-Out Benchmark And Qtype-Stratified Temperature Scaling Method For Language Models Turned Into Typed Decision Engines</h1>
+
+<p><em>Aron Homberg - Independent Researcher - 2026</em></p>
+
+<h2 id="abstract">Abstract</h2>
+
+<p>This document specifies the calibration protocol used by <code>typed-decision-bench</code>, and first implemented by <code>kyr0/Bonsai-Llama-Jev</code> inference engine. It explains the mathematics behind it, and separates four kinds of statements:</p>
+
+<ul>
+	<li><strong>PROVED</strong> — follows mathematically from the transform or from an implementation invariant.</li>
+	<li><strong>EMPIRICALLY SUPPORTED</strong> — supported by held-out measurements or established calibration literature.</li>
+	<li><strong>EXPECTED</strong> — a reasonable prior expectation that must still be tested on the target deployment.</li>
+	<li><strong>NOT CLAIMED</strong> — stronger conclusions that the method does not establish.</li>
+</ul>
+
+<p>The goal is practical: an engineer should be able to understand what the calibration</p>
+
+<p>artifact does, why it is mathematically well behaved, when it is likely to generalize,</p>
+
+<p>how to implement it correctly in an inference server, and what evidence is required</p>
+
+<p>before making stronger claims about a deployment.</p>
+
+<hr />
+
+<nav class="toc">
+	<ul>
+		<li><a href="#provenance">Provenance</a></li>
+		<li><a href="#1-what-calibration-means">1. What calibration means</a></li>
+		<li><a href="#2-why-typed-decisions-need-calibration">2. Why typed decisions need calibration</a></li>
+		<li><a href="#3-explicit-train-calibrate-test-split-contract">3. Explicit train / calibrate / test split contract</a></li>
+		<li><a href="#what-the-split-guarantees">What the split guarantees</a></li>
+		<li><a href="#what-the-split-does-not-guarantee">What the split does not guarantee</a></li>
+		<li><a href="#4-the-temperature-transform">4. The temperature transform</a></li>
+		<li><a href="#5-proof-probability-space-scaling-equals-logit-temperature-scaling">5. Proof: probability-space scaling equals logit temperature scaling</a></li>
+		<li><a href="#6-proof-pairwise-odds-are-exponentiated-by">6. Proof: pairwise odds are exponentiated by</a></li>
+		<li><a href="#7-proof-candidate-ordering-and-argmax-are-unchanged">7. Proof: candidate ordering and argmax are unchanged</a></li>
+		<li><a href="#8-worked-binary-example">8. Worked binary example</a></li>
+		<li><a href="#9-why-fit-separate-temperatures-by-question-type">9. Why fit separate temperatures by question type?</a></li>
+		<li><a href="#current-schema-v2-fallback-behavior">Current schema-v2 fallback behavior</a></li>
+		<li><a href="#10-what-is-actually-fitted">10. What is actually fitted?</a></li>
+		<li><a href="#11-proof-the-objective-is-convex-in-inverse-temperature">11. Proof: the objective is convex in inverse temperature</a></li>
+		<li><a href="#12-global-optimum-does-not-always-mean-unique-optimum">12. Global optimum does not always mean unique optimum</a></li>
+		<li><a href="#13-why-optimize-nll">13. Why optimize NLL?</a></li>
+		<li><a href="#14-metrics-what-each-one-does-and-does-not-establish">14. Metrics: what each one does and does not establish</a></li>
+		<li><a href="#141-nll-cross-entropy">14.1 NLL / cross-entropy</a></li>
+		<li><a href="#142-brier-score">14.2 Brier score</a></li>
+		<li><a href="#143-top-label-ece">14.3 Top-label ECE</a></li>
+		<li><a href="#144-hard-accuracy">14.4 Hard accuracy</a></li>
+		<li><a href="#145-soft-accuracy">14.5 Soft accuracy</a></li>
+		<li><a href="#15-what-temperature-scaling-can-fix">15. What temperature scaling can fix</a></li>
+		<li><a href="#16-what-temperature-scaling-cannot-fix">16. What temperature scaling cannot fix</a></li>
+		<li><a href="#17-why-we-expect-the-fitted-temperature-to-generalize">17. Why we expect the fitted temperature to generalize</a></li>
+		<li><a href="#171-historical-empirical-evidence">17.1 Historical empirical evidence</a></li>
+		<li><a href="#172-very-low-estimator-capacity">17.2 Very low estimator capacity</a></li>
+		<li><a href="#173-broad-calibration-support">17.3 Broad calibration support</a></li>
+		<li><a href="#174-the-expectation-is-strongest-under-distributional-continuity">17.4 The expectation is strongest under distributional continuity</a></li>
+		<li><a href="#18-three-different-meanings-of-generalization">18. Three different meanings of &#39;generalization&#39;</a></li>
+		<li><a href="#level-a-calibration-split-benchmark-test-split">Level A — calibration split → benchmark test split</a></li>
+		<li><a href="#level-b-benchmark-new-but-similar-typed-decisions">Level B — benchmark → new but similar typed decisions</a></li>
+		<li><a href="#level-c-benchmark-shifted-production-traffic">Level C — benchmark → shifted production traffic</a></li>
+		<li><a href="#19-what-held-out-evidence-should-we-require">19. What held-out evidence should we require?</a></li>
+		<li><a href="#20-statistical-precision-what-does-and-does-not-mean">20. Statistical precision: what  does and does not mean</a></li>
+		<li><a href="#21-recommended-uncertainty-estimation-cluster-bootstrap">21. Recommended uncertainty estimation: cluster bootstrap</a></li>
+		<li><a href="#22-why-calibration-and-evaluation-must-use-different-rows">22. Why calibration and evaluation must use different rows</a></li>
+		<li><a href="#23-fixed-point-composition-theorem">23. Fixed-point composition theorem</a></li>
+		<li><a href="#24-what-the-fixed-point-check-proves-and-what-it-does-not">24. What the fixed-point check proves — and what it does not</a></li>
+		<li><a href="#25-recommended-beforeafter-experiment">25. Recommended before/after experiment</a></li>
+		<li><a href="#run-a-raw-endpoint">Run A — raw endpoint</a></li>
+		<li><a href="#offline-held-out-evaluation">Offline held-out evaluation</a></li>
+		<li><a href="#run-b-calibrated-endpoint">Run B — calibrated endpoint</a></li>
+		<li><a href="#strong-implementation-invariant">Strong implementation invariant</a></li>
+		<li><a href="#26-what-should-be-published-for-reproducibility">26. What should be published for reproducibility?</a></li>
+		<li><a href="#27-correct-inference-engine-placement">27. Correct inference-engine placement</a></li>
+		<li><a href="#28-recompute-every-derived-answer-field-after-calibration">28. Recompute every derived answer field after calibration</a></li>
+		<li><a href="#choice">choice</a></li>
+		<li><a href="#score">score</a></li>
+		<li><a href="#noul">noul</a></li>
+		<li><a href="#29-benchmark-confidence-vs-api-confidence">29. Benchmark confidence vs API confidence</a></li>
+		<li><a href="#30-artifact-contract">30. Artifact contract</a></li>
+		<li><a href="#31-what-deployable-true-means">31. What deployable: true means</a></li>
+		<li><a href="#32-search-bound-temperatures">32. Search-bound temperatures</a></li>
+		<li><a href="#33-generalization-under-dataset-shift">33. Generalization under dataset shift</a></li>
+		<li><a href="#34-what-the-bonsai-reference-experiment-now-demonstrates">34. What the Bonsai reference experiment now demonstrates</a></li>
+		<li><a href="#35-claim-ladder">35. Claim ladder</a></li>
+		<li><a href="#proved">PROVED</a></li>
+		<li><a href="#empirically-supported-by-prior-literature">EMPIRICALLY SUPPORTED BY PRIOR LITERATURE</a></li>
+		<li><a href="#empirically-observed-in-the-bonsai-2-27b-reference-experiment">EMPIRICALLY OBSERVED IN THE BONSAI-2-27B REFERENCE EXPERIMENT</a></li>
+		<li><a href="#expected-then-tested-here">EXPECTED, THEN TESTED HERE</a></li>
+		<li><a href="#not-claimed">NOT CLAIMED</a></li>
+		<li><a href="#36-relationship-to-established-calibration-methods">36. Relationship to established calibration methods</a></li>
+		<li><a href="#37-references-and-further-reading">37. References and further reading</a></li>
+		<li><a href="#primary-scientific-references">Primary scientific references</a></li>
+		<li><a href="#accessible-engineering-primers">Accessible engineering primers</a></li>
+		<li><a href="#38-practical-interpretation">38. Practical interpretation</a></li>
+		<li><a href="#summary">Summary</a></li>
+		<li><a href="#citation">Citation</a></li>
+	</ul>
+</nav>
+
+<hr />
+
+<h2 id="provenance">Provenance</h2>
+
+<p>The method has now been exercised end to end on a real typed-decision deployment,</p>
+
+<p>not only on synthetic calibration-unit tests.</p>
+
+<p>Reference deployment:</p>
+
+<ul>
+	<li>model: <code>bonsai-2-27b</code></li>
+	<li>System One endpoint: <code>/v1/systemone</code></li>
+	<li>frozen calibration artifact: schema v2, <code>per_qtype</code></li>
+	<li>server implementation: <code>Bonsai-Llama-Jev</code>, commit</li>
+</ul>
+
+<p> <a href="https://github.com/kyr0/Bonsai-Llama-Jev/commit/c8054874473399fa32868257a0f7d05985a863ea"><code>c805487</code></a></p>
+
+<ul>
+	<li>benchmark invocation: all 275 suites with <code>--n 100</code></li>
+	<li>total requests: <strong>27,500</strong></li>
+	<li>calibration rows: <strong>5,499</strong></li>
+	<li>held-out test rows: <strong>22,001</strong></li>
+</ul>
+
+<p>The run is slightly smaller than the repository&#39;s complete 27,598-row corpus</p>
+
+<p>because <code>--n 100</code> caps GPQA Diamond at 100 of its 198 stored rows.</p>
+
+<p>The frozen temperatures were:</p>
+
+<table>
+	<thead>
+		<tr>
+			<th>
+				parameter
+			</th>
+			<th style="text-align: right;">
+				fitted value
+			</th>
+			<th>
+				interpretation
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				pooled/global fallback
+			</td>
+			<td style="text-align: right;">
+				1.011720
+			</td>
+			<td>
+				close to identity
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>choice</code>
+			</td>
+			<td style="text-align: right;">
+				1.037240
+			</td>
+			<td>
+				very mild flattening
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>noul</code>
+			</td>
+			<td style="text-align: right;">
+				0.765169
+			</td>
+			<td>
+				substantial sharpening
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>score</code>
+			</td>
+			<td style="text-align: right;">
+				1.162158
+			</td>
+			<td>
+				moderate flattening
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>All three qtype fits were interior solutions, not search-bound results.</p>
+
+<p>This is useful evidence for qtype stratification: the pooled scalar is close to</p>
+
+<p>1 even though <code>noul</code> and <code>score</code> require corrections in opposite directions.</p>
+
+<p>A single pooled slope cannot represent both effects simultaneously.</p>
+
+<h3 id="held-out-generalization">Held-out generalization</h3>
+
+<p>The temperatures were fitted on <code>split=calibrate</code> only. Applying that frozen</p>
+
+<p>artifact offline to the 22,001 disjoint <code>split=test</code> examples produced:</p>
+
+<table>
+	<thead>
+		<tr>
+			<th>
+				metric
+			</th>
+			<th style="text-align: right;">
+				raw test
+			</th>
+			<th style="text-align: right;">
+				calibrated test
+			</th>
+			<th style="text-align: right;">
+				relative change
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				NLL
+			</td>
+			<td style="text-align: right;">
+				0.438015
+			</td>
+			<td style="text-align: right;">
+				<strong>0.434996</strong>
+			</td>
+			<td style="text-align: right;">
+				<strong>-0.689%</strong>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Brier
+			</td>
+			<td style="text-align: right;">
+				0.235513
+			</td>
+			<td style="text-align: right;">
+				<strong>0.233939</strong>
+			</td>
+			<td style="text-align: right;">
+				<strong>-0.668%</strong>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				hard accuracy
+			</td>
+			<td style="text-align: right;">
+				0.832962
+			</td>
+			<td style="text-align: right;">
+				0.832962
+			</td>
+			<td style="text-align: right;">
+				exactly unchanged offline
+			</td>
+		</tr>
+		<tr>
+			<td>
+				top-label ECE-15
+			</td>
+			<td style="text-align: right;">
+				<strong>0.011998</strong>
+			</td>
+			<td style="text-align: right;">
+				0.014646
+			</td>
+			<td style="text-align: right;">
+				+22.1%
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>The two proper full-distribution scores improved on rows that were never used</p>
+
+<p>to fit the temperatures. This is direct empirical evidence that the fitted</p>
+
+<p>correction generalized from the calibration partition to the held-out benchmark</p>
+
+<p>partition for this deployment.</p>
+
+<p>The ECE result is deliberately shown rather than hidden: top-label ECE did not</p>
+
+<p>improve globally. Temperature scaling was fitted to NLL, and ECE is a binned</p>
+
+<p>top-label diagnostic rather than the optimized full-distribution objective.</p>
+
+<h3 id="held-out-result-by-qtype">Held-out result by qtype</h3>
+
+<table>
+	<thead>
+		<tr>
+			<th>
+				qtype
+			</th>
+			<th style="text-align: right;">
+				T
+			</th>
+			<th style="text-align: right;">
+				test NLL raw → calibrated
+			</th>
+			<th style="text-align: right;">
+				test Brier raw → calibrated
+			</th>
+			<th style="text-align: right;">
+				ECE-15 raw → calibrated
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<code>choice</code>
+			</td>
+			<td style="text-align: right;">
+				1.037240
+			</td>
+			<td style="text-align: right;">
+				0.488071 → <strong>0.487981</strong>
+			</td>
+			<td style="text-align: right;">
+				0.251921 → <strong>0.251900</strong>
+			</td>
+			<td style="text-align: right;">
+				0.015138 → <strong>0.013787</strong>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>noul</code>
+			</td>
+			<td style="text-align: right;">
+				0.765169
+			</td>
+			<td style="text-align: right;">
+				0.277873 → <strong>0.267841</strong>
+			</td>
+			<td style="text-align: right;">
+				0.169659 → <strong>0.165212</strong>
+			</td>
+			<td style="text-align: right;">
+				0.046100 → <strong>0.025605</strong>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>score</code>
+			</td>
+			<td style="text-align: right;">
+				1.162158
+			</td>
+			<td style="text-align: right;">
+				0.555333 → <strong>0.551416</strong>
+			</td>
+			<td style="text-align: right;">
+				0.317909 → <strong>0.313074</strong>
+			</td>
+			<td style="text-align: right;">
+				<strong>0.068788</strong> → 0.073269
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><code>noul</code> is the clearest calibration win: held-out NLL fell by about <strong>3.61%</strong>,</p>
+
+<p>Brier by about <strong>2.62%</strong>, and top-label ECE by about <strong>44.5%</strong>.</p>
+
+<p><code>score</code> demonstrates why proper scores and ECE must not be conflated: its</p>
+
+<p>full-distribution NLL and Brier improved while its binned top-label ECE became</p>
+
+<p>slightly worse.</p>
+
+<h3 id="independent-server-side-reproduction">Independent server-side reproduction</h3>
+
+<p>The frozen artifact was then loaded into the same inference server configuration</p>
+
+<p>with the C++ calibration path enabled, and the benchmark was run again.</p>
+
+<p>The served result almost exactly reproduced the offline prediction:</p>
+
+<table>
+	<thead>
+		<tr>
+			<th>
+				metric
+			</th>
+			<th style="text-align: right;">
+				offline prediction from raw Run A
+			</th>
+			<th style="text-align: right;">
+				actual calibrated Run B
+			</th>
+			<th style="text-align: right;">
+				absolute difference
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				NLL
+			</td>
+			<td style="text-align: right;">
+				0.4349960051
+			</td>
+			<td style="text-align: right;">
+				0.4349837998
+			</td>
+			<td style="text-align: right;">
+				0.0000122052
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Brier
+			</td>
+			<td style="text-align: right;">
+				0.2339390976
+			</td>
+			<td style="text-align: right;">
+				0.2339318835
+			</td>
+			<td style="text-align: right;">
+				0.0000072142
+			</td>
+		</tr>
+		<tr>
+			<td>
+				soft accuracy
+			</td>
+			<td style="text-align: right;">
+				0.7645820850
+			</td>
+			<td style="text-align: right;">
+				0.7645868428
+			</td>
+			<td style="text-align: right;">
+				0.0000047578
+			</td>
+		</tr>
+		<tr>
+			<td>
+				mean confidence
+			</td>
+			<td style="text-align: right;">
+				0.8319436708
+			</td>
+			<td style="text-align: right;">
+				0.8319458355
+			</td>
+			<td style="text-align: right;">
+				0.0000021647
+			</td>
+		</tr>
+		<tr>
+			<td>
+				top-label ECE-15
+			</td>
+			<td style="text-align: right;">
+				0.0146457356
+			</td>
+			<td style="text-align: right;">
+				0.0150875306
+			</td>
+			<td style="text-align: right;">
+				0.0004417949
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>The larger relative difference in ECE is expected to be more sensitive than NLL</p>
+
+<p>or Brier because fixed-width bin membership is discontinuous: a tiny probability</p>
+
+<p>change can move an example across a bin boundary.</p>
+
+<p>Hard accuracy differed by one test case between the two independent server runs</p>
+
+<p>(0.832962 versus 0.833008). Positive temperature scaling cannot cause such an</p>
+
+<p>argmax change for an identical raw vector; therefore this is evidence of a tiny</p>
+
+<p>cross-run raw-inference difference near a decision boundary, not a property of</p>
+
+<p>the calibration transform.</p>
+
+<p>The C++ implementation itself also has a direct unit test that compares</p>
+
+<p>server-returned calibrated probabilities against the analytic transform.</p>
+
+<h3 id="fixed-point-reproduction">Fixed-point reproduction</h3>
+
+<p>After Run B — whose probabilities were already calibrated by the frozen artifact</p>
+
+<p>— the benchmark fitted another temperature artifact from the same calibration</p>
+
+<p>rows.</p>
+
+<p>The residual temperatures were:</p>
+
+<table>
+	<thead>
+		<tr>
+			<th>
+				parameter
+			</th>
+			<th style="text-align: right;">
+				residual T
+			</th>
+			<th style="text-align: right;">
+				deviation from identity
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				pooled/global
+			</td>
+			<td style="text-align: right;">
+				0.99987869
+			</td>
+			<td style="text-align: right;">
+				-0.0121%
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>choice</code>
+			</td>
+			<td style="text-align: right;">
+				0.99991057
+			</td>
+			<td style="text-align: right;">
+				-0.0089%
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>noul</code>
+			</td>
+			<td style="text-align: right;">
+				0.99959046
+			</td>
+			<td style="text-align: right;">
+				-0.0410%
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>score</code>
+			</td>
+			<td style="text-align: right;">
+				0.99999629
+			</td>
+			<td style="text-align: right;">
+				-0.00037%
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>The additional residual fit changed held-out NLL only from</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>0.4349837998</mn></mrow><annotation encoding="application/x-tex">
+0.4349837998
+</annotation></semantics></math></p>
+
+<p>to</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>0.4349823236</mn><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">
+0.4349823236,
+</annotation></semantics></math></p>
+
+<p>a relative change of roughly <strong>0.00034%</strong>.</p>
+
+<p>This is the expected temperature-composition fixed point in practice: after the</p>
+
+<p>frozen qtype temperatures are applied, the best additional multiplicative</p>
+
+<p>temperature correction is essentially identity.</p>
+
+<p>Because the residual fit reuses the same benchmark calibration partition, this</p>
+
+<p>is an <strong>implementation consistency / fixed-point check</strong>, not a second</p>
+
+<p>independent generalization experiment.</p>
+
+<p>Taken together, the reference experiment establishes four different facts:</p>
+
+<ol>
+	<li>the low-capacity temperatures fit successfully on the calibration partition;</li>
+	<li>proper probabilistic scores improve on the disjoint test partition;</li>
+	<li>the C++ deployment reproduces the offline-calibrated aggregate behavior to</li>
+</ol>
+
+<p> very small numerical error;</p>
+
+<ol start="4">
+	<li>refitting the already calibrated endpoint returns essentially identity</li>
+</ol>
+
+<p> temperatures.</p>
+
+<p>That combination is materially stronger evidence than calibration-set</p>
+
+<p>improvement alone.</p>
+
+<h2 id="1-what-calibration-means">1. What calibration means</h2>
+
+<p>A model is not well calibrated merely because it is accurate.</p>
+
+<p>Suppose a binary system emits confidence <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.80</mn></mrow><annotation encoding="application/x-tex">0.80</annotation></semantics></math> for 1,000 decisions. A common</p>
+
+<p>notion of confidence calibration asks whether decisions reported near <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.80</mn></mrow><annotation encoding="application/x-tex">0.80</annotation></semantics></math></p>
+
+<p>are actually correct approximately 80% of the time.</p>
+
+<p>For multiclass predictions the full object is a probability vector,</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>p</mi><mo>=</mo><mo stretchy="false">(</mo><msub><mi>p</mi><mn>1</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>p</mi><mi>K</mi></msub><mo stretchy="false">)</mo><mo separator="true">,</mo><mspace width="2em"/><msub><mi>p</mi><mi>k</mi></msub><mo>≥</mo><mn>0</mn><mo separator="true">,</mo><mspace width="2em"/><munder><mo>∑</mo><mi>k</mi></munder><msub><mi>p</mi><mi>k</mi></msub><mo>=</mo><mn>1.</mn></mrow><annotation encoding="application/x-tex">
+p=(p_1,\ldots,p_K),\qquad p_k\ge0,\qquad \sum_k p_k=1.
+</annotation></semantics></math></p>
+
+<p>Calibration of the complete probability distribution is stronger than calibration</p>
+
+<p>of only the largest probability.</p>
+
+<p>This distinction matters in this benchmark.</p>
+
+<p>For a <code>choice</code> response such as</p>
+
+<pre><code class="code-highlighted code-json">{
+  <span class="syntax-all syntax-string">&quot;probabilities&quot;</span>: {
+    <span class="syntax-all syntax-string">&quot;billing&quot;</span>: <span class="syntax-all syntax-constant">0.70</span>,
+    <span class="syntax-all syntax-string">&quot;technical&quot;</span>: <span class="syntax-all syntax-constant">0.20</span>,
+    <span class="syntax-all syntax-string">&quot;sales&quot;</span>: <span class="syntax-all syntax-constant">0.10</span>
+  }
+}</code></pre>
+
+<p>the <strong>top-label confidence</strong> is</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mi>k</mi></munder><msub><mi>p</mi><mi>k</mi></msub><mo>=</mo><mn>0.70.</mn></mrow><annotation encoding="application/x-tex">
+\max_k p_k = 0.70.
+</annotation></semantics></math></p>
+
+<p>A top-label reliability diagram or ECE examines whether examples whose maximum</p>
+
+<p>probability is approximately <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.70</mn></mrow><annotation encoding="application/x-tex">0.70</annotation></semantics></math> are correct approximately 70% of the time.</p>
+
+<p>But the full distribution additionally claims that <code>technical</code> is twice as likely</p>
+
+<p>as <code>sales</code>. Top-label ECE does not test that claim.</p>
+
+<p>For this reason the benchmark reports multiple complementary metrics:</p>
+
+<ul>
+	<li><strong>NLL / cross-entropy</strong> — primary optimization objective; evaluates the full distribution.</li>
+	<li><strong>Brier score</strong> — another proper score for the full distribution.</li>
+	<li><strong>top-label ECE</strong> — useful reliability diagnostic for the winning probability.</li>
+	<li><strong>hard accuracy</strong> — evaluates only the chosen label.</li>
+	<li><strong>soft accuracy</strong> — descriptive probability/gold agreement, but <strong>not</strong> a proper scoring rule.</li>
+</ul>
+
+<p>Useful introductions:</p>
+
+<ul>
+	<li>Probability calibration: https://en.wikipedia.org/wiki/Calibration_%28statistics%29</li>
+	<li>Probabilistic classification: https://en.wikipedia.org/wiki/Probabilistic_classification</li>
+	<li>Scoring rules: https://en.wikipedia.org/wiki/Scoring_rule</li>
+	<li>Brier score: https://en.wikipedia.org/wiki/Brier_score</li>
+</ul>
+
+<p>For a more rigorous treatment of multiclass calibration evaluation, see</p>
+
+<p>Vaicenavicius et al. (AISTATS 2019):</p>
+
+<p>https://proceedings.mlr.press/v89/vaicenavicius19a.html</p>
+
+<hr />
+
+<h2 id="2-why-typed-decisions-need-calibration">2. Why typed decisions need calibration</h2>
+
+<p>A System One typed-decision endpoint returns a structured decision rather than a</p>
+
+<p>free-form generated answer. Typical answer types are:</p>
+
+<ul>
+	<li><code>choice</code> — a categorical probability distribution over named candidates,</li>
+	<li><code>noul</code> — a binary probability <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo stretchy="false">(</mo><mtext>true</mtext><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">p(\text{true})</annotation></semantics></math>,</li>
+	<li><code>score</code> — a categorical probability distribution over ordered score levels,</li>
+</ul>
+
+<p> from which an expected score is derived.</p>
+
+<p>The inference engine usually obtains these values from model scores or logits.</p>
+
+<p>A softmax converts scores <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>z</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">z_i</annotation></semantics></math> into probabilities:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub><mo>=</mo><mfrac><msup><mi>e</mi><msub><mi>z</mi><mi>i</mi></msub></msup><mrow><munder><mo>∑</mo><mi>j</mi></munder><msup><mi>e</mi><msub><mi>z</mi><mi>j</mi></msub></msup></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+p_i = \frac{e^{z_i}}{\sum_j e^{z_j}}.
+</annotation></semantics></math></p>
+
+<p>Softmax is excellent at turning relative scores into an ordered probability</p>
+
+<p>simplex, but the numerical scale of the logits determines how sharp the resulting</p>
+
+<p>distribution is.</p>
+
+<p>If all logit differences are too large, the model can be systematically</p>
+
+<p>over-confident while still choosing the correct answers.</p>
+
+<p>If all logit differences are too small, the model can be systematically</p>
+
+<p>under-confident while still choosing the same answers.</p>
+
+<p>Temperature scaling directly targets that degree of freedom.</p>
+
+<p>Accessible softmax/temperature primer:</p>
+
+<p>https://en.wikipedia.org/wiki/Softmax_function</p>
+
+<hr />
+
+<h2 id="3-explicit-train-calibrate-test-split-contract">3. Explicit <code>train</code> / <code>calibrate</code> / <code>test</code> split contract</h2>
+
+<p>Split membership is stored in the line-aligned <code>metadata/*.jsonl</code> files, not in</p>
+
+<p>the System One wire payload.</p>
+
+<p>Each metadata row contains exactly one:</p>
+
+<pre><code class="code-highlighted code-json">{<span class="syntax-all syntax-string">&quot;split&quot;</span>:<span class="syntax-all syntax-string">&quot;train&quot;</span>}
+{<span class="syntax-all syntax-string">&quot;split&quot;</span>:<span class="syntax-all syntax-string">&quot;calibrate&quot;</span>}
+{<span class="syntax-all syntax-string">&quot;split&quot;</span>:<span class="syntax-all syntax-string">&quot;test&quot;</span>}</code></pre>
+
+<table>
+	<thead>
+		<tr>
+			<th>
+				split
+			</th>
+			<th style="text-align: right;">
+				may train model
+			</th>
+			<th style="text-align: right;">
+				may fit calibration
+			</th>
+			<th style="text-align: right;">
+				published benchmark metrics
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<code>train</code>
+			</td>
+			<td style="text-align: right;">
+				yes
+			</td>
+			<td style="text-align: right;">
+				no
+			</td>
+			<td style="text-align: right;">
+				no
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>calibrate</code>
+			</td>
+			<td style="text-align: right;">
+				no
+			</td>
+			<td style="text-align: right;">
+				yes
+			</td>
+			<td style="text-align: right;">
+				no
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<code>test</code>
+			</td>
+			<td style="text-align: right;">
+				no
+			</td>
+			<td style="text-align: right;">
+				no
+			</td>
+			<td style="text-align: right;">
+				yes
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>The benchmark currently creates no <code>train</code> rows by default.</p>
+
+<p>The one-time migration assigns approximately 20% of each suite to <code>calibrate</code></p>
+
+<p>and the remainder to <code>test</code> by deterministic SHA-256 rank. Runtime tools then</p>
+
+<p>read the persisted field; they do not recompute split membership.</p>
+
+<pre><code class="code-highlighted code-bash">make assign-splits</code></pre>
+
+<p>The current repository validation reports:</p>
+
+<pre><code class="code-highlighted code-text">train:          0
+calibrate:  5,520
+test:      22,078
+total:     27,598</code></pre>
+
+<p>For ordinary 100-case suites this normally means 20 calibration rows and 80 test</p>
+
+<p>rows. GPQA Diamond has 198 rows and therefore receives 40 calibration rows and</p>
+
+<p>158 test rows.</p>
+
+<h2 id="what-the-split-guarantees">What the split guarantees</h2>
+
+<p><strong>PROVED by repository structure:</strong> the same row is not simultaneously assigned</p>
+
+<p>to <code>calibrate</code> and <code>test</code>.</p>
+
+<p>This prevents direct calibration/test row reuse.</p>
+
+<h2 id="what-the-split-does-not-guarantee">What the split does not guarantee</h2>
+
+<p>Disjoint rows are not automatically statistically independent.</p>
+
+<p>Synthetic cases can share generators, templates, source families, semantic</p>
+
+<p>structure, or latent difficulty factors.</p>
+
+<p><code>METHODOLOGY.md</code> already notes that templated synthetic cases can be correlated.</p>
+
+<p>Therefore the scientifically correct interpretation is:</p>
+
+<blockquote>
+<p>The test split is held out from direct calibration fitting.</p>
+</blockquote>
+
+<p>It is stronger than evaluating on the calibration rows themselves, but it is not</p>
+
+<p>a proof that calibration and test observations are independent random variables,</p>
+
+<p>nor that benchmark test performance is an unbiased estimate of every possible</p>
+
+<p>production workload.</p>
+
+<hr />
+
+<h2 id="4-the-temperature-transform">4. The temperature transform</h2>
+
+<p>For one probability vector <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi></mrow><annotation encoding="application/x-tex">p</annotation></semantics></math> and temperature <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">T&gt;0</annotation></semantics></math>,</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><msub><mi>q</mi><mi>i</mi></msub><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup><mrow><munder><mo>∑</mo><mi>j</mi></munder><msubsup><mi>p</mi><mi>j</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup></mrow></mfrac></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+q_i(T)=\frac{p_i^{1/T}}{\sum_j p_j^{1/T}}
+}
+</annotation></semantics></math></p>
+
+<p>The same operation can be written</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>q</mi><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mi mathvariant="normal">softmax</mi><mo>⁡</mo><mrow><mo fence="true">(</mo><mfrac><mrow><mi>log</mi><mo>⁡</mo><mi>p</mi></mrow><mi>T</mi></mfrac><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">
+q(T)=\operatorname{softmax}\left(\frac{\log p}{T}\right)
+</annotation></semantics></math></p>
+
+<p>when every <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">p_i&gt;0</annotation></semantics></math>.</p>
+
+<p>If the inference engine has the original logits, it is preferable to apply the</p>
+
+<p>temperature there:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><mi>q</mi><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mi mathvariant="normal">softmax</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>z</mi><mi mathvariant="normal">/</mi><mi>T</mi><mo stretchy="false">)</mo></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{q(T)=\operatorname{softmax}(z/T)}
+</annotation></semantics></math></p>
+
+<p>because this avoids taking logarithms of rounded or underflowed probabilities.</p>
+
+<p>If only probabilities are available, a numerically stable implementation can use:</p>
+
+<pre><code class="code-highlighted code-python"><span class="syntax-all syntax-keyword">def</span> <span class="syntax-all syntax-entity">temperature_scale</span>(<span class="syntax-all syntax-parameter">p</span>, <span class="syntax-all syntax-parameter">T</span>, <span class="syntax-all syntax-parameter">eps</span><span class="syntax-all syntax-keyword">=</span><span class="syntax-all syntax-constant">1e-12</span>):
+    logp <span class="syntax-all syntax-keyword">=</span> [math.log(<span class="syntax-all syntax-constant">max</span>(eps, x)) <span class="syntax-all syntax-keyword">/</span> <span class="syntax-all syntax-constant">T</span> <span class="syntax-all syntax-keyword">for</span> x <span class="syntax-all syntax-keyword">in</span> p]
+    m <span class="syntax-all syntax-keyword">=</span> <span class="syntax-all syntax-constant">max</span>(logp)
+    w <span class="syntax-all syntax-keyword">=</span> [math.exp(x <span class="syntax-all syntax-keyword">-</span> m) <span class="syntax-all syntax-keyword">for</span> x <span class="syntax-all syntax-keyword">in</span> logp]
+    z <span class="syntax-all syntax-keyword">=</span> <span class="syntax-all syntax-constant">sum</span>(w)
+    <span class="syntax-all syntax-keyword">return</span> [x <span class="syntax-all syntax-keyword">/</span> z <span class="syntax-all syntax-keyword">for</span> x <span class="syntax-all syntax-keyword">in</span> w]</code></pre>
+
+<p>The probability-space and logit-space forms are mathematically identical for</p>
+
+<p>strictly positive probabilities. With an implementation epsilon, zero-valued</p>
+
+<p>serialized probabilities are approximated rather than exactly inverted.</p>
+
+<hr />
+
+<h2 id="5-proof-probability-space-scaling-equals-logit-temperature-scaling">5. Proof: probability-space scaling equals logit temperature scaling</h2>
+
+<p>Assume</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub><mo>=</mo><mfrac><msup><mi>e</mi><msub><mi>z</mi><mi>i</mi></msub></msup><mi>Z</mi></mfrac><mo separator="true">,</mo><mspace width="2em"/><mi>Z</mi><mo>=</mo><munder><mo>∑</mo><mi>j</mi></munder><msup><mi>e</mi><msub><mi>z</mi><mi>j</mi></msub></msup><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+p_i=\frac{e^{z_i}}{Z},
+\qquad
+Z=\sum_j e^{z_j}.
+</annotation></semantics></math></p>
+
+<p>Then</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup><mo>=</mo><msup><mrow><mo fence="true">(</mo><mfrac><msup><mi>e</mi><msub><mi>z</mi><mi>i</mi></msub></msup><mi>Z</mi></mfrac><mo fence="true">)</mo></mrow><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup><mo>=</mo><mfrac><msup><mi>e</mi><mrow><msub><mi>z</mi><mi>i</mi></msub><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup><msup><mi>Z</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+p_i^{1/T}
+=
+\left(\frac{e^{z_i}}{Z}\right)^{1/T}
+=
+\frac{e^{z_i/T}}{Z^{1/T}}.
+</annotation></semantics></math></p>
+
+<p>After normalizing across <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math>,</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>q</mi><mi>i</mi></msub><mo>=</mo><mfrac><mrow><msup><mi>e</mi><mrow><msub><mi>z</mi><mi>i</mi></msub><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup><mi mathvariant="normal">/</mi><msup><mi>Z</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup></mrow><mrow><munder><mo>∑</mo><mi>j</mi></munder><msup><mi>e</mi><mrow><msub><mi>z</mi><mi>j</mi></msub><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup><mi mathvariant="normal">/</mi><msup><mi>Z</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup></mrow></mfrac><mo>=</mo><mfrac><msup><mi>e</mi><mrow><msub><mi>z</mi><mi>i</mi></msub><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup><mrow><munder><mo>∑</mo><mi>j</mi></munder><msup><mi>e</mi><mrow><msub><mi>z</mi><mi>j</mi></msub><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+q_i
+=
+\frac{e^{z_i/T}/Z^{1/T}}
+{\sum_j e^{z_j/T}/Z^{1/T}}
+=
+\frac{e^{z_i/T}}
+{\sum_j e^{z_j/T}}.
+</annotation></semantics></math></p>
+
+<p>Therefore:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><mi mathvariant="normal">normalize</mi><mo>⁡</mo><mo stretchy="false">(</mo><msup><mi>p</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup><mo stretchy="false">)</mo><mo>=</mo><mi mathvariant="normal">softmax</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>z</mi><mi mathvariant="normal">/</mi><mi>T</mi><mo stretchy="false">)</mo></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+\operatorname{normalize}(p^{1/T})
+=
+\operatorname{softmax}(z/T)
+}
+</annotation></semantics></math></p>
+
+<p>for <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">p_i&gt;0</annotation></semantics></math>.</p>
+
+<p><strong>PROVED.</strong></p>
+
+<hr />
+
+<h2 id="6-proof-pairwise-odds-are-exponentiated-by">6. Proof: pairwise odds are exponentiated by <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow><annotation encoding="application/x-tex">1/T</annotation></semantics></math></h2>
+
+<p>For any two candidates <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo separator="true">,</mo><mi>j</mi></mrow><annotation encoding="application/x-tex">i,j</annotation></semantics></math>,</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><msub><mi>q</mi><mi>i</mi></msub><msub><mi>q</mi><mi>j</mi></msub></mfrac><mo>=</mo><mfrac><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup><msubsup><mi>p</mi><mi>j</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup></mfrac><mo>=</mo><msup><mrow><mo fence="true">(</mo><mfrac><msub><mi>p</mi><mi>i</mi></msub><msub><mi>p</mi><mi>j</mi></msub></mfrac><mo fence="true">)</mo></mrow><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\frac{q_i}{q_j}
+=
+\frac{p_i^{1/T}}{p_j^{1/T}}
+=
+\left(\frac{p_i}{p_j}\right)^{1/T}.
+</annotation></semantics></math></p>
+
+<p>Therefore temperature scaling changes the <em>strength</em> of pairwise preference but</p>
+
+<p>not its direction.</p>
+
+<p>For <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>&gt;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">T&gt;1</annotation></semantics></math>, <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi><mo>&lt;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">1/T&lt;1</annotation></semantics></math>, so odds move toward <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>:</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">1:1</annotation></semantics></math>.</p>
+
+<p>For <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>&lt;</mo><mi>T</mi><mo>&lt;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">0&lt;T&lt;1</annotation></semantics></math>, <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi><mo>&gt;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">1/T&gt;1</annotation></semantics></math>, so odds move farther away from <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>:</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">1:1</annotation></semantics></math>.</p>
+
+<p>Hence:</p>
+
+<ul>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>&gt;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">T&gt;1</annotation></semantics></math> <strong>flattens</strong> the distribution,</li>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>&lt;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">T&lt;1</annotation></semantics></math> <strong>sharpens</strong> the distribution,</li>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">T=1</annotation></semantics></math> is exactly the identity.</li>
+</ul>
+
+<hr />
+
+<h2 id="7-proof-candidate-ordering-and-argmax-are-unchanged">7. Proof: candidate ordering and argmax are unchanged</h2>
+
+<p>For <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">T&gt;0</annotation></semantics></math>, the function</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>x</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msup></mrow><annotation encoding="application/x-tex">
+f(x)=x^{1/T}
+</annotation></semantics></math></p>
+
+<p>is strictly increasing for <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x&gt;0</annotation></semantics></math>.</p>
+
+<p>Therefore:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub><mo>&gt;</mo><msub><mi>p</mi><mi>j</mi></msub><mtext>  </mtext><mo>⟺</mo><mtext>  </mtext><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup><mo>&gt;</mo><msubsup><mi>p</mi><mi>j</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup><mtext>  </mtext><mo>⟺</mo><mtext>  </mtext><msub><mi>q</mi><mi>i</mi></msub><mo>&gt;</mo><msub><mi>q</mi><mi>j</mi></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+p_i&gt;p_j
+\iff
+p_i^{1/T}&gt;p_j^{1/T}
+\iff
+q_i&gt;q_j.
+</annotation></semantics></math></p>
+
+<p>So:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><mi>arg</mi><mo>⁡</mo><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mi>i</mi></munder><msub><mi>p</mi><mi>i</mi></msub><mo>=</mo><mi>arg</mi><mo>⁡</mo><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mi>i</mi></munder><msub><mi>q</mi><mi>i</mi></msub></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+\arg\max_i p_i
+=
+\arg\max_i q_i
+}
+</annotation></semantics></math></p>
+
+<p>except for pre-existing exact ties, whose tie-breaking behavior is unchanged by</p>
+
+<p>the ideal mathematical transform.</p>
+
+<p>This gives an important invariant:</p>
+
+<blockquote>
+<p>Positive temperature scaling cannot change the winning candidate of one</p>
+
+<p>decision.</p>
+</blockquote>
+
+<p>Consequently <strong>hard argmax accuracy is mathematically unchanged</strong>.</p>
+
+<p>This guarantee applies to candidate ordering <em>within a decision</em>. It does not</p>
+
+<p>mean every conceivable ranking metric across different examples is unchanged,</p>
+
+<p>because confidence values can move by different amounts across examples.</p>
+
+<hr />
+
+<h2 id="8-worked-binary-example">8. Worked binary example</h2>
+
+<p>Suppose a <code>noul</code> answer reports</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>p</mi><mo stretchy="false">(</mo><mtext>true</mtext><mo stretchy="false">)</mo><mo>=</mo><mn>0.9</mn><mo separator="true">,</mo><mspace width="2em"/><mi>p</mi><mo stretchy="false">(</mo><mtext>false</mtext><mo stretchy="false">)</mo><mo>=</mo><mn>0.1.</mn></mrow><annotation encoding="application/x-tex">
+p(\text{true})=0.9,
+\qquad
+p(\text{false})=0.1.
+</annotation></semantics></math></p>
+
+<p>Its odds are</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mn>0.9</mn><mn>0.1</mn></mfrac><mo>=</mo><mn>9.</mn></mrow><annotation encoding="application/x-tex">
+\frac{0.9}{0.1}=9.
+</annotation></semantics></math></p>
+
+<p>Set <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">T=2</annotation></semantics></math>. Pairwise odds become:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mn>9</mn><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mn>2</mn></mrow></msup><mo>=</mo><mn>3.</mn></mrow><annotation encoding="application/x-tex">
+9^{1/2}=3.
+</annotation></semantics></math></p>
+
+<p>So the calibrated probabilities have odds <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>:</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">3:1</annotation></semantics></math>:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>q</mi><mo stretchy="false">(</mo><mtext>true</mtext><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>3</mn><mrow><mn>3</mn><mo>+</mo><mn>1</mn></mrow></mfrac><mo>=</mo><mn>0.75.</mn></mrow><annotation encoding="application/x-tex">
+q(\text{true})=\frac3{3+1}=0.75.
+</annotation></semantics></math></p>
+
+<p>Equivalently:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>q</mi><mo>=</mo><mfrac><mrow><mo stretchy="false">(</mo><msqrt><mn>0.9</mn></msqrt><mo separator="true">,</mo><msqrt><mn>0.1</mn></msqrt><mo stretchy="false">)</mo></mrow><mrow><msqrt><mn>0.9</mn></msqrt><mo>+</mo><msqrt><mn>0.1</mn></msqrt></mrow></mfrac><mo>=</mo><mo stretchy="false">(</mo><mn>0.75</mn><mo separator="true">,</mo><mn>0.25</mn><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+q
+=
+\frac{(\sqrt{0.9},\sqrt{0.1})}
+{\sqrt{0.9}+\sqrt{0.1}}
+=
+(0.75,0.25).
+</annotation></semantics></math></p>
+
+<p>The binary decision remains <code>true</code>, but its probability changes from <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.90</mn></mrow><annotation encoding="application/x-tex">0.90</annotation></semantics></math></p>
+
+<p>to <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.75</mn></mrow><annotation encoding="application/x-tex">0.75</annotation></semantics></math>.</p>
+
+<p>In binary form temperature scaling is:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>q</mi><mo>=</mo><mi>σ</mi><mrow><mo fence="true">(</mo><mfrac><mrow><mi mathvariant="normal">logit</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>p</mi><mo stretchy="false">)</mo></mrow><mi>T</mi></mfrac><mo fence="true">)</mo></mrow><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+q
+=
+\sigma\left(\frac{\operatorname{logit}(p)}{T}\right).
+</annotation></semantics></math></p>
+
+<p>Platt-scaling primer:</p>
+
+<p>https://en.wikipedia.org/wiki/Platt_scaling</p>
+
+<p>Temperature scaling is more restrictive than full Platt scaling: it uses one</p>
+
+<p>positive scale parameter and no learned intercept.</p>
+
+<hr />
+
+<h2 id="9-why-fit-separate-temperatures-by-question-type">9. Why fit separate temperatures by question type?</h2>
+
+<p>The benchmark can fit one temperature for each sufficiently represented answer</p>
+
+<p>type:</p>
+
+<pre><code class="code-highlighted code-text">choice
+noul
+score</code></pre>
+
+<p>This is a <strong>predeclared modeling choice</strong>, not a theorem that answer type is the</p>
+
+<p>only possible source of calibration heterogeneity.</p>
+
+<p>Other plausible sources include number of candidates, domain, capability,</p>
+
+<p>difficulty, prompt template, quantization, adapter, and model version.</p>
+
+<p>The reason to begin with question type is engineering parsimony:</p>
+
+<ol>
+	<li>there are only three groups;</li>
+	<li>they correspond to structurally different API outputs;</li>
+	<li>each group can contain examples from many capabilities;</li>
+	<li>one scalar per group remains extremely low capacity;</li>
+	<li>the grouping is fixed before inspecting test results.</li>
+</ol>
+
+<p>This is substantially less flexible than capability-by-capability calibration</p>
+
+<p>and correspondingly harder to overfit.</p>
+
+<p>The repository has historically called this <strong>qtype-affine calibration</strong>.</p>
+
+<p>Strictly speaking, the transform used here is a **zero-intercept linear scaling</p>
+
+<p>of logits** within each qtype:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>z</mi><mo>↦</mo><mi>z</mi><mi mathvariant="normal">/</mi><mi>T</mi><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+z \mapsto z/T.
+</annotation></semantics></math></p>
+
+<p>&quot;Qtype-stratified temperature scaling&quot; is the more precise mathematical name.</p>
+
+<h2 id="current-schema-v2-fallback-behavior">Current schema-v2 fallback behavior</h2>
+
+<p>A qtype receives its own fitted <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math> only when it reaches the configured</p>
+
+<p>minimum number of successful calibration examples.</p>
+
+<p>Underrepresented qtypes use the top-level global temperature.</p>
+
+<p>The current v2 implementation fits that global temperature on the pooled</p>
+
+<p>calibration corpus. This gives a stable fallback estimate, but when some qtypes</p>
+
+<p>also have dedicated temperatures it is **not mathematically the same as fitting</p>
+
+<p>an optimum only on the remaining fallback subset**.</p>
+
+<p>Accordingly, claims of exact within-family optimality apply to:</p>
+
+<ul>
+	<li>each dedicated qtype fit on its own calibration examples, and</li>
+	<li>the pooled global model considered by itself.</li>
+</ul>
+
+<p>The pooled global fallback in a mixed artifact is a stability-oriented fallback,</p>
+
+<p>not a theorem that it is the exact optimum for the residual small-qtype subset.</p>
+
+<hr />
+
+<h2 id="10-what-is-actually-fitted">10. What is actually fitted?</h2>
+
+<p>For calibration example <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi></mrow><annotation encoding="application/x-tex">r</annotation></semantics></math>, let:</p>
+
+<ul>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>p</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msup></mrow><annotation encoding="application/x-tex">p^{(r)}</annotation></semantics></math> be the raw predicted distribution,</li>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msup></mrow><annotation encoding="application/x-tex">y^{(r)}</annotation></semantics></math> be the gold distribution,</li>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>q</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">q^{(r)}(T)</annotation></semantics></math> be the temperature-scaled distribution.</li>
+</ul>
+
+<p>The empirical calibration objective is:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><mi>L</mi><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>r</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi mathvariant="normal">CE</mi><mo>⁡</mo><mrow><mo fence="true">(</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msup><mo separator="true">,</mo><msup><mi>q</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mo fence="true">)</mo></mrow></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+L(T)
+=
+\frac1n
+\sum_{r=1}^{n}
+\operatorname{CE}
+\left(
+y^{(r)}, q^{(r)}(T)
+\right)
+}
+</annotation></semantics></math></p>
+
+<p>with:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">CE</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>y</mi><mo separator="true">,</mo><mi>q</mi><mo stretchy="false">)</mo><mo>=</mo><mo>−</mo><munder><mo>∑</mo><mi>k</mi></munder><msub><mi>y</mi><mi>k</mi></msub><mi>log</mi><mo>⁡</mo><msub><mi>q</mi><mi>k</mi></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\operatorname{CE}(y,q)
+=
+-\sum_k y_k\log q_k.
+</annotation></semantics></math></p>
+
+<p>For the benchmark&#39;s deterministic one-hot gold labels this is ordinary mean</p>
+
+<p>categorical negative log-likelihood.</p>
+
+<p>For soft gold targets the same expression is empirical cross-entropy risk.</p>
+
+<p>Cross-entropy primer:</p>
+
+<p>https://en.wikipedia.org/wiki/Cross-entropy</p>
+
+<p>Because the implementation supports soft target distributions, **empirical</p>
+
+<p>cross-entropy minimization** is the most general description.</p>
+
+<p>For current one-hot benchmark targets, the same objective coincides with</p>
+
+<p>categorical maximum-likelihood estimation under the usual independent-case</p>
+
+<p>conditional model.</p>
+
+<hr />
+
+<h2 id="11-proof-the-objective-is-convex-in-inverse-temperature">11. Proof: the objective is convex in inverse temperature</h2>
+
+<p>Let:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>β</mi><mo>=</mo><mfrac><mn>1</mn><mi>T</mi></mfrac></mrow><annotation encoding="application/x-tex">
+\beta=\frac1T
+</annotation></semantics></math></p>
+
+<p>and for one example define:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>a</mi><mi>k</mi></msub><mo>=</mo><mi>log</mi><mo>⁡</mo><msub><mi>p</mi><mi>k</mi></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+a_k=\log p_k.
+</annotation></semantics></math></p>
+
+<p>Then:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>q</mi><mi>k</mi></msub><mo stretchy="false">(</mo><mi>β</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><msup><mi>e</mi><mrow><mi>β</mi><msub><mi>a</mi><mi>k</mi></msub></mrow></msup><mrow><munder><mo>∑</mo><mi>j</mi></munder><msup><mi>e</mi><mrow><mi>β</mi><msub><mi>a</mi><mi>j</mi></msub></mrow></msup></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+q_k(\beta)
+=
+\frac{e^{\beta a_k}}
+{\sum_j e^{\beta a_j}}.
+</annotation></semantics></math></p>
+
+<p>The cross-entropy for that example is:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>L</mi><mi>r</mi></msub><mo stretchy="false">(</mo><mi>β</mi><mo stretchy="false">)</mo><mo>=</mo><mo>−</mo><munder><mo>∑</mo><mi>k</mi></munder><msub><mi>y</mi><mi>k</mi></msub><mi>log</mi><mo>⁡</mo><msub><mi>q</mi><mi>k</mi></msub><mo stretchy="false">(</mo><mi>β</mi><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+L_r(\beta)
+=
+-\sum_k y_k\log q_k(\beta).
+</annotation></semantics></math></p>
+
+<p>Expanding:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>L</mi><mi>r</mi></msub><mo stretchy="false">(</mo><mi>β</mi><mo stretchy="false">)</mo><mo>=</mo><mi>log</mi><mo>⁡</mo><mrow><mo fence="true">(</mo><munder><mo>∑</mo><mi>j</mi></munder><msup><mi>e</mi><mrow><mi>β</mi><msub><mi>a</mi><mi>j</mi></msub></mrow></msup><mo fence="true">)</mo></mrow><mo>−</mo><mi>β</mi><munder><mo>∑</mo><mi>k</mi></munder><msub><mi>y</mi><mi>k</mi></msub><msub><mi>a</mi><mi>k</mi></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+L_r(\beta)
+=
+\log\left(\sum_j e^{\beta a_j}\right)
+-
+\beta\sum_k y_k a_k.
+</annotation></semantics></math></p>
+
+<p>Differentiate:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mrow><mi mathvariant="normal">∂</mi><msub><mi>L</mi><mi>r</mi></msub></mrow><mrow><mi mathvariant="normal">∂</mi><mi>β</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>a</mi><mi>j</mi></msub><msup><mi>e</mi><mrow><mi>β</mi><msub><mi>a</mi><mi>j</mi></msub></mrow></msup></mrow><mrow><munder><mo>∑</mo><mi>j</mi></munder><msup><mi>e</mi><mrow><mi>β</mi><msub><mi>a</mi><mi>j</mi></msub></mrow></msup></mrow></mfrac><mo>−</mo><munder><mo>∑</mo><mi>k</mi></munder><msub><mi>y</mi><mi>k</mi></msub><msub><mi>a</mi><mi>k</mi></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\frac{\partial L_r}{\partial\beta}
+=
+\frac{\sum_j a_j e^{\beta a_j}}
+{\sum_j e^{\beta a_j}}
+-
+\sum_k y_k a_k.
+</annotation></semantics></math></p>
+
+<p>The first term is an expectation under <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>q</mi><mi>β</mi></msub></mrow><annotation encoding="application/x-tex">q_\beta</annotation></semantics></math>:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><mfrac><mrow><mi mathvariant="normal">∂</mi><msub><mi>L</mi><mi>r</mi></msub></mrow><mrow><mi mathvariant="normal">∂</mi><mi>β</mi></mrow></mfrac><mo>=</mo><msub><mi mathvariant="double-struck">E</mi><msub><mi>q</mi><mi>β</mi></msub></msub><mo stretchy="false">[</mo><mi>a</mi><mo stretchy="false">]</mo><mo>−</mo><msub><mi mathvariant="double-struck">E</mi><mi>y</mi></msub><mo stretchy="false">[</mo><mi>a</mi><mo stretchy="false">]</mo></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+\frac{\partial L_r}{\partial\beta}
+=
+\mathbb E_{q_\beta}[a]
+-
+\mathbb E_y[a]
+}
+</annotation></semantics></math></p>
+
+<p>or equivalently:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><mfrac><mrow><mi mathvariant="normal">∂</mi><msub><mi>L</mi><mi>r</mi></msub></mrow><mrow><mi mathvariant="normal">∂</mi><mi>β</mi></mrow></mfrac><mo>=</mo><msub><mi mathvariant="double-struck">E</mi><msub><mi>q</mi><mi>β</mi></msub></msub><mo stretchy="false">[</mo><mi>log</mi><mo>⁡</mo><mi>p</mi><mo stretchy="false">]</mo><mo>−</mo><msub><mi mathvariant="double-struck">E</mi><mi>y</mi></msub><mo stretchy="false">[</mo><mi>log</mi><mo>⁡</mo><mi>p</mi><mo stretchy="false">]</mo><mi mathvariant="normal">.</mi></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+\frac{\partial L_r}{\partial\beta}
+=
+\mathbb E_{q_\beta}[\log p]
+-
+\mathbb E_y[\log p].
+}
+</annotation></semantics></math></p>
+
+<p>Differentiate again:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><mfrac><mrow><msup><mi mathvariant="normal">∂</mi><mn>2</mn></msup><msub><mi>L</mi><mi>r</mi></msub></mrow><mrow><mi mathvariant="normal">∂</mi><msup><mi>β</mi><mn>2</mn></msup></mrow></mfrac><mo>=</mo><msub><mrow><mi mathvariant="normal">Var</mi><mo>⁡</mo></mrow><msub><mi>q</mi><mi>β</mi></msub></msub><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo><mo>=</mo><msub><mrow><mi mathvariant="normal">Var</mi><mo>⁡</mo></mrow><msub><mi>q</mi><mi>β</mi></msub></msub><mo stretchy="false">(</mo><mi>log</mi><mo>⁡</mo><mi>p</mi><mo stretchy="false">)</mo><mo>≥</mo><mn>0.</mn></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+\frac{\partial^2 L_r}{\partial\beta^2}
+=
+\operatorname{Var}_{q_\beta}(a)
+=
+\operatorname{Var}_{q_\beta}(\log p)
+\ge0.
+}
+</annotation></semantics></math></p>
+
+<p>A mean of convex functions is convex, therefore the complete calibration</p>
+
+<p>objective is convex in <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math>.</p>
+
+<p><strong>PROVED.</strong></p>
+
+<p>This gives the implementation an important property:</p>
+
+<blockquote>
+<p>There are no non-global local minima in inverse-temperature space.</p>
+</blockquote>
+
+<p>The derivative is monotone non-decreasing, so one-dimensional gradient bisection</p>
+
+<p>is sufficient once a search interval is chosen.</p>
+
+<hr />
+
+<h2 id="12-global-optimum-does-not-always-mean-unique-optimum">12. Global optimum does not always mean unique optimum</h2>
+
+<p>Convexity guarantees that every local optimum is global.</p>
+
+<p>It does <strong>not</strong> guarantee that the minimizer is always unique.</p>
+
+<p>Consider a prediction that is uniform:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>p</mi><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mi mathvariant="normal">/</mi><mi>K</mi><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><mn>1</mn><mi mathvariant="normal">/</mi><mi>K</mi><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+p=(1/K,\ldots,1/K).
+</annotation></semantics></math></p>
+
+<p>Then every <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>log</mi><mo>⁡</mo><msub><mi>p</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">\log p_k</annotation></semantics></math> is equal, so:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mrow><mi mathvariant="normal">Var</mi><mo>⁡</mo></mrow><msub><mi>q</mi><mi>β</mi></msub></msub><mo stretchy="false">(</mo><mi>log</mi><mo>⁡</mo><mi>p</mi><mo stretchy="false">)</mo><mo>=</mo><mn>0.</mn></mrow><annotation encoding="application/x-tex">
+\operatorname{Var}_{q_\beta}(\log p)=0.
+</annotation></semantics></math></p>
+
+<p>The objective can therefore be flat in <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math>.</p>
+
+<p>The rigorous statement is:</p>
+
+<blockquote>
+<p>The objective has a global minimum. It is unique when the aggregate objective</p>
+
+<p>is strictly convex over the relevant interval; degenerate data can produce a</p>
+
+<p>flat set of minimizers.</p>
+</blockquote>
+
+<p>The implementation searches within:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>T</mi><mo>∈</mo><mo stretchy="false">[</mo><mn>0.05</mn><mo separator="true">,</mo><mn>20</mn><mo stretchy="false">]</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+T\in[0.05,20].
+</annotation></semantics></math></p>
+
+<p>A fitted value at one of those search bounds should be interpreted cautiously:</p>
+
+<p>the unconstrained optimum may lie outside the supported interval, or the</p>
+
+<p>objective may be insufficiently informative near that direction.</p>
+
+<p>The artifact records whether the fitted temperature is at a search bound.</p>
+
+<hr />
+
+<h2 id="13-why-optimize-nll">13. Why optimize NLL?</h2>
+
+<p>Negative log-likelihood / cross-entropy is a <strong>proper scoring rule</strong>.</p>
+
+<p>Informally, a proper scoring rule is constructed so that, in expectation, a</p>
+
+<p>forecaster minimizes its loss by reporting its actual predictive distribution</p>
+
+<p>rather than strategically distorting it.</p>
+
+<p>For formal background:</p>
+
+<p>Tilmann Gneiting and Adrian E. Raftery,</p>
+
+<p><strong>Strictly Proper Scoring Rules, Prediction, and Estimation</strong>, JASA 2007:</p>
+
+<p>https://doi.org/10.1198/016214506000001437</p>
+
+<p>Accessible primer:</p>
+
+<p>https://en.wikipedia.org/wiki/Scoring_rule</p>
+
+<p>NLL is also the exact fitting objective, which makes held-out NLL the most</p>
+
+<p>direct measure of whether the fitted transform generalized beyond calibration</p>
+
+<p>rows.</p>
+
+<hr />
+
+<h2 id="14-metrics-what-each-one-does-and-does-not-establish">14. Metrics: what each one does and does not establish</h2>
+
+<h2 id="141-nll-cross-entropy">14.1 NLL / cross-entropy</h2>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">NLL</mi><mo>⁡</mo><mo>=</mo><mo>−</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munder><mo>∑</mo><mi>r</mi></munder><munder><mo>∑</mo><mi>k</mi></munder><msubsup><mi>y</mi><mi>k</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msubsup><mi>log</mi><mo>⁡</mo><msubsup><mi>p</mi><mi>k</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msubsup><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\operatorname{NLL}
+=
+-\frac1n
+\sum_r\sum_k
+y_k^{(r)}
+\log p_k^{(r)}.
+</annotation></semantics></math></p>
+
+<p>Lower is better.</p>
+
+<p>It evaluates the complete reported distribution and strongly penalizes assigning</p>
+
+<p>very little probability to the true outcome.</p>
+
+<p><strong>Use:</strong> primary fitting objective and primary held-out calibration comparison.</p>
+
+<h2 id="142-brier-score">14.2 Brier score</h2>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">Brier</mi><mo>⁡</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munder><mo>∑</mo><mi>r</mi></munder><munder><mo>∑</mo><mi>k</mi></munder><msup><mrow><mo fence="true">(</mo><msubsup><mi>p</mi><mi>k</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>−</mo><msubsup><mi>y</mi><mi>k</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msubsup><mo fence="true">)</mo></mrow><mn>2</mn></msup><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\operatorname{Brier}
+=
+\frac1n
+\sum_r\sum_k
+\left(
+p_k^{(r)}-y_k^{(r)}
+\right)^2.
+</annotation></semantics></math></p>
+
+<p>Lower is better.</p>
+
+<p>Brier score is also a proper scoring rule.</p>
+
+<p><strong>Use:</strong> complementary full-distribution evaluation.</p>
+
+<p>Primer:</p>
+
+<p>https://en.wikipedia.org/wiki/Brier_score</p>
+
+<h2 id="143-top-label-ece">14.3 Top-label ECE</h2>
+
+<p>The implementation&#39;s ECE uses:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>c</mi><mi>r</mi></msub><mo>=</mo><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mi>k</mi></munder><msubsup><mi>p</mi><mi>k</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">
+c_r=\max_k p_k^{(r)}
+</annotation></semantics></math></p>
+
+<p>and:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>a</mi><mi>r</mi></msub><mo>=</mo><mn mathvariant="bold">1</mn><mo stretchy="false">[</mo><mi>arg</mi><mo>⁡</mo><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mi>k</mi></munder><msubsup><mi>p</mi><mi>k</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><mi>arg</mi><mo>⁡</mo><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mi>k</mi></munder><msubsup><mi>y</mi><mi>k</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msubsup><mo stretchy="false">]</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+a_r=
+\mathbf 1[
+\arg\max_k p_k^{(r)}
+=
+\arg\max_k y_k^{(r)}
+].
+</annotation></semantics></math></p>
+
+<p>Examples are placed into confidence bins <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>B</mi><mi>b</mi></msub></mrow><annotation encoding="application/x-tex">B_b</annotation></semantics></math>:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">ECE</mi><mo>⁡</mo><mo>=</mo><munder><mo>∑</mo><mi>b</mi></munder><mfrac><mrow><mi mathvariant="normal">∣</mi><msub><mi>B</mi><mi>b</mi></msub><mi mathvariant="normal">∣</mi></mrow><mi>n</mi></mfrac><mrow><mo fence="true">∣</mo><msub><mrow><mi mathvariant="normal">mean</mi><mo>⁡</mo></mrow><mrow><mi>r</mi><mo>∈</mo><msub><mi>B</mi><mi>b</mi></msub></mrow></msub><mo stretchy="false">(</mo><msub><mi>c</mi><mi>r</mi></msub><mo stretchy="false">)</mo><mo>−</mo><msub><mrow><mi mathvariant="normal">mean</mi><mo>⁡</mo></mrow><mrow><mi>r</mi><mo>∈</mo><msub><mi>B</mi><mi>b</mi></msub></mrow></msub><mo stretchy="false">(</mo><msub><mi>a</mi><mi>r</mi></msub><mo stretchy="false">)</mo><mo fence="true">∣</mo></mrow><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\operatorname{ECE}
+=
+\sum_b
+\frac{|B_b|}{n}
+\left|
+\operatorname{mean}_{r\in B_b}(c_r)
+-
+\operatorname{mean}_{r\in B_b}(a_r)
+\right|.
+</annotation></semantics></math></p>
+
+<p>This is useful and intuitive, but evaluates only the winning confidence.</p>
+
+<p>It does not fully test the multiclass distribution and is bin-dependent.</p>
+
+<p>Vaicenavicius et al. discuss these subtleties:</p>
+
+<p>https://proceedings.mlr.press/v89/vaicenavicius19a.html</p>
+
+<p>ECE should therefore be treated as a <strong>diagnostic</strong>, not as the sole acceptance</p>
+
+<p>criterion.</p>
+
+<h2 id="144-hard-accuracy">14.4 Hard accuracy</h2>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">Accuracy</mi><mo>⁡</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munder><mo>∑</mo><mi>r</mi></munder><mn mathvariant="bold">1</mn><mo stretchy="false">[</mo><mi>arg</mi><mo>⁡</mo><mi>max</mi><mo>⁡</mo><msup><mi>p</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msup><mo>=</mo><mi>arg</mi><mo>⁡</mo><mi>max</mi><mo>⁡</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">]</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\operatorname{Accuracy}
+=
+\frac1n
+\sum_r
+\mathbf 1[
+\arg\max p^{(r)}
+=
+\arg\max y^{(r)}
+].
+</annotation></semantics></math></p>
+
+<p>Positive temperature scaling preserves argmax, therefore:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><msub><mrow><mi mathvariant="normal">Accuracy</mi><mo>⁡</mo></mrow><mrow><mi>r</mi><mi>a</mi><mi>w</mi></mrow></msub><mo>=</mo><msub><mrow><mi mathvariant="normal">Accuracy</mi><mo>⁡</mo></mrow><mrow><mi>c</mi><mi>a</mi><mi>l</mi><mi>i</mi><mi>b</mi><mi>r</mi><mi>a</mi><mi>t</mi><mi>e</mi><mi>d</mi></mrow></msub></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+\operatorname{Accuracy}_{raw}
+=
+\operatorname{Accuracy}_{calibrated}
+}
+</annotation></semantics></math></p>
+
+<p>up to implementation/tie-breaking bugs.</p>
+
+<p>This is a useful invariant test.</p>
+
+<h2 id="145-soft-accuracy">14.5 Soft accuracy</h2>
+
+<p>The benchmark also reports:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">SoftAccuracy</mi><mo>⁡</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munder><mo>∑</mo><mi>r</mi></munder><msup><mi>p</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo><mi mathvariant="normal">⊤</mi></mrow></msup><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>r</mi><mo stretchy="false">)</mo></mrow></msup><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\operatorname{SoftAccuracy}
+=
+\frac1n
+\sum_r
+p^{(r)\top}y^{(r)}.
+</annotation></semantics></math></p>
+
+<p>This can be useful as a descriptive agreement measure.</p>
+
+<p>It is <strong>not invariant under temperature scaling</strong>.</p>
+
+<p>Example:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>y</mi><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo><mo separator="true">,</mo><mspace width="2em"/><mi>p</mi><mo>=</mo><mo stretchy="false">(</mo><mn>0.9</mn><mo separator="true">,</mo><mn>0.1</mn><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+y=(1,0),\qquad p=(0.9,0.1).
+</annotation></semantics></math></p>
+
+<p>Then:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>p</mi><mi mathvariant="normal">⊤</mi></msup><mi>y</mi><mo>=</mo><mn>0.9.</mn></mrow><annotation encoding="application/x-tex">
+p^\top y=0.9.
+</annotation></semantics></math></p>
+
+<p>After <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">T=2</annotation></semantics></math>:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>q</mi><mo>=</mo><mo stretchy="false">(</mo><mn>0.75</mn><mo separator="true">,</mo><mn>0.25</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">
+q=(0.75,0.25)
+</annotation></semantics></math></p>
+
+<p>and:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>q</mi><mi mathvariant="normal">⊤</mi></msup><mi>y</mi><mo>=</mo><mn>0.75.</mn></mrow><annotation encoding="application/x-tex">
+q^\top y=0.75.
+</annotation></semantics></math></p>
+
+<p>It is also not a proper scoring rule for general soft targets. For example:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>y</mi><mo>=</mo><mo stretchy="false">(</mo><mn>0.6</mn><mo separator="true">,</mo><mn>0.4</mn><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+y=(0.6,0.4).
+</annotation></semantics></math></p>
+
+<p>Reporting <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mi>y</mi></mrow><annotation encoding="application/x-tex">p=y</annotation></semantics></math> gives:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>p</mi><mi mathvariant="normal">⊤</mi></msup><mi>y</mi><mo>=</mo><mn>0.52</mn><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">
+p^\top y=0.52,
+</annotation></semantics></math></p>
+
+<p>whereas reporting:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>p</mi><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">
+p=(1,0)
+</annotation></semantics></math></p>
+
+<p>gives:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>p</mi><mi mathvariant="normal">⊤</mi></msup><mi>y</mi><mo>=</mo><mn>0.60.</mn></mrow><annotation encoding="application/x-tex">
+p^\top y=0.60.
+</annotation></semantics></math></p>
+
+<p>So soft accuracy should not be used as the mathematical calibration objective.</p>
+
+<hr />
+
+<h2 id="15-what-temperature-scaling-can-fix">15. What temperature scaling can fix</h2>
+
+<p>Temperature scaling is a one-dimensional shape correction.</p>
+
+<p>It is well suited to a common failure mode:</p>
+
+<blockquote>
+<p>the model&#39;s ranking is useful, but the logit scale is systematically too</p>
+
+<p>sharp or too flat.</p>
+</blockquote>
+
+<p>Suppose an ideal model would produce logits <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>z</mi><mo>∗</mo></msup></mrow><annotation encoding="application/x-tex">z^*</annotation></semantics></math>, but the deployed model</p>
+
+<p>approximately produces:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>z</mi><mo>=</mo><mi>α</mi><msup><mi>z</mi><mo>∗</mo></msup><mo>+</mo><mi>c</mi><mn mathvariant="bold">1.</mn></mrow><annotation encoding="application/x-tex">
+z=\alpha z^* + c\mathbf 1.
+</annotation></semantics></math></p>
+
+<p>Softmax is invariant to adding the same constant <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi></mrow><annotation encoding="application/x-tex">c</annotation></semantics></math> to every candidate:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">softmax</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo><mo>=</mo><mi mathvariant="normal">softmax</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>α</mi><msup><mi>z</mi><mo>∗</mo></msup><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\operatorname{softmax}(z)
+=
+\operatorname{softmax}(\alpha z^*).
+</annotation></semantics></math></p>
+
+<p>Choosing:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>T</mi><mo>=</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">
+T=\alpha
+</annotation></semantics></math></p>
+
+<p>gives:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">softmax</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>z</mi><mi mathvariant="normal">/</mi><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mi mathvariant="normal">softmax</mi><mo>⁡</mo><mo stretchy="false">(</mo><msup><mi>z</mi><mo>∗</mo></msup><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+\operatorname{softmax}(z/T)
+=
+\operatorname{softmax}(z^*).
+</annotation></semantics></math></p>
+
+<p>In this idealized failure mode, temperature scaling exactly corrects the</p>
+
+<p>probability distortion without changing the decision ordering.</p>
+
+<p>This is one reason temperature scaling can generalize well when miscalibration</p>
+
+<p>is dominated by a stable logit-scale effect.</p>
+
+<hr />
+
+<h2 id="16-what-temperature-scaling-cannot-fix">16. What temperature scaling cannot fix</h2>
+
+<p>One scalar cannot express every calibration map.</p>
+
+<p>Examples it cannot generally repair perfectly:</p>
+
+<pre><code class="code-highlighted code-text">low confidence  → under-confident
+high confidence → over-confident</code></pre>
+
+<p>or:</p>
+
+<pre><code class="code-highlighted code-text">2-way choices   → calibrated
+12-way choices  → over-confident</code></pre>
+
+<p>or:</p>
+
+<pre><code class="code-highlighted code-text">domain A → over-confident
+domain B → under-confident</code></pre>
+
+<p>when all of those cases share the same fitted temperature.</p>
+
+<p>A richer calibrator may be required if held-out diagnostics show structured</p>
+
+<p>residual miscalibration.</p>
+
+<p>Examples include isotonic regression, vector scaling, class-specific scaling,</p>
+
+<p>beta calibration, and instance-conditioned calibration.</p>
+
+<p>Kull, Silva Filho and Flach (AISTATS 2017) show why a richer parametric family</p>
+
+<p>can outperform simpler logistic calibration when the simple shape is</p>
+
+<p>misspecified:</p>
+
+<p>https://proceedings.mlr.press/v54/kull17a.html</p>
+
+<p>The engineering trade-off is capacity:</p>
+
+<blockquote>
+<p>richer calibrators can fit richer distortions, but they also require more</p>
+
+<p>calibration data and create more opportunities to overfit.</p>
+</blockquote>
+
+<p>The benchmark intentionally begins with a very low-capacity family.</p>
+
+<hr />
+
+<h2 id="17-why-we-expect-the-fitted-temperature-to-generalize">17. Why we expect the fitted temperature to generalize</h2>
+
+<p>This section is deliberately stronger than &quot;it might work&quot; but weaker than a</p>
+
+<p>universal guarantee.</p>
+
+<p>There are now two sources of support:</p>
+
+<ol>
+	<li>prior calibration literature gives a reasonable expectation of</li>
+</ol>
+
+<p> same-distribution transfer for low-capacity temperature scaling;</p>
+
+<ol start="2">
+	<li>the Bonsai-2-27B reference experiment above directly observed</li>
+</ol>
+
+<p> <code>calibrate</code> → held-out <code>test</code> generalization on this benchmark.</p>
+
+<h2 id="171-historical-empirical-evidence">17.1 Historical empirical evidence</h2>
+
+<p>Guo, Pleiss, Sun and Weinberger studied post-hoc calibration for modern neural</p>
+
+<p>networks in ICML 2017.</p>
+
+<p>Their practical conclusion was that temperature scaling — a single-parameter</p>
+
+<p>variant of Platt scaling — was **surprisingly effective on most of the datasets</p>
+
+<p>they evaluated**.</p>
+
+<p>Paper:</p>
+
+<p>https://proceedings.mlr.press/v70/guo17a.html</p>
+
+<p>That result does not prove temperature scaling will work for every language model</p>
+
+<p>or every typed-decision endpoint.</p>
+
+<p>It does establish substantial historical empirical evidence that a</p>
+
+<p>one-parameter temperature correction can generalize from a held-out calibration</p>
+
+<p>set to a same-distribution test set.</p>
+
+<h2 id="172-very-low-estimator-capacity">17.2 Very low estimator capacity</h2>
+
+<p>A qtype temperature fit learns one scalar.</p>
+
+<p>Even with three fitted question types, the deployed calibrator contains only a</p>
+
+<p>handful of learned degrees of freedom.</p>
+
+<p>It cannot memorize individual benchmark examples, capability names, prompts, or</p>
+
+<p>labels.</p>
+
+<p>It can only express statements like:</p>
+
+<pre><code class="code-highlighted code-text">choice distributions are systematically too sharp/flat by this scale
+noul distributions are systematically too sharp/flat by this scale
+score distributions are systematically too sharp/flat by this scale</code></pre>
+
+<p>That low capacity makes severe row-level overfitting much less plausible than</p>
+
+<p>with a flexible nonlinear calibrator.</p>
+
+<p>This is not a formal finite-sample guarantee, especially because benchmark cases</p>
+
+<p>are correlated, but it is a strong practical reason to expect better</p>
+
+<p>generalization behavior than a high-capacity post-hoc map with the same data</p>
+
+<p>budget.</p>
+
+<h2 id="173-broad-calibration-support">17.3 Broad calibration support</h2>
+
+<p>The current benchmark reserves 5,520 rows for calibration across hundreds of</p>
+
+<p>capabilities.</p>
+
+<p>A qtype temperature is therefore learned from many semantically different</p>
+
+<p>tasks rather than one narrow classification problem.</p>
+
+<p>If a similar fitted temperature improves held-out test NLL across heterogeneous</p>
+
+<p>capabilities, that is evidence that the correction captures a deployment-wide</p>
+
+<p>property rather than one task-specific accident.</p>
+
+<h2 id="174-the-expectation-is-strongest-under-distributional-continuity">17.4 The expectation is strongest under distributional continuity</h2>
+
+<p>The strongest expected transfer is:</p>
+
+<pre><code class="code-highlighted code-text">same model weights
+same quantization
+same inference code
+same prompt template
+same typed-decision readout
+similar task distribution
+calibrate rows → held-out test rows</code></pre>
+
+<p>Under those conditions, expecting temperature calibration to generalize is</p>
+
+<p>reasonable.</p>
+
+<p>The expectation becomes progressively weaker as those conditions change.</p>
+
+<hr />
+
+<h2 id="18-three-different-meanings-of-generalization">18. Three different meanings of &#39;generalization&#39;</h2>
+
+<h2 id="level-a-calibration-split-benchmark-test-split">Level A — calibration split → benchmark test split</h2>
+
+<p>Fit only on <code>split=calibrate</code>, freeze the artifact, and evaluate on</p>
+
+<p><code>split=test</code>.</p>
+
+<p>If held-out test NLL and Brier improve, then the correction **generalized beyond</p>
+
+<p>the rows used to fit it on this benchmark**.</p>
+
+<p>This is the primary generalization claim the benchmark can directly establish.</p>
+
+<p><strong>EXPECTED before measurement. EMPIRICALLY SUPPORTED after measurement.</strong></p>
+
+<p>For the Bonsai-2-27B reference deployment this Level-A claim has now been</p>
+
+<p>observed: held-out NLL and Brier both improved on 22,001 test examples after</p>
+
+<p>fitting only on 5,499 calibration examples.</p>
+
+<h2 id="level-b-benchmark-new-but-similar-typed-decisions">Level B — benchmark → new but similar typed decisions</h2>
+
+<p>If test improvement is broad across many capabilities, it becomes plausible that</p>
+
+<p>the same correction will help new typed decisions from a similar operational</p>
+
+<p>distribution.</p>
+
+<p>This is stronger than Level A and should remain an expected-transfer claim</p>
+
+<p>unless tested on genuinely new cases.</p>
+
+<h2 id="level-c-benchmark-shifted-production-traffic">Level C — benchmark → shifted production traffic</h2>
+
+<p>This is not guaranteed.</p>
+
+<p>Ovadia et al. studied predictive uncertainty under dataset shift and found that</p>
+
+<p>traditional post-hoc calibration can deteriorate as the evaluation distribution</p>
+
+<p>moves away from the calibration distribution:</p>
+
+<p>https://papers.nips.cc/paper_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html</p>
+
+<p>Therefore:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>T</mi><mtext>benchmark</mtext></msub><mo>≢</mo><msub><mi>T</mi><mtext>all future production distributions</mtext></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+T_{\text{benchmark}}
+\not\equiv
+T_{\text{all future production distributions}}.
+</annotation></semantics></math></p>
+
+<p>Calibration should be treated as part of the exact inference configuration and</p>
+
+<p>rechecked when that configuration or its traffic distribution changes</p>
+
+<p>materially.</p>
+
+<hr />
+
+<h2 id="19-what-held-out-evidence-should-we-require">19. What held-out evidence should we require?</h2>
+
+<p>The fit itself minimizes calibration-set NLL, so calibration-set improvement is</p>
+
+<p>not evidence of generalization.</p>
+
+<p>The important evidence is held out.</p>
+
+<p>For each qtype, inspect at least:</p>
+
+<pre><code class="code-highlighted code-text">test NLL:       raw → calibrated
+test Brier:     raw → calibrated
+top-label ECE:  raw → calibrated
+accuracy:       raw = calibrated   [invariant check]</code></pre>
+
+<p>Also inspect reliability bins, capability-level breakdowns, candidate-count</p>
+
+<p>breakdowns when relevant, raw-confidence distributions, and whether the fitted</p>
+
+<p>temperature lies at a search bound.</p>
+
+<p>A particularly convincing pattern is:</p>
+
+<pre><code class="code-highlighted code-text">calibrate NLL improves
+test NLL improves
+test Brier improves
+test ECE improves or remains reasonable
+accuracy is unchanged
+improvement appears across many capabilities</code></pre>
+
+<p>ECE alone is not enough because it is binned and only tests top-label</p>
+
+<p>confidence.</p>
+
+<p>The Bonsai-2-27B reference experiment satisfies the central proper-score part of</p>
+
+<p>this pattern: held-out NLL and Brier improve while hard accuracy is effectively</p>
+
+<p>unchanged. It also provides a useful counterexample to treating ECE as the only</p>
+
+<p>criterion: aggregate ECE worsens slightly even while both full-distribution</p>
+
+<p>proper scores improve.</p>
+
+<hr />
+
+<h2 id="20-statistical-precision-what-does-and-does-not-mean">20. Statistical precision: what <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><msqrt><mi>n</mi></msqrt></mrow><annotation encoding="application/x-tex">1/\sqrt n</annotation></semantics></math> does and does not mean</h2>
+
+<p>The fitted temperature is a one-dimensional empirical risk estimator.</p>
+
+<p>Under standard regularity conditions, nondegenerate M-estimators often have</p>
+
+<p>sampling error that decreases on the order of:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><msup><mi>n</mi><mrow><mo>−</mo><mn>1</mn><mi mathvariant="normal">/</mi><mn>2</mn></mrow></msup><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+O(n^{-1/2}).
+</annotation></semantics></math></p>
+
+<p>This gives the familiar rule:</p>
+
+<blockquote>
+<p>multiplying effective sample size by four roughly halves estimator noise.</p>
+</blockquote>
+
+<p>But that scaling law does <strong>not</strong> justify a universal numeric confidence interval</p>
+
+<p>from raw case count alone.</p>
+
+<p>The benchmark cases are not guaranteed IID. Examples within one synthetic family</p>
+
+<p>may be correlated, reducing effective sample size.</p>
+
+<p>For a general scalar M-estimator <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi></mrow><annotation encoding="application/x-tex">\theta</annotation></semantics></math>, the asymptotic variance has the</p>
+
+<p>sandwich form:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">Var</mi><mo>⁡</mo><mrow><mo fence="true">(</mo><msqrt><mi>n</mi></msqrt><mo stretchy="false">(</mo><mover accent="true"><mi>θ</mi><mo>^</mo></mover><mo>−</mo><msup><mi>θ</mi><mo>∗</mo></msup><mo stretchy="false">)</mo><mo fence="true">)</mo></mrow><mo>≈</mo><mfrac><mi>J</mi><msup><mi>H</mi><mn>2</mn></msup></mfrac><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">
+\operatorname{Var}
+\left(
+\sqrt n(\hat\theta-\theta^*)
+\right)
+\approx
+\frac{J}{H^2},
+</annotation></semantics></math></p>
+
+<p>where:</p>
+
+<ul>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math> is expected objective curvature,</li>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi></mrow><annotation encoding="application/x-tex">J</annotation></semantics></math> is variance of the estimating equation / score.</li>
+</ul>
+
+<p>Only under additional likelihood-model assumptions does this simplify to a pure</p>
+
+<p>inverse-Fisher-information expression.</p>
+
+<p>Therefore the repository&#39;s default per-qtype minimum is best understood as an</p>
+
+<p><strong>engineering data floor</strong>, not a theorem that 100 examples imply a particular</p>
+
+<p>standard error.</p>
+
+<hr />
+
+<h2 id="21-recommended-uncertainty-estimation-cluster-bootstrap">21. Recommended uncertainty estimation: cluster bootstrap</h2>
+
+<p>If confidence intervals for <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math> are to be published, prefer a bootstrap that</p>
+
+<p>respects known correlation structure.</p>
+
+<p>A practical version is:</p>
+
+<pre><code class="code-highlighted code-text">choose clusters = suites or generator/template families
+
+repeat B times:
+    sample clusters with replacement
+    collect their calibration examples
+    fit T
+
+report:
+    median T
+    2.5th percentile
+    97.5th percentile</code></pre>
+
+<p>This is more defensible than pretending every templated row is independent.</p>
+
+<p>For qtype-specific fits, bootstrap the relevant qtype examples while preserving</p>
+
+<p>cluster membership.</p>
+
+<hr />
+
+<h2 id="22-why-calibration-and-evaluation-must-use-different-rows">22. Why calibration and evaluation must use different rows</h2>
+
+<p>Suppose the same data are used both to choose <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math> and to report improvement.</p>
+
+<p>The parameter was explicitly selected to minimize loss on those data.</p>
+
+<p>Consequently, its in-sample fitted loss is optimistically selected.</p>
+
+<p>That is ordinary model-selection bias.</p>
+
+<p>The exact amount of optimism depends on assumptions; it is not universally</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mi mathvariant="normal">/</mi><mi>n</mi></mrow><annotation encoding="application/x-tex">k/n</annotation></semantics></math> outside regular correctly specified likelihood settings.</p>
+
+<p>The benchmark therefore uses:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><mtext>fit on calibrate</mtext><mspace width="1em"/><mo>→</mo><mspace width="1em"/><mtext>report on test</mtext></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+\text{fit on calibrate}
+\quad\rightarrow\quad
+\text{report on test}
+}
+</annotation></semantics></math></p>
+
+<p>This establishes row-level holdout:</p>
+
+<blockquote>
+<p>no test row directly contributes to the fitted temperature.</p>
+</blockquote>
+
+<p>That is the claim we need. We do not need to claim that the partitions are</p>
+
+<p>statistically independent in every latent sense.</p>
+
+<hr />
+
+<h2 id="23-fixed-point-composition-theorem">23. Fixed-point composition theorem</h2>
+
+<p>Define:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>S</mi><mi>T</mi></msub><mo stretchy="false">(</mo><mi>p</mi><msub><mo stretchy="false">)</mo><mi>i</mi></msub><mo>=</mo><mfrac><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup><mrow><munder><mo>∑</mo><mi>j</mi></munder><msubsup><mi>p</mi><mi>j</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+S_T(p)_i
+=
+\frac{p_i^{1/T}}
+{\sum_jp_j^{1/T}}.
+</annotation></semantics></math></p>
+
+<p>Apply <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mi>T</mi></msub></mrow><annotation encoding="application/x-tex">S_T</annotation></semantics></math>, then another temperature <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mi>U</mi></msub></mrow><annotation encoding="application/x-tex">S_U</annotation></semantics></math>:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>S</mi><mi>U</mi></msub><mo stretchy="false">(</mo><msub><mi>S</mi><mi>T</mi></msub><mo stretchy="false">(</mo><mi>p</mi><mo stretchy="false">)</mo><msub><mo stretchy="false">)</mo><mi>i</mi></msub><mo>∝</mo><msup><mrow><mo fence="true">(</mo><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup><mo fence="true">)</mo></mrow><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>U</mi></mrow></msup><mo>=</mo><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mo stretchy="false">(</mo><mi>T</mi><mi>U</mi><mo stretchy="false">)</mo></mrow></msubsup><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+S_U(S_T(p))_i
+\propto
+\left(p_i^{1/T}\right)^{1/U}
+=
+p_i^{1/(TU)}.
+</annotation></semantics></math></p>
+
+<p>Therefore:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><menclose notation="box"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="false"><mstyle scriptlevel="0" displaystyle="true"><mrow><msub><mi>S</mi><mi>U</mi></msub><mo>∘</mo><msub><mi>S</mi><mi>T</mi></msub><mo>=</mo><msub><mi>S</mi><mrow><mi>T</mi><mi>U</mi></mrow></msub><mi mathvariant="normal">.</mi></mrow></mstyle></mstyle></mstyle></menclose></mrow><annotation encoding="application/x-tex">
+\boxed{
+S_U\circ S_T
+=
+S_{TU}.
+}
+</annotation></semantics></math></p>
+
+<p><strong>PROVED.</strong></p>
+
+<p>Suppose <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>T</mi><mo>∗</mo></msup></mrow><annotation encoding="application/x-tex">T^*</annotation></semantics></math> is the interior optimum for a particular dataset and scalar</p>
+
+<p>temperature family.</p>
+
+<p>If the server applies <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>T</mi><mo>∗</mo></msup></mrow><annotation encoding="application/x-tex">T^*</annotation></semantics></math> exactly and the same dataset is fitted again,</p>
+
+<p>then the residual optimum should be:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>U</mi><mo>∗</mo></msup><mo>≈</mo><mn>1</mn><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">
+U^*\approx1,
+</annotation></semantics></math></p>
+
+<p>subject to numerical tolerance and non-uniqueness/degeneracy.</p>
+
+<hr />
+
+<h2 id="24-what-the-fixed-point-check-proves-and-what-it-does-not">24. What the fixed-point check proves — and what it does not</h2>
+
+<p>Running the same benchmark again after loading the artifact is useful for</p>
+
+<p>detecting:</p>
+
+<ul>
+	<li>calibration not being applied,</li>
+	<li>calibration being applied twice,</li>
+	<li>wrong qtype lookup,</li>
+	<li>wrong artifact loaded,</li>
+	<li>a changed server path,</li>
+	<li>numerical implementation mismatch.</li>
+</ul>
+
+<p>But if the second run uses the same benchmark rows, it is an **implementation</p>
+
+<p>consistency check**, not a fresh statistical hypothesis test.</p>
+
+<p>For stronger external evidence, perform the residual fit on genuinely new</p>
+
+<p>labeled data from the same target distribution.</p>
+
+<p>In the Bonsai-2-27B reference run, the already calibrated endpoint refitted to</p>
+
+<p><code>choice=0.99991057</code>, <code>noul=0.99959046</code>, and <code>score=0.99999629</code>. This is an</p>
+
+<p>extremely close practical realization of the identity fixed point predicted by</p>
+
+<p>the composition theorem.</p>
+
+<hr />
+
+<h2 id="25-recommended-beforeafter-experiment">25. Recommended before/after experiment</h2>
+
+<h2 id="run-a-raw-endpoint">Run A — raw endpoint</h2>
+
+<p>Run the selected benchmark without server-side calibration.</p>
+
+<p>Collect raw predictions for:</p>
+
+<pre><code class="code-highlighted code-text">split=calibrate
+split=test</code></pre>
+
+<p>Fit <code>calibration.json</code> from <code>calibrate</code> only.</p>
+
+<p>Freeze that artifact.</p>
+
+<h2 id="offline-held-out-evaluation">Offline held-out evaluation</h2>
+
+<p>Before changing the server, apply the frozen artifact offline to Run A&#39;s <code>test</code></p>
+
+<p>predictions.</p>
+
+<p>This gives:</p>
+
+<pre><code class="code-highlighted code-text">raw test metrics
+vs
+offline-calibrated test metrics</code></pre>
+
+<p>Because <code>test</code> was not used to fit <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math>, this is the cleanest direct evidence</p>
+
+<p>of benchmark generalization.</p>
+
+<h2 id="run-b-calibrated-endpoint">Run B — calibrated endpoint</h2>
+
+<p>Load exactly the frozen artifact into the server.</p>
+
+<p>Keep constant, as far as practical:</p>
+
+<ul>
+	<li>model weights,</li>
+	<li>model file,</li>
+	<li>quantization,</li>
+	<li>server code,</li>
+	<li>prompt template,</li>
+	<li>adapters,</li>
+	<li>inference settings.</li>
+</ul>
+
+<p>Run the same benchmark under a distinct run name.</p>
+
+<p>Then compare case by case:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>p</mi><mi>B</mi></msup><mo><mover><mo><mo>≈</mo></mo><mo stretchy="false" lspace="0em" rspace="0em">?</mo></mover></mo><msub><mi>S</mi><mi>T</mi></msub><mo stretchy="false">(</mo><msup><mi>p</mi><mi>A</mi></msup><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+p^B
+\stackrel{?}{\approx}
+S_T(p^A).
+</annotation></semantics></math></p>
+
+<p>This checks that the production server implements the same transform the</p>
+
+<p>benchmark fitted.</p>
+
+<h2 id="strong-implementation-invariant">Strong implementation invariant</h2>
+
+<p>For every test case:</p>
+
+<pre><code class="code-highlighted code-text">offline temperature_scale(raw_A, T)
+≈
+served probability_B</code></pre>
+
+<p>within a documented floating-point tolerance.</p>
+
+<p>Also verify:</p>
+
+<pre><code class="code-highlighted code-text">argmax(raw_A) == argmax(probability_B)</code></pre>
+
+<p>unless an exact pre-existing tie is present.</p>
+
+<hr />
+
+<h2 id="26-what-should-be-published-for-reproducibility">26. What should be published for reproducibility?</h2>
+
+<p>Recommended layout:</p>
+
+<pre><code class="code-highlighted code-text">calibration/
+├── calibration.json
+├── before_stats.jsonl
+├── before_cases.jsonl
+├── after_stats.jsonl
+├── after_cases.jsonl
+├── before_calibration.json
+├── after_calibration.json
+└── provenance.json</code></pre>
+
+<p>Recommended provenance:</p>
+
+<pre><code class="code-highlighted code-json">{
+  <span class="syntax-all syntax-string">&quot;model&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;model_sha256&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;quantization&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;server_commit&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;benchmark_commit&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;prompt_template_sha256&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;adapter_sha256&quot;</span>: <span class="syntax-all syntax-constant">null</span>,
+  <span class="syntax-all syntax-string">&quot;calibration_sha256&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;before_run&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;after_run&quot;</span>: <span class="syntax-all syntax-string">&quot;...&quot;</span>
+}</code></pre>
+
+<p>A model name and endpoint URL alone do not uniquely identify quantization, model</p>
+
+<p>bytes, prompt template, server implementation, or adapter state.</p>
+
+<hr />
+
+<h2 id="27-correct-inference-engine-placement">27. Correct inference-engine placement</h2>
+
+<p>Apply calibration to the <strong>final candidate probability distribution</strong>:</p>
+
+<pre><code class="code-highlighted code-text">prompt
+  ↓
+model forward pass
+  ↓
+candidate logits / scores
+  ↓
+construct final candidate distribution
+  ↓
+temperature scaling       ← HERE
+  ↓
+derive typed answer fields</code></pre>
+
+<p>This matters for engines that construct a large candidate set through several</p>
+
+<p>conditional or multi-token readouts.</p>
+
+<p>If the benchmark fitted a temperature to the final candidate probabilities,</p>
+
+<p>applying temperature separately to intermediate conditional distributions is a</p>
+
+<p>different operation.</p>
+
+<blockquote>
+<p>Compose the complete candidate distribution first, then apply its qtype</p>
+
+<p>temperature exactly once.</p>
+</blockquote>
+
+<hr />
+
+<h2 id="28-recompute-every-derived-answer-field-after-calibration">28. Recompute every derived answer field after calibration</h2>
+
+<h2 id="choice"><code>choice</code></h2>
+
+<p>Given calibrated probabilities <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>q</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">q_k</annotation></semantics></math>:</p>
+
+<pre><code class="code-highlighted code-text">probabilities = q
+choice        = argmax(q)</code></pre>
+
+<p>The choice should equal the raw choice by the ordering proof.</p>
+
+<p>Any API-specific derived confidence field should be recomputed from <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi></mrow><annotation encoding="application/x-tex">q</annotation></semantics></math>, not</p>
+
+<p>copied from the raw response.</p>
+
+<h2 id="score"><code>score</code></h2>
+
+<p>Given score levels <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><mi>K</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">0,\ldots,K-1</annotation></semantics></math>:</p>
+
+<pre><code class="code-highlighted code-text">probabilities = q
+score         = Σ k q_k</code></pre>
+
+<p>Temperature scaling preserves the most likely score level but can change the</p>
+
+<p>expected numeric score because it changes mass assigned to non-winning levels.</p>
+
+<p>Therefore <code>score</code> <strong>must</strong> be recomputed.</p>
+
+<h2 id="noul"><code>noul</code></h2>
+
+<p>If the API stores only:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>p</mi><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><mtext>true</mtext><mo stretchy="false">)</mo><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">
+p=P(\text{true}),
+</annotation></semantics></math></p>
+
+<p>reconstruct:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo separator="true">,</mo><mi>p</mi><mo stretchy="false">)</mo><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">
+(1-p,p),
+</annotation></semantics></math></p>
+
+<p>apply temperature scaling, then return the calibrated true probability.</p>
+
+<hr />
+
+<h2 id="29-benchmark-confidence-vs-api-confidence">29. Benchmark confidence vs API <code>confidence</code></h2>
+
+<p>For calibration analysis, the benchmark derives top-label confidence from the</p>
+
+<p>probability vector:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>c</mi><mo>=</mo><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mi>k</mi></munder><msub><mi>p</mi><mi>k</mi></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+c=\max_k p_k.
+</annotation></semantics></math></p>
+
+<p>That is the value used by top-label ECE.</p>
+
+<p>An inference API may additionally expose a field named <code>confidence</code> with its own</p>
+
+<p>legacy or compatibility semantics.</p>
+
+<p>Those concepts should not be conflated.</p>
+
+<p>The calibration artifact modifies the probability distribution. Any derived API</p>
+
+<p><code>confidence</code> field should subsequently be recomputed according to that API&#39;s</p>
+
+<p>definition.</p>
+
+<hr />
+
+<h2 id="30-artifact-contract">30. Artifact contract</h2>
+
+<p>The current artifact uses:</p>
+
+<pre><code class="code-highlighted code-json">{
+  <span class="syntax-all syntax-string">&quot;schema_version&quot;</span>: <span class="syntax-all syntax-constant">2</span>,
+  <span class="syntax-all syntax-string">&quot;kind&quot;</span>: <span class="syntax-all syntax-string">&quot;typed-decision-temperature-calibration&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;method&quot;</span>: <span class="syntax-all syntax-string">&quot;temperature_scaling&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;scope&quot;</span>: <span class="syntax-all syntax-string">&quot;per_qtype&quot;</span>,
+  <span class="syntax-all syntax-string">&quot;temperature&quot;</span>: <span class="syntax-all syntax-constant">1.0</span>,
+  <span class="syntax-all syntax-string">&quot;temperatures&quot;</span>: {
+    <span class="syntax-all syntax-string">&quot;choice&quot;</span>: <span class="syntax-all syntax-constant">1.0</span>,
+    <span class="syntax-all syntax-string">&quot;noul&quot;</span>: <span class="syntax-all syntax-constant">1.0</span>,
+    <span class="syntax-all syntax-string">&quot;score&quot;</span>: <span class="syntax-all syntax-constant">1.0</span>
+  }
+}</code></pre>
+
+<p>Basic lookup:</p>
+
+<pre><code class="code-highlighted code-python"><span class="syntax-all syntax-constant">T</span> <span class="syntax-all syntax-keyword">=</span> artifact.get(<span class="syntax-all syntax-string">&quot;temperatures&quot;</span>, {}).get(
+    question_type,
+    artifact[<span class="syntax-all syntax-string">&quot;temperature&quot;</span>],
+)</code></pre>
+
+<p>A loader should at minimum validate:</p>
+
+<pre><code class="code-highlighted code-text">schema_version == 2
+kind == &quot;typed-decision-temperature-calibration&quot;
+method == &quot;temperature_scaling&quot;
+T is finite
+T &gt; 0</code></pre>
+
+<p>and validate deployment provenance when relevant identifiers are available.</p>
+
+<hr />
+
+<h2 id="31-what-deployable-true-means">31. What <code>deployable: true</code> means</h2>
+
+<p><code>deployable</code> is a <strong>mechanical eligibility flag</strong>, not proof that the transform</p>
+
+<p>improves every future dataset.</p>
+
+<p>In the current implementation it primarily means:</p>
+
+<ul>
+	<li>enough successful calibration examples were available,</li>
+	<li>the run had a single model identity,</li>
+	<li>the run had a single endpoint identity,</li>
+	<li>a finite fitted temperature was produced.</li>
+</ul>
+
+<p>The held-out <code>test</code> split does not control this flag.</p>
+
+<p>That separation is intentional: test results should describe evidence, not feed</p>
+
+<p>back into parameter selection or artifact eligibility.</p>
+
+<p>A production policy may choose to be stricter, for example by rejecting</p>
+
+<p>search-bound temperatures, missing exact model hashes, insufficient qtype data,</p>
+
+<p>or unacceptable held-out degradation.</p>
+
+<hr />
+
+<h2 id="32-search-bound-temperatures">32. Search-bound temperatures</h2>
+
+<p>The implementation searches:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>T</mi><mo>∈</mo><mo stretchy="false">[</mo><mn>0.05</mn><mo separator="true">,</mo><mn>20</mn><mo stretchy="false">]</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+T\in[0.05,20].
+</annotation></semantics></math></p>
+
+<p>If the optimum is returned at a boundary, the artifact records that fact.</p>
+
+<p>A boundary result should be treated as a warning because:</p>
+
+<ol>
+	<li>the unconstrained optimum may lie outside the interval;</li>
+	<li>calibration data may not identify a useful interior optimum;</li>
+	<li>extreme temperatures can indicate a mismatch between the one-slope family</li>
+</ol>
+
+<p> and observed probabilities.</p>
+
+<p>A rigorous deployment policy should inspect or reject at-bound fits.</p>
+
+<hr />
+
+<h2 id="33-generalization-under-dataset-shift">33. Generalization under dataset shift</h2>
+
+<p>Calibration is a joint property of predictions and the distribution of outcomes</p>
+
+<p>that materialize.</p>
+
+<p>A temperature fitted for:</p>
+
+<pre><code class="code-highlighted code-text">model A
+quantization Q
+template P
+traffic distribution D1</code></pre>
+
+<p>need not be optimal for:</p>
+
+<pre><code class="code-highlighted code-text">model A
+quantization Q
+template P
+traffic distribution D2</code></pre>
+
+<p>Ovadia et al. provide large-scale evidence that uncertainty quality and post-hoc</p>
+
+<p>calibration can degrade under increasing dataset shift:</p>
+
+<p>https://papers.nips.cc/paper_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html</p>
+
+<p>The strongest defensible deployment statement is therefore:</p>
+
+<blockquote>
+<p>A temperature fitted on representative calibration data is expected to</p>
+
+<p>transfer best to future data drawn from a similar distribution and the same</p>
+
+<p>inference configuration.</p>
+</blockquote>
+
+<p>That is a meaningful expectation, not a universal invariance claim.</p>
+
+<hr />
+
+<h2 id="34-what-the-bonsai-reference-experiment-now-demonstrates">34. What the Bonsai reference experiment now demonstrates</h2>
+
+<p>The reference experiment turns several previous expectations into observed</p>
+
+<p>evidence for one exact deployment.</p>
+
+<p>The frozen artifact was fitted on 5,499 calibration examples and evaluated on</p>
+
+<p>22,001 disjoint test examples. Test NLL decreased from 0.438015 to 0.434996 and</p>
+
+<p>Brier from 0.235513 to 0.233939 in the offline held-out evaluation.</p>
+
+<p>The independently rerun calibrated server then produced test NLL 0.434984 and</p>
+
+<p>Brier 0.233932 — within approximately <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.2</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>5</mn></mrow></msup></mrow><annotation encoding="application/x-tex">1.2\times10^{-5}</annotation></semantics></math> and</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>7.2</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>6</mn></mrow></msup></mrow><annotation encoding="application/x-tex">7.2\times10^{-6}</annotation></semantics></math>, respectively, of the offline prediction.</p>
+
+<p>Finally, fitting another temperature layer to the already calibrated endpoint</p>
+
+<p>returned all qtype temperatures within 0.041% of 1.</p>
+
+<p>Therefore the following deployment-specific statement is supported:</p>
+
+<blockquote>
+<p>**On the held-out typed-decision-bench test distribution used in the</p>
+
+<p>2026-09-22 Bonsai-2-27B reference experiment, qtype-stratified temperature</p>
+
+<p>scaling fitted only on the calibration split improved full-distribution NLL</p>
+
+<p>and Brier score, transferred to the independently rerun calibrated C++ server,</p>
+
+<p>and reached the expected near-identity residual-temperature fixed point.**</p>
+</blockquote>
+
+<p>This is a substantial empirical result.</p>
+
+<p>It still does not imply that the same temperatures are optimal for arbitrary</p>
+
+<p>future production distributions or materially different inference</p>
+
+<p>configurations.</p>
+
+<h2 id="35-claim-ladder">35. Claim ladder</h2>
+
+<h2 id="proved">PROVED</h2>
+
+<ul>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>q</mi><mi>i</mi></msub><mo>∝</mo><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">q_i\propto p_i^{1/T}</annotation></semantics></math> equals logit temperature scaling for positive <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">p_i</annotation></semantics></math>.</li>
+	<li>pairwise odds are raised to <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow><annotation encoding="application/x-tex">1/T</annotation></semantics></math>.</li>
+	<li>candidate ordering is preserved for every <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">T&gt;0</annotation></semantics></math>.</li>
+	<li>argmax is preserved.</li>
+	<li>hard argmax accuracy is therefore unchanged.</li>
+	<li>the cross-entropy objective is convex in <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo>=</mo><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow><annotation encoding="application/x-tex">\beta=1/T</annotation></semantics></math>.</li>
+	<li>there are no non-global local minima in <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math>.</li>
+	<li>temperature transforms compose as <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mi>U</mi></msub><mo>∘</mo><msub><mi>S</mi><mi>T</mi></msub><mo>=</mo><msub><mi>S</mi><mrow><mi>U</mi><mi>T</mi></mrow></msub></mrow><annotation encoding="application/x-tex">S_U\circ S_T=S_{UT}</annotation></semantics></math>.</li>
+</ul>
+
+<h2 id="empirically-supported-by-prior-literature">EMPIRICALLY SUPPORTED BY PRIOR LITERATURE</h2>
+
+<ul>
+	<li>modern neural networks can be poorly calibrated;</li>
+	<li>temperature scaling has historically been effective on many same-distribution</li>
+</ul>
+
+<p> classification benchmarks;</p>
+
+<ul>
+	<li>richer calibrators can outperform simpler parametric families when the</li>
+</ul>
+
+<p> distortion shape is misspecified;</p>
+
+<ul>
+	<li>calibration can deteriorate under dataset shift.</li>
+</ul>
+
+<h2 id="empirically-observed-in-the-bonsai-2-27b-reference-experiment">EMPIRICALLY OBSERVED IN THE BONSAI-2-27B REFERENCE EXPERIMENT</h2>
+
+<p>For the exact reference deployment and benchmark distribution:</p>
+
+<ul>
+	<li>temperatures fitted on 5,499 calibration rows improved held-out test NLL and</li>
+</ul>
+
+<p> Brier on 22,001 disjoint rows;</p>
+
+<ul>
+	<li><code>noul</code> showed the strongest transfer, including a large ECE reduction;</li>
+	<li><code>choice</code> was already close to calibrated and required only a mild correction;</li>
+	<li><code>score</code> improved NLL/Brier even though top-label ECE worsened, demonstrating</li>
+</ul>
+
+<p> why no single diagnostic should replace proper-score evaluation;</p>
+
+<ul>
+	<li>the calibrated C++ run reproduced the offline predicted NLL/Brier to roughly</li>
+</ul>
+
+<p> <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>10</mn><mrow><mo>−</mo><mn>5</mn></mrow></msup></mrow><annotation encoding="application/x-tex">10^{-5}</annotation></semantics></math> absolute error;</p>
+
+<ul>
+	<li>a second fit on the already calibrated endpoint returned residual qtype</li>
+</ul>
+
+<p> temperatures essentially equal to 1.</p>
+
+<p>These observations are deployment-specific empirical evidence, not algebraic</p>
+
+<p>guarantees for every future model or traffic distribution.</p>
+
+<h2 id="expected-then-tested-here">EXPECTED, THEN TESTED HERE</h2>
+
+<p>For a large calibration sample from the same typed-decision deployment:</p>
+
+<ul>
+	<li>qtype temperatures are expected to generalize better than a highly flexible</li>
+</ul>
+
+<p> calibrator with the same data budget;</p>
+
+<ul>
+	<li>held-out test NLL/Brier are likely to improve when dominant error is stable</li>
+</ul>
+
+<p> logit-scale distortion;</p>
+
+<ul>
+	<li>a calibrated server should reproduce the benchmark&#39;s offline transform;</li>
+	<li>a residual same-data fit should return near <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn></mrow><annotation encoding="application/x-tex">1</annotation></semantics></math> when the artifact is</li>
+</ul>
+
+<p> applied correctly and the optimum is well identified.</p>
+
+<p>These are reasonable expectations, not algebraic guarantees.</p>
+
+<h2 id="not-claimed">NOT CLAIMED</h2>
+
+<p>The method does not by itself establish that:</p>
+
+<ul>
+	<li>every confidence bin is perfectly calibrated;</li>
+	<li>top-label ECE captures full multiclass calibration;</li>
+	<li>one qtype temperature is optimal for every domain or candidate count;</li>
+	<li>calibration and test rows are statistically independent merely because they</li>
+</ul>
+
+<p> are disjoint;</p>
+
+<ul>
+	<li>benchmark test performance is an unbiased estimate of arbitrary production traffic;</li>
+	<li>fitted temperature remains optimal after distribution shift;</li>
+	<li>temperature scaling improves model capability;</li>
+	<li>temperature scaling repairs wrong discrete answers;</li>
+	<li>a same-data fixed-point rerun is a formal statistical hypothesis test.</li>
+</ul>
+
+<hr />
+
+<h2 id="36-relationship-to-established-calibration-methods">36. Relationship to established calibration methods</h2>
+
+<p>Temperature scaling is an established member of the post-hoc calibration family.</p>
+
+<p>Guo et al. describe it as a one-parameter variant of Platt scaling.</p>
+
+<p>Full Platt scaling fits a logistic map with slope and intercept.</p>
+
+<p>Temperature scaling keeps only a positive scale:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>z</mi><mo>↦</mo><mi>z</mi><mi mathvariant="normal">/</mi><mi>T</mi><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+z\mapsto z/T.
+</annotation></semantics></math></p>
+
+<p>This restriction has useful consequences:</p>
+
+<ol>
+	<li>identity <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">T=1</annotation></semantics></math> is naturally in the family;</li>
+	<li>candidate ordering is guaranteed unchanged.</li>
+</ol>
+
+<p>The benchmark&#39;s contribution is therefore not invention of temperature scaling</p>
+
+<p>itself.</p>
+
+<p>The engineering contribution is the typed-decision protocol around it:</p>
+
+<pre><code class="code-highlighted code-text">explicit split contract
++ qtype stratification
++ portable calibration artifact
++ held-out evaluation
++ inference-engine loader contract
++ reproducibility/provenance workflow</code></pre>
+
+<p>Any stronger novelty claim should be based on a separate literature review.</p>
+
+<hr />
+
+<h2 id="37-references-and-further-reading">37. References and further reading</h2>
+
+<h2 id="primary-scientific-references">Primary scientific references</h2>
+
+<h3 id="guo-et-al-temperature-scaling-for-modern-neural-networks">Guo et al. — Temperature scaling for modern neural networks</h3>
+
+<p>Chuan Guo, Geoff Pleiss, Yu Sun, Kilian Q. Weinberger.</p>
+
+<p><strong>On Calibration of Modern Neural Networks.</strong></p>
+
+<p>ICML 2017, PMLR 70:1321–1330.</p>
+
+<p>https://proceedings.mlr.press/v70/guo17a.html</p>
+
+<p>Key relevance:</p>
+
+<ul>
+	<li>documents miscalibration in modern neural networks;</li>
+	<li>evaluates several post-hoc calibration methods;</li>
+	<li>reports temperature scaling as surprisingly effective on most studied datasets;</li>
+	<li>establishes temperature scaling as a standard practical baseline.</li>
+</ul>
+
+<h3 id="vaicenavicius-et-al-what-calibration-evaluation-actually-means">Vaicenavicius et al. — What calibration evaluation actually means</h3>
+
+<p>Juozas Vaicenavicius, David Widmann, Carl Andersson, Fredrik Lindsten,</p>
+
+<p>Jacob Roll, Thomas B. Schön.</p>
+
+<p><strong>Evaluating model calibration in classification.</strong></p>
+
+<p>AISTATS 2019, PMLR 89:3459–3467.</p>
+
+<p>https://proceedings.mlr.press/v89/vaicenavicius19a.html</p>
+
+<p>Key relevance:</p>
+
+<ul>
+	<li>formalizes calibration evaluation;</li>
+	<li>explains that multiclass calibration has multiple notions;</li>
+	<li>motivates caution when interpreting confidence calibration alone.</li>
+</ul>
+
+<h3 id="ovadia-et-al-calibration-under-dataset-shift">Ovadia et al. — Calibration under dataset shift</h3>
+
+<p>Yaniv Ovadia, Emily Fertig, Jie Ren, Zachary Nado, D. Sculley,</p>
+
+<p>Sebastian Nowozin, Joshua V. Dillon, Balaji Lakshminarayanan, Jasper Snoek.</p>
+
+<p>**Can You Trust Your Model&#39;s Uncertainty? Evaluating Predictive Uncertainty</p>
+
+<p>Under Dataset Shift.**</p>
+
+<p>NeurIPS 2019.</p>
+
+<p>https://papers.nips.cc/paper_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html</p>
+
+<p>Key relevance:</p>
+
+<ul>
+	<li>evaluates uncertainty under increasing dataset shift;</li>
+	<li>shows why post-hoc calibration should not be assumed invariant under</li>
+</ul>
+
+<p> distribution change.</p>
+
+<h3 id="gneiting-raftery-proper-scoring-rules">Gneiting &amp; Raftery — Proper scoring rules</h3>
+
+<p>Tilmann Gneiting, Adrian E. Raftery.</p>
+
+<p><strong>Strictly Proper Scoring Rules, Prediction, and Estimation.</strong></p>
+
+<p>Journal of the American Statistical Association, 2007.</p>
+
+<p>https://doi.org/10.1198/016214506000001437</p>
+
+<p>Key relevance:</p>
+
+<ul>
+	<li>theoretical basis for evaluating probabilistic forecasts with proper scores;</li>
+	<li>supports log score / NLL and Brier-type scores as principled probabilistic objectives.</li>
+</ul>
+
+<h3 id="kull-silva-filho-flach-richer-calibration-maps">Kull, Silva Filho &amp; Flach — Richer calibration maps</h3>
+
+<p>Meelis Kull, Telmo Silva Filho, Peter Flach.</p>
+
+<p>**Beta calibration: a well-founded and easily implemented improvement on</p>
+
+<p>logistic calibration for binary classifiers.**</p>
+
+<p>AISTATS 2017, PMLR 54:623–631.</p>
+
+<p>https://proceedings.mlr.press/v54/kull17a.html</p>
+
+<p>Key relevance:</p>
+
+<ul>
+	<li>demonstrates why simple sigmoid/logistic families can be misspecified;</li>
+	<li>provides a richer alternative when one-slope calibration leaves systematic</li>
+</ul>
+
+<p> residual structure.</p>
+
+<h2 id="accessible-engineering-primers">Accessible engineering primers</h2>
+
+<ul>
+	<li>Calibration in statistics:</li>
+</ul>
+
+<p> https://en.wikipedia.org/wiki/Calibration_%28statistics%29</p>
+
+<ul>
+	<li>Platt scaling:</li>
+</ul>
+
+<p> https://en.wikipedia.org/wiki/Platt_scaling</p>
+
+<ul>
+	<li>Softmax:</li>
+</ul>
+
+<p> https://en.wikipedia.org/wiki/Softmax_function</p>
+
+<ul>
+	<li>Cross-entropy:</li>
+</ul>
+
+<p> https://en.wikipedia.org/wiki/Cross-entropy</p>
+
+<ul>
+	<li>Scoring rules:</li>
+</ul>
+
+<p> https://en.wikipedia.org/wiki/Scoring_rule</p>
+
+<ul>
+	<li>Brier score:</li>
+</ul>
+
+<p> https://en.wikipedia.org/wiki/Brier_score</p>
+
+<p>Wikipedia is listed as an accessible primer, not as the evidentiary basis for</p>
+
+<p>the scientific claims above.</p>
+
+<hr />
+
+<h2 id="38-practical-interpretation">38. Practical interpretation</h2>
+
+<p>The most useful mental model is:</p>
+
+<blockquote>
+<p>Temperature scaling does not make a model smarter. It estimates how strongly</p>
+
+<p>to trust the probability contrast the model already produces.</p>
+</blockquote>
+
+<p>When dominant calibration error is a stable scale distortion, a single</p>
+
+<p>temperature can correct that distortion extremely efficiently.</p>
+
+<p>Because the calibrator has very low capacity and historical experiments have</p>
+
+<p>found temperature scaling effective across many same-distribution classification</p>
+
+<p>settings, **good generalization from a large calibration split to a similar</p>
+
+<p>held-out test distribution is a reasonable expectation**.</p>
+
+<p>The benchmark is designed to measure whether that expectation is actually true</p>
+
+<p>for each deployment.</p>
+
+<p>For the Bonsai-2-27B reference deployment, the first complete before/after</p>
+
+<p>experiment supports that expectation on the benchmark&#39;s held-out test</p>
+
+<p>partition: proper scores improved, the served calibrated run reproduced the</p>
+
+<p>offline prediction, and the residual temperature fit returned essentially</p>
+
+<p>identity for all three qtypes.</p>
+
+<p>The scientific claim should therefore be neither:</p>
+
+<blockquote>
+<p>&quot;It is only a heuristic and we know almost nothing.&quot;</p>
+</blockquote>
+
+<p>nor:</p>
+
+<blockquote>
+<p>&quot;It guarantees honest probabilities everywhere.&quot;</p>
+</blockquote>
+
+<p>The defensible middle is stronger and more useful:</p>
+
+<blockquote>
+<p>**Temperature scaling is a mathematically constrained, established post-hoc</p>
+
+<p>calibration method with strong historical empirical support. In this benchmark</p>
+
+<p>it is fitted only on explicit calibration rows and evaluated on held-out test</p>
+
+<p>rows. Because it learns only one scale parameter per sufficiently represented</p>
+
+<p>question type, it is expected to generalize well when calibration and deployment</p>
+
+<p>distributions are similar. That expectation is directly falsifiable through</p>
+
+<p>held-out NLL, Brier, top-label reliability, per-qtype analysis, and case-by-case</p>
+
+<p>verification of the deployed transform.**</p>
+</blockquote>
+
+<hr />
+
+<h2 id="summary">Summary</h2>
+
+<p><code>typed-decision-bench</code> uses <strong>post-hoc temperature scaling</strong>:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>q</mi><mi>i</mi></msub><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><msubsup><mi>p</mi><mi>i</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup><mrow><munder><mo>∑</mo><mi>j</mi></munder><msubsup><mi>p</mi><mi>j</mi><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>T</mi></mrow></msubsup></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+q_i(T)=\frac{p_i^{1/T}}{\sum_j p_j^{1/T}}
+</annotation></semantics></math></p>
+
+<p>where:</p>
+
+<ul>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">p_i</annotation></semantics></math> is the model&#39;s raw probability for answer <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math>,</li>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>q</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">q_i</annotation></semantics></math> is the calibrated probability,</li>
+	<li><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">T&gt;0</annotation></semantics></math> is fitted on a dedicated <code>calibrate</code> split,</li>
+	<li>published benchmark metrics use a disjoint <code>test</code> split.</li>
+</ul>
+
+<p>The benchmark can fit separate temperatures for <code>choice</code>, <code>noul</code>, and <code>score</code></p>
+
+<p>questions when enough calibration examples are available.</p>
+
+<p>The method does <strong>not</strong> retrain the model and does <strong>not</strong> change its weights.</p>
+
+<p>For every finite <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">T&gt;0</annotation></semantics></math>, the transform preserves candidate ordering:</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub><mo>&gt;</mo><msub><mi>p</mi><mi>j</mi></msub><mtext>  </mtext><mo>⟺</mo><mtext>  </mtext><msub><mi>q</mi><mi>i</mi></msub><mo>&gt;</mo><msub><mi>q</mi><mi>j</mi></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">
+p_i &gt; p_j \iff q_i &gt; q_j.
+</annotation></semantics></math></p>
+
+<p>Therefore the predicted answer is unchanged; only the probability distribution</p>
+
+<p>around that answer changes.</p>
+
+<p>The fitting objective is mean cross-entropy / negative log-likelihood (NLL).</p>
+
+<p>When parameterized by inverse temperature</p>
+
+<p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>β</mi><mo>=</mo><mfrac><mn>1</mn><mi>T</mi></mfrac><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">
+\beta=\frac1T,
+</annotation></semantics></math></p>
+
+<p>that objective is convex. Consequently, the implementation can find a global</p>
+
+<p>minimum with deterministic one-dimensional gradient bisection rather than a</p>
+
+<p>general-purpose stochastic optimizer.</p>
+
+<p>Temperature scaling is not an experimental idea invented for this benchmark.</p>
+
+<p>It is an established post-hoc calibration method. Guo et al. (ICML 2017) found</p>
+
+<p>that a single fitted temperature was surprisingly effective across most of the</p>
+
+<p>classification datasets and neural-network architectures they studied.</p>
+
+<p>That historical evidence, combined with the very low capacity of this calibrator</p>
+
+<p>(one scalar per sufficiently represented question type), gives a reasonable</p>
+
+<p>prior expectation that a temperature fitted on a large calibration split will</p>
+
+<p>generalize to a <strong>similar held-out distribution from the same deployment</strong>.</p>
+
+<p>That expectation is deliberately testable rather than assumed:</p>
+
+<pre><code class="code-highlighted code-text">calibrate split
+    ↓
+fit T
+    ↓
+freeze calibration.json
+    ↓
+test split
+    ↓
+measure held-out NLL / Brier / top-label ECE</code></pre>
+
+<p>What does <strong>not</strong> follow is that one temperature remains optimal under arbitrary</p>
+
+<p>distribution shift. Ovadia et al. (NeurIPS 2019) showed that uncertainty and</p>
+
+<p>post-hoc calibration can degrade as the evaluation distribution moves away from</p>
+
+<p>the calibration distribution. A materially different model, quantization,</p>
+
+<p>prompt template, adapter, endpoint, or production distribution should therefore</p>
+
+<p>be treated as a new calibration target.</p>
+
+<h2 id="citation">Citation</h2>
+
+<p>If you use <code>typed-decision-bench</code> or the Qtype-stratified temperature scaling method, please cite my work:</p>
+
+<pre><code class="code-highlighted code-bibtex"><span class="syntax-all syntax-keyword">@software</span>{<span class="syntax-all syntax-entity">homberg2026bonsaillamajev</span>,
+  <span class="syntax-all syntax-string">author</span>    = <span class="syntax-all syntax-string">{Homberg, Aron}</span>,
+  <span class="syntax-all syntax-string">title</span>     = <span class="syntax-all syntax-string">{typed-decision-bench: A Held-Out Benchmark And Qtype-Stratified Temperature Scaling Method For Language Models Turned Into Typed Decision Engines}</span>,
+  <span class="syntax-all syntax-string">year</span>      = <span class="syntax-all syntax-string">{2026}</span>,
+  <span class="syntax-all syntax-string">version</span>   = <span class="syntax-all syntax-string">{5}</span>,
+  <span class="syntax-all syntax-string">publisher</span> = <span class="syntax-all syntax-string">{GitHub}</span>,
+  <span class="syntax-all syntax-string">url</span>       = <span class="syntax-all syntax-string">{https://github.com/kyr0/Bonsai-Llama-Jev}</span>,
+  <span class="syntax-all syntax-string">license</span>   = <span class="syntax-all syntax-string">{MIT}</span>
+}</code></pre>
+
+</body>
+</html>
+

@@ -1,7 +1,9 @@
-# Probability Calibration for Typed Decisions
+# A Held-Out Benchmark And Qtype-Stratified Temperature Scaling Method For Language Models Turned Into Typed Decision Engines
 
-This document specifies the calibration protocol used by `typed-decision-bench`,
-explains the mathematics behind it, and separates four kinds of statements:
+_Aron Homberg - Independent Researcher - 2026_
+
+## Abstract
+This document specifies the calibration protocol used by `typed-decision-bench`, and first implemented by `kyr0/Bonsai-Llama-Jev` inference engine. It explains the mathematics behind it, and separates four kinds of statements:
 
 - **PROVED** — follows mathematically from the transform or from an implementation invariant.
 - **EMPIRICALLY SUPPORTED** — supported by held-out measurements or established calibration literature.
@@ -13,82 +15,89 @@ artifact does, why it is mathematically well behaved, when it is likely to gener
 how to implement it correctly in an inference server, and what evidence is required
 before making stronger claims about a deployment.
 
----
+---- 
+- [Provenance](#provenance)
+	- [Held-out generalization](#held-out-generalization)
+	- [Held-out result by qtype](#held-out-result-by-qtype)
+	- [Independent server-side reproduction](#independent-server-side-reproduction)
+	- [Fixed-point reproduction](#fixed-point-reproduction)
+- [1. What calibration means](#1-what-calibration-means)
+- [2. Why typed decisions need calibration](#2-why-typed-decisions-need-calibration)
+- [3. Explicit train / calibrate / test split contract](#3-explicit-train--calibrate--test-split-contract)
+- [What the split guarantees](#what-the-split-guarantees)
+- [What the split does not guarantee](#what-the-split-does-not-guarantee)
+- [4. The temperature transform](#4-the-temperature-transform)
+- [5. Proof: probability-space scaling equals logit temperature scaling](#5-proof-probability-space-scaling-equals-logit-temperature-scaling)
+- [6. Proof: pairwise odds are exponentiated by](#6-proof-pairwise-odds-are-exponentiated-by)
+- [7. Proof: candidate ordering and argmax are unchanged](#7-proof-candidate-ordering-and-argmax-are-unchanged)
+- [8. Worked binary example](#8-worked-binary-example)
+- [9. Why fit separate temperatures by question type?](#9-why-fit-separate-temperatures-by-question-type)
+- [Current schema-v2 fallback behavior](#current-schema-v2-fallback-behavior)
+- [10. What is actually fitted?](#10-what-is-actually-fitted)
+- [11. Proof: the objective is convex in inverse temperature](#11-proof-the-objective-is-convex-in-inverse-temperature)
+- [12. Global optimum does not always mean unique optimum](#12-global-optimum-does-not-always-mean-unique-optimum)
+- [13. Why optimize NLL?](#13-why-optimize-nll)
+- [14. Metrics: what each one does and does not establish](#14-metrics-what-each-one-does-and-does-not-establish)
+- [14.1 NLL / cross-entropy](#141-nll--cross-entropy)
+- [14.2 Brier score](#142-brier-score)
+- [14.3 Top-label ECE](#143-top-label-ece)
+- [14.4 Hard accuracy](#144-hard-accuracy)
+- [14.5 Soft accuracy](#145-soft-accuracy)
+- [15. What temperature scaling can fix](#15-what-temperature-scaling-can-fix)
+- [16. What temperature scaling cannot fix](#16-what-temperature-scaling-cannot-fix)
+- [17. Why we expect the fitted temperature to generalize](#17-why-we-expect-the-fitted-temperature-to-generalize)
+- [17.1 Historical empirical evidence](#171-historical-empirical-evidence)
+- [17.2 Very low estimator capacity](#172-very-low-estimator-capacity)
+- [17.3 Broad calibration support](#173-broad-calibration-support)
+- [17.4 The expectation is strongest under distributional continuity](#174-the-expectation-is-strongest-under-distributional-continuity)
+- [18. Three different meanings of 'generalization'](#18-three-different-meanings-of-generalization)
+- [Level A — calibration split → benchmark test split](#level-a--calibration-split--benchmark-test-split)
+- [Level B — benchmark → new but similar typed decisions](#level-b--benchmark--new-but-similar-typed-decisions)
+- [Level C — benchmark → shifted production traffic](#level-c--benchmark--shifted-production-traffic)
+- [19. What held-out evidence should we require?](#19-what-held-out-evidence-should-we-require)
+- [20. Statistical precision: what  does and does not mean](#20-statistical-precision-what--does-and-does-not-mean)
+- [21. Recommended uncertainty estimation: cluster bootstrap](#21-recommended-uncertainty-estimation-cluster-bootstrap)
+- [22. Why calibration and evaluation must use different rows](#22-why-calibration-and-evaluation-must-use-different-rows)
+- [23. Fixed-point composition theorem](#23-fixed-point-composition-theorem)
+- [24. What the fixed-point check proves — and what it does not](#24-what-the-fixed-point-check-proves--and-what-it-does-not)
+- [25. Recommended before/after experiment](#25-recommended-beforeafter-experiment)
+- [Run A — raw endpoint](#run-a--raw-endpoint)
+- [Offline held-out evaluation](#offline-held-out-evaluation)
+- [Run B — calibrated endpoint](#run-b--calibrated-endpoint)
+- [Strong implementation invariant](#strong-implementation-invariant)
+- [26. What should be published for reproducibility?](#26-what-should-be-published-for-reproducibility)
+- [27. Correct inference-engine placement](#27-correct-inference-engine-placement)
+- [28. Recompute every derived answer field after calibration](#28-recompute-every-derived-answer-field-after-calibration)
+- [choice](#choice)
+- [score](#score)
+- [noul](#noul)
+- [29. Benchmark confidence vs API confidence](#29-benchmark-confidence-vs-api-confidence)
+- [30. Artifact contract](#30-artifact-contract)
+- [31. What deployable: true means](#31-what-deployable-true-means)
+- [32. Search-bound temperatures](#32-search-bound-temperatures)
+- [33. Generalization under dataset shift](#33-generalization-under-dataset-shift)
+- [34. What the Bonsai reference experiment now demonstrates](#34-what-the-bonsai-reference-experiment-now-demonstrates)
+- [35. Claim ladder](#35-claim-ladder)
+- [PROVED](#proved)
+- [EMPIRICALLY SUPPORTED BY PRIOR LITERATURE](#empirically-supported-by-prior-literature)
+- [EMPIRICALLY OBSERVED IN THE BONSAI-2-27B REFERENCE EXPERIMENT](#empirically-observed-in-the-bonsai-2-27b-reference-experiment)
+- [EXPECTED, THEN TESTED HERE](#expected-then-tested-here)
+- [NOT CLAIMED](#not-claimed)
+- [36. Relationship to established calibration methods](#36-relationship-to-established-calibration-methods)
+- [37. References and further reading](#37-references-and-further-reading)
+- [Primary scientific references](#primary-scientific-references)
+	- [Guo et al. — Temperature scaling for modern neural networks](#guo-et-al--temperature-scaling-for-modern-neural-networks)
+	- [Vaicenavicius et al. — What calibration evaluation actually means](#vaicenavicius-et-al--what-calibration-evaluation-actually-means)
+	- [Ovadia et al. — Calibration under dataset shift](#ovadia-et-al--calibration-under-dataset-shift)
+	- [Gneiting & Raftery — Proper scoring rules](#gneiting--raftery--proper-scoring-rules)
+	- [Kull, Silva Filho & Flach — Richer calibration maps](#kull-silva-filho--flach--richer-calibration-maps)
+- [Accessible engineering primers](#accessible-engineering-primers)
+- [38. Practical interpretation](#38-practical-interpretation)
+- [Summary](#summary)
+- [Citation](#citation)
+---- 
 
-## TL;DR
-
-`typed-decision-bench` uses **post-hoc temperature scaling**:
-
-$$
-q_i(T)=\frac{p_i^{1/T}}{\sum_j p_j^{1/T}}
-$$
-
-where:
-
-- $p_i$ is the model's raw probability for answer $i$,
-- $q_i$ is the calibrated probability,
-- $T>0$ is fitted on a dedicated `calibrate` split,
-- published benchmark metrics use a disjoint `test` split.
-
-The benchmark can fit separate temperatures for `choice`, `noul`, and `score`
-questions when enough calibration examples are available.
-
-The method does **not** retrain the model and does **not** change its weights.
-
-For every finite $T>0$, the transform preserves candidate ordering:
-
-$$
-p_i > p_j \iff q_i > q_j.
-$$
-
-Therefore the predicted answer is unchanged; only the probability distribution
-around that answer changes.
-
-The fitting objective is mean cross-entropy / negative log-likelihood (NLL).
-When parameterized by inverse temperature
-
-$$
-\beta=\frac1T,
-$$
-
-that objective is convex. Consequently, the implementation can find a global
-minimum with deterministic one-dimensional gradient bisection rather than a
-general-purpose stochastic optimizer.
-
-Temperature scaling is not an experimental idea invented for this benchmark.
-It is an established post-hoc calibration method. Guo et al. (ICML 2017) found
-that a single fitted temperature was surprisingly effective across most of the
-classification datasets and neural-network architectures they studied.
-
-That historical evidence, combined with the very low capacity of this calibrator
-(one scalar per sufficiently represented question type), gives a reasonable
-prior expectation that a temperature fitted on a large calibration split will
-generalize to a **similar held-out distribution from the same deployment**.
-
-That expectation is deliberately testable rather than assumed:
-
-```text
-calibrate split
-    ↓
-fit T
-    ↓
-freeze calibration.json
-    ↓
-test split
-    ↓
-measure held-out NLL / Brier / top-label ECE
-```
-
-What does **not** follow is that one temperature remains optimal under arbitrary
-distribution shift. Ovadia et al. (NeurIPS 2019) showed that uncertainty and
-post-hoc calibration can degrade as the evaluation distribution moves away from
-the calibration distribution. A materially different model, quantization,
-prompt template, adapter, endpoint, or production distribution should therefore
-be treated as a new calibration target.
-
----
-
-## Empirical reference result: Bonsai-2-27B
+## Provenance
 
 The method has now been exercised end to end on a real typed-decision deployment,
 not only on synthetic calibration-unit tests.
@@ -110,12 +119,12 @@ because `--n 100` caps GPQA Diamond at 100 of its 198 stored rows.
 
 The frozen temperatures were:
 
-| parameter | fitted value | interpretation |
-|---|---:|---|
-| pooled/global fallback | 1.011720 | close to identity |
-| `choice` | 1.037240 | very mild flattening |
-| `noul` | 0.765169 | substantial sharpening |
-| `score` | 1.162158 | moderate flattening |
+| parameter              | fitted value | interpretation         |
+| ---------------------- | -----------: | ---------------------- |
+| pooled/global fallback | 1.011720     | close to identity      |
+| `choice`               | 1.037240     | very mild flattening   |
+| `noul`                 | 0.765169     | substantial sharpening |
+| `score`                | 1.162158     | moderate flattening    |
 
 All three qtype fits were interior solutions, not search-bound results.
 
@@ -128,12 +137,12 @@ A single pooled slope cannot represent both effects simultaneously.
 The temperatures were fitted on `split=calibrate` only. Applying that frozen
 artifact offline to the 22,001 disjoint `split=test` examples produced:
 
-| metric | raw test | calibrated test | relative change |
-|---|---:|---:|---:|
-| NLL | 0.438015 | **0.434996** | **-0.689%** |
-| Brier | 0.235513 | **0.233939** | **-0.668%** |
-| hard accuracy | 0.832962 | 0.832962 | exactly unchanged offline |
-| top-label ECE-15 | **0.011998** | 0.014646 | +22.1% |
+| metric           | raw test     | calibrated test | relative change           |
+| ---------------- | -----------: | --------------: | ------------------------: |
+| NLL              | 0.438015     | **0.434996**    | **-0.689%**               |
+| Brier            | 0.235513     | **0.233939**    | **-0.668%**               |
+| hard accuracy    | 0.832962     | 0.832962        | exactly unchanged offline |
+| top-label ECE-15 | **0.011998** | 0.014646        | +22.1%                    |
 
 The two proper full-distribution scores improved on rows that were never used
 to fit the temperatures. This is direct empirical evidence that the fitted
@@ -146,11 +155,11 @@ top-label diagnostic rather than the optimized full-distribution objective.
 
 ### Held-out result by qtype
 
-| qtype | T | test NLL raw → calibrated | test Brier raw → calibrated | ECE-15 raw → calibrated |
-|---|---:|---:|---:|---:|
-| `choice` | 1.037240 | 0.488071 → **0.487981** | 0.251921 → **0.251900** | 0.015138 → **0.013787** |
-| `noul` | 0.765169 | 0.277873 → **0.267841** | 0.169659 → **0.165212** | 0.046100 → **0.025605** |
-| `score` | 1.162158 | 0.555333 → **0.551416** | 0.317909 → **0.313074** | **0.068788** → 0.073269 |
+| qtype    | T        | test NLL raw → calibrated | test Brier raw → calibrated | ECE-15 raw → calibrated |
+| -------- | -------: | ------------------------: | --------------------------: | ----------------------: |
+| `choice` | 1.037240 | 0.488071 → **0.487981**   | 0.251921 → **0.251900**     | 0.015138 → **0.013787** |
+| `noul`   | 0.765169 | 0.277873 → **0.267841**   | 0.169659 → **0.165212**     | 0.046100 → **0.025605** |
+| `score`  | 1.162158 | 0.555333 → **0.551416**   | 0.317909 → **0.313074**     | **0.068788** → 0.073269 |
 
 `noul` is the clearest calibration win: held-out NLL fell by about **3.61%**,
 Brier by about **2.62%**, and top-label ECE by about **44.5%**.
@@ -166,13 +175,13 @@ with the C++ calibration path enabled, and the benchmark was run again.
 
 The served result almost exactly reproduced the offline prediction:
 
-| metric | offline prediction from raw Run A | actual calibrated Run B | absolute difference |
-|---|---:|---:|---:|
-| NLL | 0.4349960051 | 0.4349837998 | 0.0000122052 |
-| Brier | 0.2339390976 | 0.2339318835 | 0.0000072142 |
-| soft accuracy | 0.7645820850 | 0.7645868428 | 0.0000047578 |
-| mean confidence | 0.8319436708 | 0.8319458355 | 0.0000021647 |
-| top-label ECE-15 | 0.0146457356 | 0.0150875306 | 0.0004417949 |
+| metric           | offline prediction from raw Run A | actual calibrated Run B | absolute difference |
+| ---------------- | --------------------------------: | ----------------------: | ------------------: |
+| NLL              | 0.4349960051                      | 0.4349837998            | 0.0000122052        |
+| Brier            | 0.2339390976                      | 0.2339318835            | 0.0000072142        |
+| soft accuracy    | 0.7645820850                      | 0.7645868428            | 0.0000047578        |
+| mean confidence  | 0.8319436708                      | 0.8319458355            | 0.0000021647        |
+| top-label ECE-15 | 0.0146457356                      | 0.0150875306            | 0.0004417949        |
 
 The larger relative difference in ECE is expected to be more sensitive than NLL
 or Brier because fixed-width bin membership is discontinuous: a tiny probability
@@ -195,24 +204,20 @@ rows.
 
 The residual temperatures were:
 
-| parameter | residual T | deviation from identity |
-|---|---:|---:|
-| pooled/global | 0.99987869 | -0.0121% |
-| `choice` | 0.99991057 | -0.0089% |
-| `noul` | 0.99959046 | -0.0410% |
-| `score` | 0.99999629 | -0.00037% |
+| parameter     | residual T | deviation from identity |
+| ------------- | ---------: | ----------------------: |
+| pooled/global | 0.99987869 | -0.0121%                |
+| `choice`      | 0.99991057 | -0.0089%                |
+| `noul`        | 0.99959046 | -0.0410%                |
+| `score`       | 0.99999629 | -0.00037%               |
 
 The additional residual fit changed held-out NLL only from
 
-$$
-0.4349837998
-$$
+$$0.4349837998$$
 
 to
 
-$$
-0.4349823236,
-$$
+$$0.4349823236,$$
 
 a relative change of roughly **0.00034%**.
 
@@ -246,9 +251,7 @@ are actually correct approximately 80% of the time.
 
 For multiclass predictions the full object is a probability vector,
 
-$$
-p=(p_1,\ldots,p_K),\qquad p_k\ge0,\qquad \sum_k p_k=1.
-$$
+$$p=(p_1,\ldots,p_K),\qquad p_k\ge0,\qquad \sum_k p_k=1.$$
 
 Calibration of the complete probability distribution is stronger than calibration
 of only the largest probability.
@@ -269,9 +272,7 @@ For a `choice` response such as
 
 the **top-label confidence** is
 
-$$
-\max_k p_k = 0.70.
-$$
+$$\max_k p_k = 0.70.$$
 
 A top-label reliability diagram or ECE examines whether examples whose maximum
 probability is approximately $0.70$ are correct approximately 70% of the time.
@@ -289,17 +290,17 @@ For this reason the benchmark reports multiple complementary metrics:
 
 Useful introductions:
 
-- Probability calibration: https://en.wikipedia.org/wiki/Calibration_%28statistics%29
-- Probabilistic classification: https://en.wikipedia.org/wiki/Probabilistic_classification
-- Scoring rules: https://en.wikipedia.org/wiki/Scoring_rule
-- Brier score: https://en.wikipedia.org/wiki/Brier_score
+- Probability calibration: https://en.wikipedia.org/wiki/Calibration\_%28statistics%29
+- Probabilistic classification: https://en.wikipedia.org/wiki/Probabilistic\_classification
+- Scoring rules: https://en.wikipedia.org/wiki/Scoring\_rule
+- Brier score: https://en.wikipedia.org/wiki/Brier\_score
 
 For a more rigorous treatment of multiclass calibration evaluation, see
 Vaicenavicius et al. (AISTATS 2019):
 
 https://proceedings.mlr.press/v89/vaicenavicius19a.html
 
----
+---- 
 
 ## 2. Why typed decisions need calibration
 
@@ -314,9 +315,7 @@ free-form generated answer. Typical answer types are:
 The inference engine usually obtains these values from model scores or logits.
 A softmax converts scores $z_i$ into probabilities:
 
-$$
-p_i = \frac{e^{z_i}}{\sum_j e^{z_j}}.
-$$
+$$p_i = \frac{e^{z_i}}{\sum_j e^{z_j}}.$$
 
 Softmax is excellent at turning relative scores into an ordered probability
 simplex, but the numerical scale of the logits determines how sharp the resulting
@@ -332,9 +331,9 @@ Temperature scaling directly targets that degree of freedom.
 
 Accessible softmax/temperature primer:
 
-https://en.wikipedia.org/wiki/Softmax_function
+https://en.wikipedia.org/wiki/Softmax\_function
 
----
+---- 
 
 ## 3. Explicit `train` / `calibrate` / `test` split contract
 
@@ -349,11 +348,11 @@ Each metadata row contains exactly one:
 {"split":"test"}
 ```
 
-| split | may train model | may fit calibration | published benchmark metrics |
-|---|---:|---:|---:|
-| `train` | yes | no | no |
-| `calibrate` | no | yes | no |
-| `test` | no | no | yes |
+| split       | may train model | may fit calibration | published benchmark metrics |
+| ----------- | --------------: | ------------------: | --------------------------: |
+| `train`     | yes             | no                  | no                          |
+| `calibrate` | no              | yes                 | no                          |
+| `test`      | no              | no                  | yes                         |
 
 The benchmark currently creates no `train` rows by default.
 
@@ -403,32 +402,26 @@ a proof that calibration and test observations are independent random variables,
 nor that benchmark test performance is an unbiased estimate of every possible
 production workload.
 
----
+---- 
 
 ## 4. The temperature transform
 
 For one probability vector $p$ and temperature $T>0$,
 
-$$
-\boxed{
+$$\boxed{
 q_i(T)=\frac{p_i^{1/T}}{\sum_j p_j^{1/T}}
-}
-$$
+}$$
 
 The same operation can be written
 
-$$
-q(T)=\operatorname{softmax}\left(\frac{\log p}{T}\right)
-$$
+$$q(T)=\operatorname{softmax}\left(\frac{\log p}{T}\right)$$
 
 when every $p_i>0$.
 
 If the inference engine has the original logits, it is preferable to apply the
 temperature there:
 
-$$
-\boxed{q(T)=\operatorname{softmax}(z/T)}
-$$
+$$\boxed{q(T)=\operatorname{softmax}(z/T)}$$
 
 because this avoids taking logarithms of rounded or underflowed probabilities.
 
@@ -447,67 +440,57 @@ The probability-space and logit-space forms are mathematically identical for
 strictly positive probabilities. With an implementation epsilon, zero-valued
 serialized probabilities are approximated rather than exactly inverted.
 
----
+---- 
 
 ## 5. Proof: probability-space scaling equals logit temperature scaling
 
 Assume
 
-$$
-p_i=\frac{e^{z_i}}{Z},
+$$p_i=\frac{e^{z_i}}{Z},
 \qquad
-Z=\sum_j e^{z_j}.
-$$
+Z=\sum_j e^{z_j}.$$
 
 Then
 
-$$
-p_i^{1/T}
+$$p_i^{1/T}
 =
 \left(\frac{e^{z_i}}{Z}\right)^{1/T}
 =
-\frac{e^{z_i/T}}{Z^{1/T}}.
-$$
+\frac{e^{z_i/T}}{Z^{1/T}}.$$
 
 After normalizing across $i$,
 
-$$
-q_i
+$$q_i
 =
 \frac{e^{z_i/T}/Z^{1/T}}
 {\sum_j e^{z_j/T}/Z^{1/T}}
 =
 \frac{e^{z_i/T}}
-{\sum_j e^{z_j/T}}.
-$$
+{\sum_j e^{z_j/T}}.$$
 
 Therefore:
 
-$$
-\boxed{
+$$\boxed{
 \operatorname{normalize}(p^{1/T})
 =
 \operatorname{softmax}(z/T)
-}
-$$
+}$$
 
 for $p_i>0$.
 
 **PROVED.**
 
----
+---- 
 
 ## 6. Proof: pairwise odds are exponentiated by $1/T$
 
 For any two candidates $i,j$,
 
-$$
-\frac{q_i}{q_j}
+$$\frac{q_i}{q_j}
 =
 \frac{p_i^{1/T}}{p_j^{1/T}}
 =
-\left(\frac{p_i}{p_j}\right)^{1/T}.
-$$
+\left(\frac{p_i}{p_j}\right)^{1/T}.$$
 
 Therefore temperature scaling changes the *strength* of pairwise preference but
 not its direction.
@@ -522,37 +505,31 @@ Hence:
 - $T<1$ **sharpens** the distribution,
 - $T=1$ is exactly the identity.
 
----
+---- 
 
 ## 7. Proof: candidate ordering and argmax are unchanged
 
 For $T>0$, the function
 
-$$
-f(x)=x^{1/T}
-$$
+$$f(x)=x^{1/T}$$
 
 is strictly increasing for $x>0$.
 
 Therefore:
 
-$$
-p_i>p_j
+$$p_i>p_j
 \iff
 p_i^{1/T}>p_j^{1/T}
 \iff
-q_i>q_j.
-$$
+q_i>q_j.$$
 
 So:
 
-$$
-\boxed{
+$$\boxed{
 \arg\max_i p_i
 =
 \arg\max_i q_i
-}
-$$
+}$$
 
 except for pre-existing exact ties, whose tie-breaking behavior is unchanged by
 the ideal mathematical transform.
@@ -568,66 +545,53 @@ This guarantee applies to candidate ordering *within a decision*. It does not
 mean every conceivable ranking metric across different examples is unchanged,
 because confidence values can move by different amounts across examples.
 
----
+---- 
 
-## 8. Worked binary example: $0.90 \rightarrow 0.75$
-
+## 8. Worked binary example
 Suppose a `noul` answer reports
 
-$$
-p(\text{true})=0.9,
+$$p(\text{true})=0.9,
 \qquad
-p(\text{false})=0.1.
-$$
+p(\text{false})=0.1.$$
 
 Its odds are
 
-$$
-\frac{0.9}{0.1}=9.
-$$
+$$\frac{0.9}{0.1}=9.$$
 
 Set $T=2$. Pairwise odds become:
 
-$$
-9^{1/2}=3.
-$$
+$$9^{1/2}=3.$$
 
 So the calibrated probabilities have odds $3:1$:
 
-$$
-q(\text{true})=\frac3{3+1}=0.75.
-$$
+$$q(\text{true})=\frac3{3+1}=0.75.$$
 
 Equivalently:
 
-$$
-q
+$$q
 =
 \frac{(\sqrt{0.9},\sqrt{0.1})}
 {\sqrt{0.9}+\sqrt{0.1}}
 =
-(0.75,0.25).
-$$
+(0.75,0.25).$$
 
 The binary decision remains `true`, but its probability changes from $0.90$
 to $0.75$.
 
 In binary form temperature scaling is:
 
-$$
-q
+$$q
 =
-\sigma\left(\frac{\operatorname{logit}(p)}{T}\right).
-$$
+\sigma\left(\frac{\operatorname{logit}(p)}{T}\right).$$
 
 Platt-scaling primer:
 
-https://en.wikipedia.org/wiki/Platt_scaling
+https://en.wikipedia.org/wiki/Platt\_scaling
 
 Temperature scaling is more restrictive than full Platt scaling: it uses one
 positive scale parameter and no learned intercept.
 
----
+---- 
 
 ## 9. Why fit separate temperatures by question type?
 
@@ -658,12 +622,10 @@ This is substantially less flexible than capability-by-capability calibration
 and correspondingly harder to overfit.
 
 The repository has historically called this **qtype-affine calibration**.
-Strictly speaking, the transform used here is a **zero-intercept linear scaling
-of logits** within each qtype:
+Strictly speaking, the transform used here is a \*\*zero-intercept linear scaling
+of logits\*\* within each qtype:
 
-$$
-z \mapsto z/T.
-$$
+$$z \mapsto z/T.$$
 
 "Qtype-stratified temperature scaling" is the more precise mathematical name.
 
@@ -676,8 +638,8 @@ Underrepresented qtypes use the top-level global temperature.
 
 The current v2 implementation fits that global temperature on the pooled
 calibration corpus. This gives a stable fallback estimate, but when some qtypes
-also have dedicated temperatures it is **not mathematically the same as fitting
-an optimum only on the remaining fallback subset**.
+also have dedicated temperatures it is \*\*not mathematically the same as fitting
+an optimum only on the remaining fallback subset\*\*.
 
 Accordingly, claims of exact within-family optimality apply to:
 
@@ -687,7 +649,7 @@ Accordingly, claims of exact within-family optimality apply to:
 The pooled global fallback in a mixed artifact is a stability-oriented fallback,
 not a theorem that it is the exact optimum for the residual small-qtype subset.
 
----
+---- 
 
 ## 10. What is actually fitted?
 
@@ -699,8 +661,7 @@ For calibration example $r$, let:
 
 The empirical calibration objective is:
 
-$$
-\boxed{
+$$\boxed{
 L(T)
 =
 \frac1n
@@ -709,16 +670,13 @@ L(T)
 \left(
 y^{(r)}, q^{(r)}(T)
 \right)
-}
-$$
+}$$
 
 with:
 
-$$
-\operatorname{CE}(y,q)
+$$\operatorname{CE}(y,q)
 =
--\sum_k y_k\log q_k.
-$$
+-\sum_k y_k\log q_k.$$
 
 For the benchmark's deterministic one-hot gold labels this is ordinary mean
 categorical negative log-likelihood.
@@ -729,103 +687,85 @@ Cross-entropy primer:
 
 https://en.wikipedia.org/wiki/Cross-entropy
 
-Because the implementation supports soft target distributions, **empirical
-cross-entropy minimization** is the most general description.
+Because the implementation supports soft target distributions, \*\*empirical
+cross-entropy minimization\*\* is the most general description.
 
 For current one-hot benchmark targets, the same objective coincides with
 categorical maximum-likelihood estimation under the usual independent-case
 conditional model.
 
----
+---- 
 
 ## 11. Proof: the objective is convex in inverse temperature
 
 Let:
 
-$$
-\beta=\frac1T
-$$
+$$\beta=\frac1T$$
 
 and for one example define:
 
-$$
-a_k=\log p_k.
-$$
+$$a_k=\log p_k.$$
 
 Then:
 
-$$
-q_k(\beta)
+$$q_k(\beta)
 =
 \frac{e^{\beta a_k}}
-{\sum_j e^{\beta a_j}}.
-$$
+{\sum_j e^{\beta a_j}}.$$
 
 The cross-entropy for that example is:
 
-$$
-L_r(\beta)
+$$L_r(\beta)
 =
--\sum_k y_k\log q_k(\beta).
-$$
+-\sum_k y_k\log q_k(\beta).$$
 
 Expanding:
 
-$$
-L_r(\beta)
+$$L_r(\beta)
 =
 \log\left(\sum_j e^{\beta a_j}\right)
 -
-\beta\sum_k y_k a_k.
-$$
+\beta\sum_k y_k a_k.$$
 
 Differentiate:
 
-$$
-\frac{\partial L_r}{\partial\beta}
+$$\frac{\partial L_r}{\partial\beta}
 =
 \frac{\sum_j a_j e^{\beta a_j}}
 {\sum_j e^{\beta a_j}}
 -
-\sum_k y_k a_k.
-$$
+\sum_k y_k a_k.$$
 
 The first term is an expectation under $q_\beta$:
 
-$$
-\boxed{
+$$\boxed{
 \frac{\partial L_r}{\partial\beta}
 =
 \mathbb E_{q_\beta}[a]
 -
 \mathbb E_y[a]
-}
-$$
+}$$
 
 or equivalently:
 
-$$
-\boxed{
+$$\boxed{
 \frac{\partial L_r}{\partial\beta}
 =
 \mathbb E_{q_\beta}[\log p]
 -
 \mathbb E_y[\log p].
-}
-$$
+}$$
 
 Differentiate again:
 
-$$
-\boxed{
+$$\boxed{
 \frac{\partial^2 L_r}{\partial\beta^2}
 =
 \operatorname{Var}_{q_\beta}(a)
 =
 \operatorname{Var}_{q_\beta}(\log p)
 \ge0.
-}
-$$
+}$$
 
 A mean of convex functions is convex, therefore the complete calibration
 objective is convex in $\beta$.
@@ -839,7 +779,7 @@ This gives the implementation an important property:
 The derivative is monotone non-decreasing, so one-dimensional gradient bisection
 is sufficient once a search interval is chosen.
 
----
+---- 
 
 ## 12. Global optimum does not always mean unique optimum
 
@@ -849,15 +789,11 @@ It does **not** guarantee that the minimizer is always unique.
 
 Consider a prediction that is uniform:
 
-$$
-p=(1/K,\ldots,1/K).
-$$
+$$p=(1/K,\ldots,1/K).$$
 
 Then every $\log p_k$ is equal, so:
 
-$$
-\operatorname{Var}_{q_\beta}(\log p)=0.
-$$
+$$\operatorname{Var}_{q_\beta}(\log p)=0.$$
 
 The objective can therefore be flat in $\beta$.
 
@@ -869,9 +805,7 @@ The rigorous statement is:
 
 The implementation searches within:
 
-$$
-T\in[0.05,20].
-$$
+$$T\in[0.05,20].$$
 
 A fitted value at one of those search bounds should be interpreted cautiously:
 the unconstrained optimum may lie outside the supported interval, or the
@@ -879,7 +813,7 @@ objective may be insufficiently informative near that direction.
 
 The artifact records whether the fitted temperature is at a search bound.
 
----
+---- 
 
 ## 13. Why optimize NLL?
 
@@ -898,26 +832,24 @@ https://doi.org/10.1198/016214506000001437
 
 Accessible primer:
 
-https://en.wikipedia.org/wiki/Scoring_rule
+https://en.wikipedia.org/wiki/Scoring\_rule
 
 NLL is also the exact fitting objective, which makes held-out NLL the most
 direct measure of whether the fitted transform generalized beyond calibration
 rows.
 
----
+---- 
 
 ## 14. Metrics: what each one does and does not establish
 
 ## 14.1 NLL / cross-entropy
 
-$$
-\operatorname{NLL}
+$$\operatorname{NLL}
 =
 -\frac1n
 \sum_r\sum_k
 y_k^{(r)}
-\log p_k^{(r)}.
-$$
+\log p_k^{(r)}.$$
 
 Lower is better.
 
@@ -928,15 +860,13 @@ very little probability to the true outcome.
 
 ## 14.2 Brier score
 
-$$
-\operatorname{Brier}
+$$\operatorname{Brier}
 =
 \frac1n
 \sum_r\sum_k
 \left(
 p_k^{(r)}-y_k^{(r)}
-\right)^2.
-$$
+\right)^2.$$
 
 Lower is better.
 
@@ -946,31 +876,26 @@ Brier score is also a proper scoring rule.
 
 Primer:
 
-https://en.wikipedia.org/wiki/Brier_score
+https://en.wikipedia.org/wiki/Brier\_score
 
 ## 14.3 Top-label ECE
 
 The implementation's ECE uses:
 
-$$
-c_r=\max_k p_k^{(r)}
-$$
+$$c_r=\max_k p_k^{(r)}$$
 
 and:
 
-$$
-a_r=
+$$a_r=
 \mathbf 1[
 \arg\max_k p_k^{(r)}
 =
 \arg\max_k y_k^{(r)}
-].
-$$
+].$$
 
 Examples are placed into confidence bins $B_b$:
 
-$$
-\operatorname{ECE}
+$$\operatorname{ECE}
 =
 \sum_b
 \frac{|B_b|}{n}
@@ -978,8 +903,7 @@ $$
 \operatorname{mean}_{r\in B_b}(c_r)
 -
 \operatorname{mean}_{r\in B_b}(a_r)
-\right|.
-$$
+\right|.$$
 
 This is useful and intuitive, but evaluates only the winning confidence.
 
@@ -994,8 +918,7 @@ criterion.
 
 ## 14.4 Hard accuracy
 
-$$
-\operatorname{Accuracy}
+$$\operatorname{Accuracy}
 =
 \frac1n
 \sum_r
@@ -1003,18 +926,15 @@ $$
 \arg\max p^{(r)}
 =
 \arg\max y^{(r)}
-].
-$$
+].$$
 
 Positive temperature scaling preserves argmax, therefore:
 
-$$
-\boxed{
+$$\boxed{
 \operatorname{Accuracy}_{raw}
 =
 \operatorname{Accuracy}_{calibrated}
-}
-$$
+}$$
 
 up to implementation/tie-breaking bugs.
 
@@ -1024,13 +944,11 @@ This is a useful invariant test.
 
 The benchmark also reports:
 
-$$
-\operatorname{SoftAccuracy}
+$$\operatorname{SoftAccuracy}
 =
 \frac1n
 \sum_r
-p^{(r)\top}y^{(r)}.
-$$
+p^{(r)\top}y^{(r)}.$$
 
 This can be useful as a descriptive agreement measure.
 
@@ -1038,55 +956,39 @@ It is **not invariant under temperature scaling**.
 
 Example:
 
-$$
-y=(1,0),\qquad p=(0.9,0.1).
-$$
+$$y=(1,0),\qquad p=(0.9,0.1).$$
 
 Then:
 
-$$
-p^\top y=0.9.
-$$
+$$p^\top y=0.9.$$
 
 After $T=2$:
 
-$$
-q=(0.75,0.25)
-$$
+$$q=(0.75,0.25)$$
 
 and:
 
-$$
-q^\top y=0.75.
-$$
+$$q^\top y=0.75.$$
 
 It is also not a proper scoring rule for general soft targets. For example:
 
-$$
-y=(0.6,0.4).
-$$
+$$y=(0.6,0.4).$$
 
 Reporting $p=y$ gives:
 
-$$
-p^\top y=0.52,
-$$
+$$p^\top y=0.52,$$
 
 whereas reporting:
 
-$$
-p=(1,0)
-$$
+$$p=(1,0)$$
 
 gives:
 
-$$
-p^\top y=0.60.
-$$
+$$p^\top y=0.60.$$
 
 So soft accuracy should not be used as the mathematical calibration objective.
 
----
+---- 
 
 ## 15. What temperature scaling can fix
 
@@ -1100,31 +1002,23 @@ It is well suited to a common failure mode:
 Suppose an ideal model would produce logits $z^*$, but the deployed model
 approximately produces:
 
-$$
-z=\alpha z^* + c\mathbf 1.
-$$
+$$z=\alpha z^* + c\mathbf 1.$$
 
 Softmax is invariant to adding the same constant $c$ to every candidate:
 
-$$
-\operatorname{softmax}(z)
+$$\operatorname{softmax}(z)
 =
-\operatorname{softmax}(\alpha z^*).
-$$
+\operatorname{softmax}(\alpha z^*).$$
 
 Choosing:
 
-$$
-T=\alpha
-$$
+$$T=\alpha$$
 
 gives:
 
-$$
-\operatorname{softmax}(z/T)
+$$\operatorname{softmax}(z/T)
 =
-\operatorname{softmax}(z^*).
-$$
+\operatorname{softmax}(z^*).$$
 
 In this idealized failure mode, temperature scaling exactly corrects the
 probability distortion without changing the decision ordering.
@@ -1132,7 +1026,7 @@ probability distortion without changing the decision ordering.
 This is one reason temperature scaling can generalize well when miscalibration
 is dominated by a stable logit-scale effect.
 
----
+---- 
 
 ## 16. What temperature scaling cannot fix
 
@@ -1180,7 +1074,7 @@ The engineering trade-off is capacity:
 
 The benchmark intentionally begins with a very low-capacity family.
 
----
+---- 
 
 ## 17. Why we expect the fitted temperature to generalize
 
@@ -1200,8 +1094,8 @@ Guo, Pleiss, Sun and Weinberger studied post-hoc calibration for modern neural
 networks in ICML 2017.
 
 Their practical conclusion was that temperature scaling — a single-parameter
-variant of Platt scaling — was **surprisingly effective on most of the datasets
-they evaluated**.
+variant of Platt scaling — was \*\*surprisingly effective on most of the datasets
+they evaluated\*\*.
 
 Paper:
 
@@ -1271,7 +1165,7 @@ reasonable.
 
 The expectation becomes progressively weaker as those conditions change.
 
----
+---- 
 
 ## 18. Three different meanings of 'generalization'
 
@@ -1280,8 +1174,8 @@ The expectation becomes progressively weaker as those conditions change.
 Fit only on `split=calibrate`, freeze the artifact, and evaluate on
 `split=test`.
 
-If held-out test NLL and Brier improve, then the correction **generalized beyond
-the rows used to fit it on this benchmark**.
+If held-out test NLL and Brier improve, then the correction \*\*generalized beyond
+the rows used to fit it on this benchmark\*\*.
 
 This is the primary generalization claim the benchmark can directly establish.
 
@@ -1308,21 +1202,19 @@ Ovadia et al. studied predictive uncertainty under dataset shift and found that
 traditional post-hoc calibration can deteriorate as the evaluation distribution
 moves away from the calibration distribution:
 
-https://papers.nips.cc/paper_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html
+https://papers.nips.cc/paper\_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html
 
 Therefore:
 
-$$
-T_{\text{benchmark}}
+$$T_{\text{benchmark}}
 \not\equiv
-T_{\text{all future production distributions}}.
-$$
+T_{\text{all future production distributions}}.$$
 
 Calibration should be treated as part of the exact inference configuration and
 rechecked when that configuration or its traffic distribution changes
 materially.
 
----
+---- 
 
 ## 19. What held-out evidence should we require?
 
@@ -1365,7 +1257,7 @@ unchanged. It also provides a useful counterexample to treating ECE as the only
 criterion: aggregate ECE worsens slightly even while both full-distribution
 proper scores improve.
 
----
+---- 
 
 ## 20. Statistical precision: what $1/\sqrt n$ does and does not mean
 
@@ -1374,9 +1266,7 @@ The fitted temperature is a one-dimensional empirical risk estimator.
 Under standard regularity conditions, nondegenerate M-estimators often have
 sampling error that decreases on the order of:
 
-$$
-O(n^{-1/2}).
-$$
+$$O(n^{-1/2}).$$
 
 This gives the familiar rule:
 
@@ -1391,14 +1281,12 @@ may be correlated, reducing effective sample size.
 For a general scalar M-estimator $\theta$, the asymptotic variance has the
 sandwich form:
 
-$$
-\operatorname{Var}
+$$\operatorname{Var}
 \left(
 \sqrt n(\hat\theta-\theta^*)
 \right)
 \approx
-\frac{J}{H^2},
-$$
+\frac{J}{H^2},$$
 
 where:
 
@@ -1412,7 +1300,7 @@ Therefore the repository's default per-qtype minimum is best understood as an
 **engineering data floor**, not a theorem that 100 examples imply a particular
 standard error.
 
----
+---- 
 
 ## 21. Recommended uncertainty estimation: cluster bootstrap
 
@@ -1440,7 +1328,7 @@ This is more defensible than pretending every templated row is independent.
 For qtype-specific fits, bootstrap the relevant qtype examples while preserving
 cluster membership.
 
----
+---- 
 
 ## 22. Why calibration and evaluation must use different rows
 
@@ -1456,13 +1344,11 @@ $k/n$ outside regular correctly specified likelihood settings.
 
 The benchmark therefore uses:
 
-$$
-\boxed{
+$$\boxed{
 \text{fit on calibrate}
 \quad\rightarrow\quad
 \text{report on test}
-}
-$$
+}$$
 
 This establishes row-level holdout:
 
@@ -1471,38 +1357,32 @@ This establishes row-level holdout:
 That is the claim we need. We do not need to claim that the partitions are
 statistically independent in every latent sense.
 
----
+---- 
 
 ## 23. Fixed-point composition theorem
 
 Define:
 
-$$
-S_T(p)_i
+$$S_T(p)_i
 =
 \frac{p_i^{1/T}}
-{\sum_jp_j^{1/T}}.
-$$
+{\sum_jp_j^{1/T}}.$$
 
 Apply $S_T$, then another temperature $S_U$:
 
-$$
-S_U(S_T(p))_i
+$$S_U(S_T(p))_i
 \propto
 \left(p_i^{1/T}\right)^{1/U}
 =
-p_i^{1/(TU)}.
-$$
+p_i^{1/(TU)}.$$
 
 Therefore:
 
-$$
-\boxed{
+$$\boxed{
 S_U\circ S_T
 =
 S_{TU}.
-}
-$$
+}$$
 
 **PROVED.**
 
@@ -1512,13 +1392,11 @@ temperature family.
 If the server applies $T^*$ exactly and the same dataset is fitted again,
 then the residual optimum should be:
 
-$$
-U^*\approx1,
-$$
+$$U^*\approx1,$$
 
 subject to numerical tolerance and non-uniqueness/degeneracy.
 
----
+---- 
 
 ## 24. What the fixed-point check proves — and what it does not
 
@@ -1532,8 +1410,8 @@ detecting:
 - a changed server path,
 - numerical implementation mismatch.
 
-But if the second run uses the same benchmark rows, it is an **implementation
-consistency check**, not a fresh statistical hypothesis test.
+But if the second run uses the same benchmark rows, it is an \*\*implementation
+consistency check\*\*, not a fresh statistical hypothesis test.
 
 For stronger external evidence, perform the residual fit on genuinely new
 labeled data from the same target distribution.
@@ -1544,7 +1422,7 @@ In the Bonsai-2-27B reference run, the already calibrated endpoint refitted to
 extremely close practical realization of the identity fixed point predicted by
 the composition theorem.
 
----
+---- 
 
 ## 25. Recommended before/after experiment
 
@@ -1597,11 +1475,9 @@ Run the same benchmark under a distinct run name.
 
 Then compare case by case:
 
-$$
-p^B
+$$p^B
 \stackrel{?}{\approx}
-S_T(p^A).
-$$
+S_T(p^A).$$
 
 This checks that the production server implements the same transform the
 benchmark fitted.
@@ -1626,7 +1502,7 @@ argmax(raw_A) == argmax(probability_B)
 
 unless an exact pre-existing tie is present.
 
----
+---- 
 
 ## 26. What should be published for reproducibility?
 
@@ -1664,7 +1540,7 @@ Recommended provenance:
 A model name and endpoint URL alone do not uniquely identify quantization, model
 bytes, prompt template, server implementation, or adapter state.
 
----
+---- 
 
 ## 27. Correct inference-engine placement
 
@@ -1694,7 +1570,7 @@ different operation.
 > Compose the complete candidate distribution first, then apply its qtype
 > temperature exactly once.
 
----
+---- 
 
 ## 28. Recompute every derived answer field after calibration
 
@@ -1730,28 +1606,22 @@ Therefore `score` **must** be recomputed.
 
 If the API stores only:
 
-$$
-p=P(\text{true}),
-$$
+$$p=P(\text{true}),$$
 
 reconstruct:
 
-$$
-(1-p,p),
-$$
+$$(1-p,p),$$
 
 apply temperature scaling, then return the calibrated true probability.
 
----
+---- 
 
 ## 29. Benchmark confidence vs API `confidence`
 
 For calibration analysis, the benchmark derives top-label confidence from the
 probability vector:
 
-$$
-c=\max_k p_k.
-$$
+$$c=\max_k p_k.$$
 
 That is the value used by top-label ECE.
 
@@ -1764,7 +1634,7 @@ The calibration artifact modifies the probability distribution. Any derived API
 `confidence` field should subsequently be recomputed according to that API's
 definition.
 
----
+---- 
 
 ## 30. Artifact contract
 
@@ -1806,7 +1676,7 @@ T > 0
 
 and validate deployment provenance when relevant identifiers are available.
 
----
+---- 
 
 ## 31. What `deployable: true` means
 
@@ -1829,15 +1699,13 @@ A production policy may choose to be stricter, for example by rejecting
 search-bound temperatures, missing exact model hashes, insufficient qtype data,
 or unacceptable held-out degradation.
 
----
+---- 
 
 ## 32. Search-bound temperatures
 
 The implementation searches:
 
-$$
-T\in[0.05,20].
-$$
+$$T\in[0.05,20].$$
 
 If the optimum is returned at a boundary, the artifact records that fact.
 
@@ -1850,7 +1718,7 @@ A boundary result should be treated as a warning because:
 
 A rigorous deployment policy should inspect or reject at-bound fits.
 
----
+---- 
 
 ## 33. Generalization under dataset shift
 
@@ -1878,7 +1746,7 @@ traffic distribution D2
 Ovadia et al. provide large-scale evidence that uncertainty quality and post-hoc
 calibration can degrade under increasing dataset shift:
 
-https://papers.nips.cc/paper_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html
+https://papers.nips.cc/paper\_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html
 
 The strongest defensible deployment statement is therefore:
 
@@ -1888,7 +1756,7 @@ The strongest defensible deployment statement is therefore:
 
 That is a meaningful expectation, not a universal invariance claim.
 
----
+---- 
 
 ## 34. What the Bonsai reference experiment now demonstrates
 
@@ -1908,11 +1776,11 @@ returned all qtype temperatures within 0.041% of 1.
 
 Therefore the following deployment-specific statement is supported:
 
-> **On the held-out typed-decision-bench test distribution used in the
+> \*\*On the held-out typed-decision-bench test distribution used in the
 > 2026-09-22 Bonsai-2-27B reference experiment, qtype-stratified temperature
 > scaling fitted only on the calibration split improved full-distribution NLL
 > and Brier score, transferred to the independently rerun calibrated C++ server,
-> and reached the expected near-identity residual-temperature fixed point.**
+> and reached the expected near-identity residual-temperature fixed point.\*\*
 
 This is a substantial empirical result.
 
@@ -1989,7 +1857,7 @@ The method does not by itself establish that:
 - temperature scaling repairs wrong discrete answers;
 - a same-data fixed-point rerun is a formal statistical hypothesis test.
 
----
+---- 
 
 ## 36. Relationship to established calibration methods
 
@@ -2001,9 +1869,7 @@ Full Platt scaling fits a logistic map with slope and intercept.
 
 Temperature scaling keeps only a positive scale:
 
-$$
-z\mapsto z/T.
-$$
+$$z\mapsto z/T.$$
 
 This restriction has useful consequences:
 
@@ -2026,7 +1892,7 @@ explicit split contract
 
 Any stronger novelty claim should be based on a separate literature review.
 
----
+---- 
 
 ## 37. References and further reading
 
@@ -2066,11 +1932,11 @@ Key relevance:
 
 Yaniv Ovadia, Emily Fertig, Jie Ren, Zachary Nado, D. Sculley,
 Sebastian Nowozin, Joshua V. Dillon, Balaji Lakshminarayanan, Jasper Snoek.
-**Can You Trust Your Model's Uncertainty? Evaluating Predictive Uncertainty
-Under Dataset Shift.**
+\*\*Can You Trust Your Model's Uncertainty? Evaluating Predictive Uncertainty
+Under Dataset Shift.\*\*
 NeurIPS 2019.
 
-https://papers.nips.cc/paper_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html
+https://papers.nips.cc/paper\_files/paper/2019/hash/8558cb408c1d76621371888657d2eb1d-Abstract.html
 
 Key relevance:
 
@@ -2094,8 +1960,8 @@ Key relevance:
 ### Kull, Silva Filho & Flach — Richer calibration maps
 
 Meelis Kull, Telmo Silva Filho, Peter Flach.
-**Beta calibration: a well-founded and easily implemented improvement on
-logistic calibration for binary classifiers.**
+\*\*Beta calibration: a well-founded and easily implemented improvement on
+logistic calibration for binary classifiers.\*\*
 AISTATS 2017, PMLR 54:623–631.
 
 https://proceedings.mlr.press/v54/kull17a.html
@@ -2109,22 +1975,22 @@ Key relevance:
 ## Accessible engineering primers
 
 - Calibration in statistics:
-  https://en.wikipedia.org/wiki/Calibration_%28statistics%29
+  https://en.wikipedia.org/wiki/Calibration\_%28statistics%29
 - Platt scaling:
-  https://en.wikipedia.org/wiki/Platt_scaling
+  https://en.wikipedia.org/wiki/Platt\_scaling
 - Softmax:
-  https://en.wikipedia.org/wiki/Softmax_function
+  https://en.wikipedia.org/wiki/Softmax\_function
 - Cross-entropy:
   https://en.wikipedia.org/wiki/Cross-entropy
 - Scoring rules:
-  https://en.wikipedia.org/wiki/Scoring_rule
+  https://en.wikipedia.org/wiki/Scoring\_rule
 - Brier score:
-  https://en.wikipedia.org/wiki/Brier_score
+  https://en.wikipedia.org/wiki/Brier\_score
 
 Wikipedia is listed as an accessible primer, not as the evidentiary basis for
 the scientific claims above.
 
----
+---- 
 
 ## 38. Practical interpretation
 
@@ -2138,8 +2004,8 @@ temperature can correct that distortion extremely efficiently.
 
 Because the calibrator has very low capacity and historical experiments have
 found temperature scaling effective across many same-distribution classification
-settings, **good generalization from a large calibration split to a similar
-held-out test distribution is a reasonable expectation**.
+settings, \*\*good generalization from a large calibration split to a similar
+held-out test distribution is a reasonable expectation\*\*.
 
 The benchmark is designed to measure whether that expectation is actually true
 for each deployment.
@@ -2160,11 +2026,93 @@ nor:
 
 The defensible middle is stronger and more useful:
 
-> **Temperature scaling is a mathematically constrained, established post-hoc
+> \*\*Temperature scaling is a mathematically constrained, established post-hoc
 > calibration method with strong historical empirical support. In this benchmark
 > it is fitted only on explicit calibration rows and evaluated on held-out test
 > rows. Because it learns only one scale parameter per sufficiently represented
 > question type, it is expected to generalize well when calibration and deployment
 > distributions are similar. That expectation is directly falsifiable through
 > held-out NLL, Brier, top-label reliability, per-qtype analysis, and case-by-case
-> verification of the deployed transform.**
+> verification of the deployed transform.\*\*
+---- 
+
+## Summary
+
+`typed-decision-bench` uses **post-hoc temperature scaling**:
+
+$$q_i(T)=\frac{p_i^{1/T}}{\sum_j p_j^{1/T}}$$
+
+where:
+
+- $p_i$ is the model's raw probability for answer $i$,
+- $q_i$ is the calibrated probability,
+- $T>0$ is fitted on a dedicated `calibrate` split,
+- published benchmark metrics use a disjoint `test` split.
+
+The benchmark can fit separate temperatures for `choice`, `noul`, and `score`
+questions when enough calibration examples are available.
+
+The method does **not** retrain the model and does **not** change its weights.
+
+For every finite $T>0$, the transform preserves candidate ordering:
+
+$$p_i > p_j \iff q_i > q_j.$$
+
+Therefore the predicted answer is unchanged; only the probability distribution
+around that answer changes.
+
+The fitting objective is mean cross-entropy / negative log-likelihood (NLL).
+When parameterized by inverse temperature
+
+$$\beta=\frac1T,$$
+
+that objective is convex. Consequently, the implementation can find a global
+minimum with deterministic one-dimensional gradient bisection rather than a
+general-purpose stochastic optimizer.
+
+Temperature scaling is not an experimental idea invented for this benchmark.
+It is an established post-hoc calibration method. Guo et al. (ICML 2017) found
+that a single fitted temperature was surprisingly effective across most of the
+classification datasets and neural-network architectures they studied.
+
+That historical evidence, combined with the very low capacity of this calibrator
+(one scalar per sufficiently represented question type), gives a reasonable
+prior expectation that a temperature fitted on a large calibration split will
+generalize to a **similar held-out distribution from the same deployment**.
+
+That expectation is deliberately testable rather than assumed:
+
+```text
+calibrate split
+    ↓
+fit T
+    ↓
+freeze calibration.json
+    ↓
+test split
+    ↓
+measure held-out NLL / Brier / top-label ECE
+```
+
+What does **not** follow is that one temperature remains optimal under arbitrary
+distribution shift. Ovadia et al. (NeurIPS 2019) showed that uncertainty and
+post-hoc calibration can degrade as the evaluation distribution moves away from
+the calibration distribution. A materially different model, quantization,
+prompt template, adapter, endpoint, or production distribution should therefore
+be treated as a new calibration target.
+
+## Citation
+
+If you use `typed-decision-bench` or the Qtype-stratified temperature scaling method, please cite my work:
+
+```bibtex
+@software{homberg2026bonsaillamajev,
+  author    = {Homberg, Aron},
+  title     = {typed-decision-bench: A Held-Out Benchmark And Qtype-Stratified Temperature Scaling Method For Language Models Turned Into Typed Decision Engines},
+  year      = {2026},
+  version   = {5},
+  publisher = {GitHub},
+  url       = {https://github.com/kyr0/Bonsai-Llama-Jev},
+  license   = {MIT}
+}
+```

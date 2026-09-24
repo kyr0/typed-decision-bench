@@ -28,7 +28,7 @@ a {
 }
 
 a:link {
-	color: #c00;
+	color: navy;
 }
 
 a:visited {
@@ -142,6 +142,18 @@ blockquote {
 	margin:       1em 0;
 }
 
+.disclaimer {
+	border:        1px solid #999;
+	border-radius: 3pt;
+	padding:       0.5em 1.5em;
+	margin:        2em 0;
+	font-size:     90%;
+}
+
+.disclaimer p {
+	text-indent: 0 !important;
+}
+
 blockquote p {
 	text-indent: 0 !important;
 	font-style:  italic;
@@ -214,8 +226,8 @@ code {
 	font-size:   80%;
 	color:       #f8f8f2;
 
-	padding:       0.5em 0.5em;
-	background:    #272822;
+	padding:       0.25em 0.25em;
+	background:    #424246;
 	border-radius: 5px;
 }
 
@@ -230,11 +242,11 @@ pre {
 	text-align:    left;
 	line-height:   1.2em;
 	overflow-x:    scroll;
-	background:    #272822;
+	background:    #353a3f;
 	padding:       20pt;
 	margin:        20pt 0;
 	border-radius: 3pt;
-	white-space:   pre-wrap;
+	white-space:   pre;
 	tab-size:      4;
 }
 

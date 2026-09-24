@@ -6,7 +6,7 @@
 """Per-run metrics exporter + baseline-gated comparison.
 
 Default: turns every output/<run>_stats.jsonl into a subfolder output/<run>/
-holding that single run's metrics files (metrics.csv + metrics.json) — no
+holding that single run's metrics files (metrics.csv + metrics.json) - no
 comparison without a baseline.
 
 --compare --baseline <run>: per-capability comparison of ALL scored runs
@@ -64,7 +64,7 @@ def compare_runs(root: Path, baseline: str, metric: str, out_dir: Path) -> None:
     """/ Per-capability comparison of every scored run vs an explicit baseline:
     pivots all <run>_stats.jsonl into a capability x run matrix plus
     per-capability deltas, spread, model summary and an HTML dashboard.
-    Only ever called with a user-provided baseline — no baseline, no compare."""
+    Only ever called with a user-provided baseline - no baseline, no compare."""
     stats = sorted((root / "output").glob("*_stats.jsonl"))
     by_run = {p.stem[:-len("_stats")]: p for p in stats}
     if baseline not in by_run:

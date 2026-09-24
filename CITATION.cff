@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: >-
   If you use this benchmark, its split contract, or the calibration standard
-  defined in CALIBRATION.md, please cite the repository as below.
+  defined in https://kyr0.github.io/typed-decision-bench/paper/, please cite the repository as below.
 title: >-
   typed-decision-bench: A Held-Out Benchmark And Qtype-Stratified 
   Temperature Scaling Method For Language Models Turned Into Typed Decision Engines

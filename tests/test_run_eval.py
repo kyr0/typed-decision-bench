@@ -63,7 +63,7 @@ def test_score_reports(tmp_path: Path) -> None:
 
 
 def test_metrics_reports_no_compare(tmp_path: Path) -> None:
-    """/ write_metrics_reports(compare=False) — backing --no-compare / `make eval-only` —
+    """/ write_metrics_reports(compare=False) - backing --no-compare / `make eval-only` -
     must still export the run's metrics folder but never create output/comparison/,
     even when a baseline would otherwise be available (>= 2 scored runs)."""
     root = tmp_path
@@ -185,7 +185,7 @@ def test_resume_end_to_end(tmp_path: Path) -> None:
 
 def test_refuses_writing_gold_responses(tmp_path: Path) -> None:
     """/ The gold guard: --responses pointing at the benchmark's golden responses
-    dir must exit non-zero before anything is sent — an accidental default here
+    dir must exit non-zero before anything is sent - an accidental default here
     once silently replaced the whole benchmark's answer key."""
     root_dir = Path(__file__).resolve().parents[1]
     root = tmp_path

@@ -4,7 +4,7 @@
     "jev-1.13.0": {
       "model_name": "jev-1.13.0",
       "vram_gb": null,
-      "vram_note": "hosted API — no local deployment",
+      "vram_note": "hosted API - no local deployment",
       "license": "proprietary",
       "commercial_usable": true,
       "max_context_window": 65536,

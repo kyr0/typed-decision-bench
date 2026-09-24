@@ -8,18 +8,18 @@ export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
 # when missing), create .env from the template, create output/, pre-warm every
 # dependency cache the targets below need (PEP 723 envs + the pytest suite),
 # check the gated GPQA archives, validate all benchmark data and print a dry-run
-# send plan. Idempotent — re-run it any time something feels broken.
+# send plan. Idempotent - re-run it any time something feels broken.
 setup:
 	@set -e; \
 	echo '[1/6] toolchain…'; \
 	if ! command -v uv >/dev/null 2>&1; then \
-		echo '  uv not found — installing from https://astral.sh/uv/install.sh'; \
+		echo '  uv not found - installing from https://astral.sh/uv/install.sh'; \
 		curl -LsSf https://astral.sh/uv/install.sh | sh; \
-		command -v uv >/dev/null 2>&1 || { echo '  error: uv not on PATH after install (installer puts it in ~/.local/bin) — open a new shell or extend PATH, then re-run make setup'; exit 1; }; \
+		command -v uv >/dev/null 2>&1 || { echo '  error: uv not on PATH after install (installer puts it in ~/.local/bin) - open a new shell or extend PATH, then re-run make setup'; exit 1; }; \
 	fi; \
 	echo "  $$(uv --version)"; \
 	echo '[2/6] configuration…'; \
-	if [ ! -f .env ]; then cp .env.example .env; echo '  created .env from .env.example — now edit it (TYPESAFE_MODEL / TYPESAFE_API_KEY / TYPESAFE_BASE_URL)'; else echo '  .env already exists (CLI flag > process env > .env)'; fi; \
+	if [ ! -f .env ]; then cp .env.example .env; echo '  created .env from .env.example - now edit it (TYPESAFE_MODEL / TYPESAFE_API_KEY / TYPESAFE_BASE_URL)'; else echo '  .env already exists (CLI flag > process env > .env)'; fi; \
 	mkdir -p output; \
 	echo '[3/6] dependency caches (PEP 723 scripts + pytest suite)…'; \
 	uv run scripts/run_eval.py --help >/dev/null; \
@@ -33,7 +33,7 @@ setup:
 	echo '  PASS (document written to validation_status.json)'; \
 	echo '[6/6] send plan (dry-run, nothing sent)…'; \
 	uv run scripts/run_eval.py --benchmark . --dry-run --n 1 >/dev/null; \
-	echo 'setup complete — smoke run next: make eval ARGS="--n 2 --capabilities gpqa_diamond,contains_pii"'
+	echo 'setup complete - smoke run next: make eval ARGS="--n 2 --capabilities gpqa_diamond,contains_pii"'
 
 # ONE-TIME DATA MIGRATION: persist explicit metadata split membership, then
 # refresh every derived checksum/index and validate the resulting benchmark.
@@ -52,7 +52,7 @@ validate:
 	uv run scripts/validate.py > validation_status.json
 
 # Runs the benchmark, e.g. make eval ARGS="--capabilities gpqa_diamond --n 2"
-# (per-capability response files stay off by default — the run log embeds them;
+# (per-capability response files stay off by default - the run log embeds them;
 # the golden responses/ dir is never written to)
 eval:
 	uv run scripts/run_eval.py --benchmark . $(ARGS)

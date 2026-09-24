@@ -24,14 +24,14 @@ Outputs:
     (stable name, no timestamp postfix); otherwise output/<model>_<YYYY-MM-DD_HH_MM>.jsonl.
     Reusing a run name RESUMES that run: only cases without a successful record
     in the existing log are (re)sent, new records are appended, and the stats/
-    cases reports are refreshed — so old results are never silently discarded.
+    cases reports are refreshed - so old results are never silently discarded.
   per-capability files (only with an explicit --responses DIR, never by
   default): <DIR>/<capability>.jsonl, line-aligned with the request files;
   failed cases become {"error": ...} placeholder lines. The golden responses/
-  dir is the scoring answer key — writing there is refused outright.
+  dir is the scoring answer key - writing there is refused outright.
   stats/cases (always): each finished run scores ONLY metadata split=test
   into output/<run>_stats.jsonl + output/<run>_cases.jsonl (scripts/score.py);
-  scoring failures only warn — the log is kept and `make score` re-derives them.
+  scoring failures only warn - the log is kept and `make score` re-derives them.
   calibration (default): fit a scalar temperature ONLY from metadata
   split=calibrate and report raw vs calibrated metrics on held-out split=test;
   writes output/<run>_calibration.json. split=train is ignored.
@@ -220,7 +220,7 @@ def build_tasks(root, caps, manifest_caps, limit, model, selected_splits=DEFAULT
 def make_record(cap, line_no, url, obj=None, error_type=None, error=None, duration_ms=0.0):
     """/ One combined-log line; the single place that defines the record schema.
 
-    request_id is '<capability>-<line:03d>' — the key every downstream tool
+    request_id is '<capability>-<line:03d>' - the key every downstream tool
     (scoring, resume, e2e validation) uses to re-join a record with its case.
     """
     return {
@@ -281,7 +281,7 @@ def run_batch(tasks, url, headers, args, log_file):
                 consecutive_errors += 1
                 if consecutive_errors >= ABORT_AFTER_CONSECUTIVE_ERRORS and consecutive_errors == done:
                     abort.set()
-                    print(f'ABORT: first {done} requests all failed — check endpoint {url}, '
+                    print(f'ABORT: first {done} requests all failed - check endpoint {url}, '
                           f'--timeout ({args.timeout}s) and --retries', flush=True)
             elif not record['error_type']:
                 consecutive_errors = 0
@@ -298,7 +298,7 @@ def run_batch(tasks, url, headers, args, log_file):
 
 def log_successes(log_path):
     """/ {(capability, line): record} of every case with a successful response in
-    a run log — the resume set: reusing a run name (re)sends exactly the cases
+    a run log - the resume set: reusing a run name (re)sends exactly the cases
     NOT in here (failures, timeouts, aborted and never-reached cases)."""
     return {k: r for k, r in last_records(log_path).items() if not r.get('error_type')}
 
@@ -307,7 +307,7 @@ def write_metrics_reports(root, log_path, baseline=None, metric='soft_accuracy',
     """/ Metrics + comparison follow-ups after scoring: refreshes this run's
     output/<run>/metrics.{csv,json} and, once at least two runs are scored, the
     per-capability comparison in output/comparison/ against the explicit
-    baseline (default: `jev-1.13.0` when it is scored — the hosted reference —
+    baseline (default: `jev-1.13.0` when it is scored - the hosted reference -
     else the oldest scored run; never a fabricated one). compare=False stops
     after the single-run metrics export (`make eval-only` / `--no-compare`):
     useful when a baseline comparison is not wanted or would be misleading.
@@ -419,7 +419,7 @@ def main():
     ap = argparse.ArgumentParser(description='Run benchmark capabilities against System One.')
     ap.add_argument('--benchmark', default='.', help='Benchmark root directory')
     ap.add_argument('--responses', default='none', help="Directory for per-capability <capability>.jsonl response files "
-                                                        "(default: none — the run log already embeds every response). "
+                                                        "(default: none - the run log already embeds every response). "
                                                         "MUST NOT be the golden responses/ dir; that is refused.")
     ap.add_argument('--capabilities', default=None, help='Comma-separated capability slugs to run (default: all)')
     ap.add_argument('--splits', default='test,calibrate',
@@ -464,7 +464,7 @@ def main():
     caps = selected_capabilities(args.capabilities, manifest_caps)
 
     # GOLD GUARD: responses/ is the scoring answer key (manifest 'responses'
-    # paths). Eval output must never land there — an accidental default
+    # paths). Eval output must never land there - an accidental default
     # silently replaced the whole benchmark's gold once; never again.
     if args.responses.lower() != 'none':
         gold_root = (root / next(iter(manifest_caps.values()))['responses']).parent

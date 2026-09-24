@@ -2,7 +2,7 @@
 """Password-protected storage for gated capability data files (gpqa_diamond).
 
 At rest, each protected file exists only as <name>.jsonl.zip next to its
-original path — never as plaintext on disk or in git. Any tool that needs the
+original path - never as plaintext on disk or in git. Any tool that needs the
 jsonl (scripts/run_eval.py, scripts/validate.py, scripts/score.py,
 scripts/sync-metadata.py) calls unlock_paths() at start and registers
 cleanup_unlocked() with atexit, so the plaintext exists exactly for the
@@ -15,7 +15,7 @@ GPQA_ZIP_PASSWORD environment variable to override it, e.g. for privately
 re-encrypted copies.
 
 Archives use classic PKZIP ZipCrypto because the stdlib can decrypt such
-entries but not create them — so no third-party dependency is needed for
+entries but not create them - so no third-party dependency is needed for
 reading (zipfile) or writing (this module).
 """
 import argparse
@@ -73,7 +73,7 @@ class _ZipCrypto:
 
     def encrypt(self, data: bytes) -> bytes:
         """/ XORs each byte with the keystream, then advances the keys with that
-        plaintext byte — the exact order readers expect when decrypting."""
+        plaintext byte - the exact order readers expect when decrypting."""
         out = bytearray(len(data))
         for i, p in enumerate(data):
             temp = (self.keys[2] | 2) & 0xFFFF
@@ -88,7 +88,7 @@ def encrypted_zip_bytes(name: str, data: bytes, password: str) -> bytes:
 
     Everything is built in memory (capability files are a few hundred KB max),
     so CRC and sizes are known upfront: the general-purpose flag is 0x1
-    (encrypted) only, and byte 12 of the encryption header is crc>>24 — the
+    (encrypted) only, and byte 12 of the encryption header is crc>>24 - the
     exact check value stdlib zipfile and Info-ZIP unzip verify on decrypt.
     """
     deflater = zlib.compressobj(9, zlib.DEFLATED, -15)
@@ -155,7 +155,7 @@ def unlock_file(target: Path, password: str = None):
     zip_path = Path(str(target) + '.zip')
     if target.exists():
         if zip_path.exists():
-            _log(f'WARNING {target}: plaintext next to {zip_path.name} — leaving both, not tracked for cleanup')
+            _log(f'WARNING {target}: plaintext next to {zip_path.name} - leaving both, not tracked for cleanup')
         return None
     if not zip_path.exists():
         return None

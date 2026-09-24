@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """/ Scorer: joins predictions against the golden responses and emits two artifacts.
 
-    output/<run>_stats.jsonl — one flat self-describing line per capability plus
+    output/<run>_stats.jsonl - one flat self-describing line per capability plus
     'micro' (accuracy, calibration, transport errors, latency) so lines from
-    different models concatenate for comparison. output/<run>_cases.jsonl — one
+    different models concatenate for comparison. output/<run>_cases.jsonl - one
     line per case with correctness + per-case calibration/latency for error
     analysis.
 
@@ -88,7 +88,7 @@ def distributions(ga,pa):
 
     Calibration metrics must use the FULL gold distribution (not a one-hot
     argmax), so soft agreement and cross-entropy stay meaningful when gold
-    itself spreads mass — noul maps to the [false, true] pair."""
+    itself spreads mass - noul maps to the [false, true] pair."""
     if ga['type']=='noul':
         labels=('false','true')
         y=(1.0-float(ga['noul']),float(ga['noul']))
@@ -103,7 +103,7 @@ def distributions(ga,pa):
 def case_record(cap,i,ga,pa,duration_ms):
     """/ One per-case JSONL record (output/<run>_cases.jsonl): correctness,
     calibration (nll/brier/soft against the full gold distribution) and the
-    joined per-case latency — self-describing so cases from different models
+    joined per-case latency - self-describing so cases from different models
     can simply be concatenated and compared."""
     labels,y,p=distributions(ga,pa)
     gold_i=max(range(len(y)),key=y.__getitem__); pred_i=max(range(len(p)),key=p.__getitem__)
@@ -176,7 +176,7 @@ def log_predictions(log_path):
     """/ {(capability,line): response payload} from a combined run log, taking
     the LAST record per case (a retry appended by a resumed run overrides its
     failed try). The log embeds every successful response, so each log can be
-    scored standalone — this is what makes --all-logs work without a responses dir."""
+    scored standalone - this is what makes --all-logs work without a responses dir."""
     return {k:r['response'] for k,r in last_records(log_path).items()
             if not r.get('error_type') and isinstance(r.get('response'),dict)}
 

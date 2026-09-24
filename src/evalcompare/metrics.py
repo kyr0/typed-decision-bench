@@ -72,10 +72,10 @@ def fmt_value(value: float | int | None, spec: MetricSpec) -> str:
     """/ Renders one value per the spec's format_kind; NaN/None become an em dash
     so tables never show raw nan."""
     if value is None:
-        return "—"
+        return "-"
     try:
         if value != value:  # NaN
-            return "—"
+            return "-"
     except TypeError:
         return str(value)
     if spec.format_kind == "probability":

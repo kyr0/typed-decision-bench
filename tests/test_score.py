@@ -1,4 +1,4 @@
-"""/ E2E tests for scripts/score.py, driven through the CLI as a subprocess —
+"""/ E2E tests for scripts/score.py, driven through the CLI as a subprocess -
 exactly the way `make score` invokes it.
 
 Covers single-run mode (--responses dir joined with the newest run log) and

@@ -63,7 +63,7 @@ def _metric_axis(fig: go.Figure, spec: MetricSpec, *, axis: str = "y") -> None:
 
 def _run_order(c: Comparison) -> list[str]:
     """/ Runs ranked best-first by macro score (direction-aware; neutral metrics
-    keep the input order) — the single ordering used by heatmap/delta/distribution
+    keep the input order) - the single ordering used by heatmap/delta/distribution
     columns so every panel tells the same story left-to-right."""
     s = c.summary
     if c.metric.direction == "neutral":
@@ -95,7 +95,7 @@ def summary_bar(c: Comparison) -> go.Figure:
                 "<br>Examples on shared set: %{customdata[3]:,.0f}<br>Min n/capability: %{customdata[4]:,.0f}<extra></extra>"
             ),
         ))
-    _base_layout(fig, height=max(330, 75 + 52 * len(s)), title=f"Shared-capability macro — {c.metric.label}")
+    _base_layout(fig, height=max(330, 75 + 52 * len(s)), title=f"Shared-capability macro - {c.metric.label}")
     fig.update_layout(barmode="overlay")  # one bar per row: no side-by-side offsets
     _metric_axis(fig, c.metric, axis="x")
     fig.update_yaxes(title=None, autorange="reversed")
@@ -104,7 +104,7 @@ def summary_bar(c: Comparison) -> go.Figure:
 
 def summary_latency(c: Comparison) -> go.Figure | None:
     """/ Macro p50/p95 latency per run as grouped horizontal bars, rows in the same
-    best-first order as the macro summary — reads directly under it. None unless
+    best-first order as the macro summary - reads directly under it. None unless
     the stats carry the latency columns."""
     if "macro_latency_ms_p50" not in c.summary.columns:
         return None
@@ -125,7 +125,7 @@ def summary_latency(c: Comparison) -> go.Figure | None:
                 hovertemplate="<b>" + _kyr0_anchor(run) + "</b><br>Macro p95 latency: %{x:,.0f} ms<extra></extra>",
             ))
     _base_layout(fig, height=max(330, 75 + 52 * len(s)),
-                 title="Shared-capability macro latency — mean over capabilities (ms)")
+                 title="Shared-capability macro latency - mean over capabilities (ms)")
     fig.update_xaxes(title="ms")
     fig.update_yaxes(title=None, autorange="reversed")
     fig.update_layout(barmode="group")
@@ -177,7 +177,7 @@ def capability_heatmap(c: Comparison) -> go.Figure:
         )
     )
     inner_height = max(520, 25 * len(caps) + 170)
-    _base_layout(fig, height=inner_height, title=f"Every capability — {c.metric.label}")
+    _base_layout(fig, height=inner_height, title=f"Every capability - {c.metric.label}")
     fig.update_xaxes(side="top", title=None)
     fig.update_yaxes(title=None, autorange="reversed", tickfont=dict(size=11))
     return fig
@@ -221,7 +221,7 @@ def delta_heatmap(c: Comparison) -> go.Figure | None:
 
 
 def discriminating_capabilities(c: Comparison, top_n: int = 40) -> go.Figure | None:
-    """/ Per-model points on the capabilities with the largest model spread — where
+    """/ Per-model points on the capabilities with the largest model spread - where
     the suite separates models most. None for a single run or no multi-model rows."""
     if len(c.data.runs) < 2:
         return None
@@ -270,7 +270,7 @@ def distribution_plot(c: Comparison) -> go.Figure:
                 hovertemplate="%{customdata}<br>" + c.metric.label + ": %{y:.4f}<extra>" + _kyr0_anchor(run) + "</extra>",
             )
         )
-    _base_layout(fig, height=520, title=f"Capability distribution — {c.metric.label}")
+    _base_layout(fig, height=520, title=f"Capability distribution - {c.metric.label}")
     _metric_axis(fig, c.metric, axis="y")
     fig.update_xaxes(title=None, categoryorder="array", categoryarray=_run_order(c))
     return fig
@@ -278,7 +278,7 @@ def distribution_plot(c: Comparison) -> go.Figure:
 
 def latency_quality(c: Comparison) -> go.Figure | None:
     """/ p50 latency (log axis) vs the primary metric, one point per capability per
-    run — the speed/quality trade-off view. None without a latency column."""
+    run - the speed/quality trade-off view. None without a latency column."""
     if "latency_ms_p50" not in c.data.capabilities.columns:
         return None
     common = set(c.common_capabilities)
@@ -352,8 +352,8 @@ def pairwise_baseline(c: Comparison) -> go.Figure | None:
         )
     )
     _base_layout(fig, height=620, title=f"Pairwise capability parity vs {c.baseline}")
-    fig.update_xaxes(title=f"{c.baseline} — {c.metric.label}", range=[lo - pad, hi + pad])
-    fig.update_yaxes(title=f"Compared model — {c.metric.label}", range=[lo - pad, hi + pad], scaleanchor="x", scaleratio=1)
+    fig.update_xaxes(title=f"{c.baseline} - {c.metric.label}", range=[lo - pad, hi + pad])
+    fig.update_yaxes(title=f"Compared model - {c.metric.label}", range=[lo - pad, hi + pad], scaleanchor="x", scaleratio=1)
     tickformat = axis_tickformat(c.metric)
     if tickformat:
         fig.update_xaxes(tickformat=tickformat)
@@ -362,7 +362,7 @@ def pairwise_baseline(c: Comparison) -> go.Figure | None:
 
 
 def calibration_summary(c: Comparison) -> go.Figure | None:
-    """/ Macro ECE (x) vs macro soft accuracy (y), labelled by run — the upper-left
+    """/ Macro ECE (x) vs macro soft accuracy (y), labelled by run - the upper-left
     corner is the target. None unless the inputs carry calibration columns."""
     if "macro_ece_15" not in c.summary.columns or "macro_soft_accuracy" not in c.summary.columns:
         return None
@@ -525,10 +525,10 @@ def _summary_table(c: Comparison, reqs: dict | None = None) -> str:
                     macro += f'<br><span class="{"pos" if gap > 0 else "neg"}">{gap_txt}</span>'
                 cells.append(macro)
             else:  # latency aggregates
-                cells.append("—" if pd.isna(v) else f"{float(v):,.1f}")
+                cells.append("-" if pd.isna(v) else f"{float(v):,.1f}")
         if show_deploy:  # deployment columns present for this report
             if m:  # registry entry already resolved above (prefix-tolerant)
-                vram = ("—" if m.get("vram_gb") is None
+                vram = ("-" if m.get("vram_gb") is None
                         else f'{float(m["vram_gb"]):.1f} GB'
                              + (f' <span class="n">{html.escape(str(m["vram_note"]))}</span>'
                                 if m.get("vram_note") else ""))
@@ -538,26 +538,26 @@ def _summary_table(c: Comparison, reqs: dict | None = None) -> str:
                     k = ctx / 1024
                     ctx_txt = (f"{k / 1024:g}M" if k >= 1024 else f"{k:g}k")
                 else:
-                    ctx_txt = "—"
+                    ctx_txt = "-"
                 if m.get("context_note"):
                     # asterisk on the value; the explanation joins the caption footnote
                     ctx_txt += "*"
                     note = str(m["context_note"])
                     if note not in ctx_footnotes:
                         ctx_footnotes.append(note)
-                img = "✓" if m.get("image_support") else "—"
+                img = "✓" if m.get("image_support") else "-"
                 if m.get("image_support") and repo:
                     # grey link line: which engine image support was measured under
                     owner_repo = str(repo).rstrip("/").split("//", 1)[-1].split("/", 1)[-1]
                     img += (f'<br><span class="n"><a href="{html.escape(str(repo), quote=True)}"'
                             f' target="_blank" rel="noopener">With {html.escape(owner_repo)}</a></span>')
-                lic = html.escape(str(m.get("license", "—")))
+                lic = html.escape(str(m.get("license", "-")))
                 # grey subtitle line: open-weighted models state it explicitly
                 if str(m.get("weights", "")).lower() == "open":
                     lic += ' <span class="n">Open Weights</span>'
                 cells += [vram, lic, ctx_txt, img]
             else:
-                cells += ["—", "—", "—", "—"]
+                cells += ["-", "-", "-", "-"]
         # light-green highlight for the pareto-optimal model row
         open_tag = '<tr class="pareto">' if (show_deploy and m and m.get("paretoOptimal")) else "<tr>"
         rows.append(open_tag + "".join(f"<td>{x}</td>" for x in cells) + "</tr>")
@@ -600,7 +600,7 @@ def _capability_table(c: Comparison) -> str:
         for run in c.deltas.columns:
             v = c.deltas.loc[cap, run]
             if pd.isna(v):
-                cells.append("—")
+                cells.append("-")
             elif c.metric.format_kind == "probability":
                 cells.append(f"{float(v) * 100:+.2f} pp")
             else:
@@ -661,7 +661,7 @@ def build_report(c: Comparison, out_dir: Path, *, title: str, top_n: int = 40) -
 
     figures: list[tuple[str, str, go.Figure | None, bool]] = [
         ("summary", "Model summary", summary_bar(c), False),
-        ("summary-latency", "Model summary — latency", summary_latency(c), False),
+        ("summary-latency", "Model summary - latency", summary_latency(c), False),
         ("heatmap", "All capabilities", capability_heatmap(c), True),
         ("delta", "Baseline deltas", delta_heatmap(c), True),
         ("discriminators", f"Most discriminating capabilities (top {top_n} by model spread)",
@@ -692,7 +692,7 @@ def build_report(c: Comparison, out_dir: Path, *, title: str, top_n: int = 40) -
                             "directly comparable across runs; client-side load settings "
                             "(--parallel, --quota-buster) apply per run as configured."),
         "latency": ("All models ran on a single NVIDIA H200 NVL GPU; one point per capability "
-                    "per run — per-capability point estimates are noisy at small n."),
+                    "per run - per-capability point estimates are noisy at small n."),
     }
 
     sections = []
@@ -794,7 +794,7 @@ search.addEventListener('input', () => {{
 
 def export_static_figures(c: Comparison, out_dir: Path, formats: Iterable[str], *, top_n: int = 40) -> list[Path]:
     """/ Renders the same figures as static images (svg/png/pdf/webp/jpg) into
-    out_dir/figures/ — requires plotly's kaleido exporter; returns written paths.
+    out_dir/figures/ - requires plotly's kaleido exporter; returns written paths.
     Not part of the make pipeline; provided for embedding decks/papers."""
     formats = tuple(dict.fromkeys(f.lower() for f in formats if f))
     if not formats:

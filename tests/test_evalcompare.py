@@ -149,7 +149,7 @@ def test_latency_chart_hardware_note(tmp_path: Path) -> None:
 
 
 def test_duplicate_capability_rejected(tmp_path: Path) -> None:
-    """/ Repeated (run, capability) rows would make the pivot ambiguous — loader refuses."""
+    """/ Repeated (run, capability) rows would make the pivot ambiguous - loader refuses."""
     p = tmp_path / "dup.jsonl"
     row = {"run": "A", "capability": "x", "n": 1, "soft_accuracy": 0.5}
     p.write_text(json.dumps(row) + "\n" + json.dumps(row) + "\n", encoding="utf-8")

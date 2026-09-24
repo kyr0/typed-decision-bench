@@ -7,14 +7,14 @@
 
 Layer 1 is structural: every request, golden response and metadata line must
 satisfy the SystemOne OpenAPI schemas, fetched from the canonical live spec
-(https://api.typesafe.ai/openapi.json — no local copy to drift out of sync;
-`--openapi` accepts a local path for offline runs). Layer 2 is semantic —
+(https://api.typesafe.ai/openapi.json - no local copy to drift out of sync;
+`--openapi` accepts a local path for offline runs). Layer 2 is semantic -
 schema-valid payloads can still be wrong (answers not matching question IDs,
 probabilities not summing to 1, a score that is not the probability-weighted
 expectation, a score legend differing from the request rubric). The status
 document is printed as JSON to stdout; `make validate` redirects it to
 validation_status.json. The most recent e2e run log (output/e2e.jsonl) is
-response-schema-checked too, counting — not validating — transport failures
+response-schema-checked too, counting - not validating - transport failures
 and aborted cases.
 """
 import argparse, atexit, json, math, sys, urllib.request
